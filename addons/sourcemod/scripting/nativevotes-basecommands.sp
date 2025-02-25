@@ -79,7 +79,7 @@ public Action Command_CancelVote(int client, const char[] command, int argc)
 {
 	if (!CheckCommandAccess(client, "sm_cancelvote", ADMFLAG_VOTE))
 	{
-		if (IsVoteInProgress())
+		if (IsVoteInProgress() || NativeVotes_IsVoteInProgress())
 		{
 			// Let basecommands handle it
 			return Plugin_Continue;
