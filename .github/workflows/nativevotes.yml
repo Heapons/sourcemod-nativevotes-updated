@@ -18,12 +18,12 @@ jobs:
       with:
         submodules: true
 
-    - name: Setup SourcePawn 1.12 Compiler
+    - name: Setup SourcePawn 1.13 Compiler
       uses: rumblefrog/setup-sp@master
       with:
-        version: "1.12.x"
+        version: "1.13.x"
 
-    - name: Compile plugins 1.12
+    - name: Compile plugins 1.13
       shell: bash
       run: |
         bash .github/nv_compile.sh
