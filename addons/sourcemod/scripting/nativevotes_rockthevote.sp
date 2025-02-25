@@ -99,7 +99,7 @@ public void OnPluginStart()
 	g_Cvar_RTVPostVoteAction = CreateConVar("sm_rtv_postvoteaction", "0", "What to do with RTV's after a mapvote has completed. 0 - Allow, success = instant change, 1 - Deny", _, true, 0.0, true, 1.0);
 	
 	RegConsoleCmd("sm_rtv", Command_RTV);
-	RegAdminCmd("sm_forcertv", Command_ForceRTV, ADMFLAG_CHANGEMAP, "Force a Rock The Vote");
+	RegConsoleCmd("sm_forcertv", Command_ForceRTV);
 	
 	AutoExecConfig(true, "rtv");
 }
