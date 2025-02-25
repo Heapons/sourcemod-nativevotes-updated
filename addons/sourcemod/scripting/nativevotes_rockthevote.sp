@@ -272,9 +272,11 @@ public Action Command_RTV(int client, int args)
 	return Plugin_Handled;
 }
 
-public Action Command_ForceRTV()
+public Action Command_ForceRTV(int client, int args)
 {
 	StartRTV();
+	
+	return Plugin_Handled;
 }
 
 void AttemptRTV(int client, bool isVoteMenu=false)
