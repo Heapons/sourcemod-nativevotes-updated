@@ -105,6 +105,7 @@ bool g_MapVoteCompleted;
 bool g_ChangeMapAtRoundEnd;
 bool g_ChangeMapInProgress;
 int g_mapFileSerial = -1;
+int g_Chattime;
 
 MapChange g_ChangeTime;
 
