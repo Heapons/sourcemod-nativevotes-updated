@@ -4,6 +4,9 @@ name: Nativevotes Autobuild
 on:
   push:
     branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   run:
@@ -29,13 +32,23 @@ jobs:
         bash .github/nv_compile.sh
         bash
 
-
     - name: Setup SourcePawn 1.12 Compiler
       uses: rumblefrog/setup-sp@master
       with:
         version: "1.12.x"
 
     - name: Compile plugins 1.12
+      shell: bash
+      run: |
+        bash .github/nv_compile.sh
+        bash
+
+    - name: Setup SourcePawn 1.13 Compiler
+      uses: rumblefrog/setup-sp@master
+      with:
+        version: "1.13.x"
+
+    - name: Compile plugins 1.13
       shell: bash
       run: |
         bash .github/nv_compile.sh

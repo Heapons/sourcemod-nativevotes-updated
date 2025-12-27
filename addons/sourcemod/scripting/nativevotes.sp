@@ -46,7 +46,7 @@ EngineVersion g_EngineVersion = Engine_Unknown;
 
 #include "nativevotes/data-keyvalues.sp"
 
-#define VERSION 							"1.1.1fix"
+#define VERSION 							"25w52a"
 
 #define LOGTAG "NV"
 
@@ -148,7 +148,7 @@ public Plugin myinfo =
 	author = "Powerlord",
 	description = "Voting API to use the game's native vote panels. Compatible with L4D, L4D2, TF2, and CS:GO.",
 	version = VERSION,
-	url = "https://forums.alliedmods.net/showthread.php?t=208008"
+	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -746,7 +746,7 @@ void OnVoteSelect(NativeVote vote, int client, int item)
 					
 					if (g_Cvar_VoteChat.BoolValue)
 					{
-						PrintToChatAll("[%s] %t", LOGTAG, phrase, name, choice);
+						CPrintToChatAll("[%s] %t", LOGTAG, phrase, name, choice);
 					}
 					
 					if (g_Cvar_VoteClientConsole.BoolValue)
@@ -1989,7 +1989,7 @@ public int Native_IsClientInVotePool(Handle plugin, int numParams)
 {
 	int client = GetNativeCell(1);
 	
-	if (client <= 0 || client > MaxClients)
+	if (!client || client > MaxClients)
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index %d", client);
 		return false;
@@ -2379,7 +2379,7 @@ public int Native_SetTarget(Handle plugin, int numParams)
 	int userid;
 	char steamId[20];
 	
-	if (client <= 0)
+	if (!client)
 	{
 		userid = 0;
 		steamId = "";

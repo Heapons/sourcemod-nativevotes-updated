@@ -41,7 +41,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define VERSION "3.0.0"
+#define VERSION "25w52a"
 
 ConVar g_Cvar_Votes;
 ConVar g_Cvar_KickVote;
@@ -56,7 +56,7 @@ public Plugin myinfo = {
 	author			= "Powerlord",
 	description		= "Causes TF2 kick votes to fail against people who the current user can't target.",
 	version			= VERSION,
-	url				= "https://forums.alliedmods.net/showthread.php?t=208008"
+	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
 public void OnPluginStart()
@@ -161,7 +161,7 @@ public Action KickVoteHandler(int client, NativeVotesOverride overrideType, cons
 	if (!CanUserTarget(client, target))
 	{
 		NativeVotes_DisplayCallVoteFail(client, NativeVotesCallFail_CantKickAdmin);
-		PrintToChat(client, "%t", "Unable to target");
+		CPrintToChat(client, "%t", "Unable to target");
 		return Plugin_Stop;
 	}
 		

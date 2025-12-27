@@ -31,6 +31,7 @@
  
 #include <menus>
 #include <sourcemod>
+#include <multicolors>
 
 // NativeVotes 1.1 series
 

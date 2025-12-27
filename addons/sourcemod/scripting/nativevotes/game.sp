@@ -736,7 +736,7 @@ void Game_DisplayRawVotePass(NativeVotesPassType passType, int team, int client=
 	{
 		case Engine_Left4Dead:
 		{
-			if (!client)
+			if (client <= 0)
 			{
 				L4DL4D2_VotePassToTranslation(passType, translation, sizeof(translation));
 				
@@ -2083,7 +2083,7 @@ static void L4D2_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 static void L4D2_VotePass(const char[] translation, const char[] details, int team, int client=0)
 {
 	BfWrite votePass;
-	if (!client)
+	if (client <= 0)
 	{
 		votePass = UserMessageToBfWrite(StartMessageAll("VotePass", USERMSG_RELIABLE));
 	}
@@ -2509,7 +2509,7 @@ static void CSGO_VotePass(const char[] translation, const char[] details, int te
 {
 	Protobuf votePass = null;
 	
-	if (!client)
+	if (client <= 0)
 	{
 		votePass = UserMessageToProtobuf(StartMessageAll("VotePass", USERMSG_RELIABLE));
 	}
@@ -2530,7 +2530,7 @@ static void TF2_VotePass(const char[] translation, const char[] details, int tea
 {
 	BfWrite votePass = null;
 	
-	if (!client)
+	if (client <= 0)
 	{
 		votePass = UserMessageToBfWrite(StartMessageAll("VotePass", USERMSG_RELIABLE));
 	}

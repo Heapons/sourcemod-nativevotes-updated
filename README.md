@@ -1,47 +1,24 @@
-sourcemod-nativevotes-updated
-=====================
+![](https://wiki.teamfortress.com/w/images/8/88/Voting_YYN.png)
+# <img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="32" height="32" style="vertical-align: text-bottom;">/<img src="https://store.steampowered.com/favicon.ico" width="32" height="32" style="vertical-align: text-bottom;"> NativeVotes — Continued!
+This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u/15315481" width="16" height="16" style="vertical-align: text-bottom;"/> sapphonie](https://github.com/sapphonie)['s work](https://github.com/sapphonie/sourcemod-nativevotes-updated).
 
-### NativeVotes SourceMod plugin, with the following fixes:
+> [!WARNING]
+> This plugin has only been tested in [<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> **Team Fortress 2**](https://store.steampowered.com/app/440)‼ If it doesn't work in any other game, open an [issue](https://github.com/Heapons/sourcemod-nativevotes-updated/issues/new).
 
-@nosoop
-- [Prevent NativeVote menu callback from freeing in-use forward handle](https://github.com/powerlord/sourcemod-nativevotes/pull/3)
-- [Hotfix for 2022-06-22 Update](https://github.com/sapphonie/sourcemod-nativevotes-updated/pull/11)
-
-@rowedahelicon
-- [Fixed MvM mission votes from causing an Invalid forward handle](https://github.com/powerlord/sourcemod-nativevotes/pull/8)
-
-@Blueberryy
-- [Added Russian translation](https://github.com/powerlord/sourcemod-nativevotes/pull/7)
-
-@arthurdead
-- [Sourcemod 1.11 syntax update](https://github.com/arthurdead/sourcemod-nativevotes/tree/sm111-fix)
-
-@sapphonie (me)
-- [Stop memleak with FireToClient](https://github.com/powerlord/sourcemod-nativevotes/pull/9)
-
-@justkamiii
-- [Fix caps](https://github.com/sapphonie/sourcemod-nativevotes-updated/pull/7)
-
-@HotoCocoaco
-- [Add chi translation](https://github.com/sapphonie/sourcemod-nativevotes-updated/pull/8)
-
-@fdxx
-- [Fixed L4D2_VotePass](https://github.com/sapphonie/sourcemod-nativevotes-updated/pull/11)
-
-@satanskitty
-- [danish and turkish translations](https://github.com/sapphonie/sourcemod-nativevotes-updated/pull/17)
-
-@Spaenny
-- [added german translation](https://github.com/sapphonie/sourcemod-nativevotes-updated/pull/18)
-
-@iBoonie
-- [fixed a bug where you can spam invalid votes and forcibly prematurely change the level](https://github.com/sapphonie/sourcemod-nativevotes-updated/pull/20)
-- [removed an unnecessary ThrowNativeError](https://github.com/sapphonie/sourcemod-nativevotes-updated/pull/21)
-
-This repo also autoreleases all changes to master, compiled on SM 1.11 and SM 1.12. Check out the latest release [here](https://github.com/sapphonie/sourcemod-nativevotes-updated/releases/latest).
-
-NativeVotes is a SourceMod Plugin that lets plugins use the L4D/L4D2/TF2/CSGO built-in vote screens.
-It supplies an API that plugins can use to create and display these votes.
-
-It replaces the BuiltinVotes SourceMod extension and has a few new features as well as bugfixes.
-
+# To-Do (Wishlist...?)
+## General
+- [x] Include [NativeVotes BaseVotes and FunVotes](https://github.com/powerlord/sourcemod-nativevotes-basevotes) in this repository.
+- Colored chat.
+  - [x] Team-colored player names.
+  - [x] Highlight map names.
+    - [] Parse workshop map titles.
+- [x] Update [Nominations](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_nominations.sp) and [Rock The Vote](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_rockthevote.sp) to match with the latest [Sourcemod](https://github.com/alliedmodders/sourcemod/tree/master/plugins) version.
+- [x] Add [`sm_voterp`](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_voterp.sp).
+  - Controls `tf_medieval_autorp` cvar.
+## [Rock The Vote](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_rockthevote.sp)
+- [x] Add `sm_forcertv` for admins.
+- [x] Allow players to retract their rock-the-vote.
+  - Execute `sm_rtv` again to undo.
+## [Nominations](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_nominations.sp)
+- [] Download and nominate workshop maps.
+  - Inspired by [[TF2] Workshop Vote](https://forums.alliedmods.net/showthread.php?p=2717878).

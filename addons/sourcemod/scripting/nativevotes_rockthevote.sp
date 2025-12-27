@@ -50,7 +50,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define VERSION "1.8.0 beta 1"
+#define VERSION "25w52a"
 
 public Plugin myinfo =
 {
@@ -58,7 +58,7 @@ public Plugin myinfo =
 	author = "AlliedModders LLC and Powerlord",
 	description = "Provides RTV Map Voting",
 	version = VERSION,
-	url = "https://forums.alliedmods.net/showthread.php?t=208010"
+	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
 ConVar g_Cvar_Needed;
@@ -68,7 +68,6 @@ ConVar g_Cvar_Interval;
 ConVar g_Cvar_ChangeTime;
 ConVar g_Cvar_RTVPostVoteAction;
 
-bool g_CanRTV = false;		// True if RTV loaded maps and is active.
 bool g_RTVAllowed = false;	// True if RTV is available to players. Used to delay rtv votes.
 int g_Voters = 0;				// Total voters connected. Doesn't include fake clients.
 int g_Votes = 0;				// Total number of "say rtv" votes
@@ -99,8 +98,20 @@ public void OnPluginStart()
 	g_Cvar_RTVPostVoteAction = CreateConVar("sm_rtv_postvoteaction", "0", "What to do with RTV's after a mapvote has completed. 0 - Allow, success = instant change, 1 - Deny", _, true, 0.0, true, 1.0);
 	
 	RegConsoleCmd("sm_rtv", Command_RTV);
+	RegAdminCmd("sm_forcertv", Command_ForceRTV, ADMFLAG_CHANGEMAP);
 	
 	AutoExecConfig(true, "rtv");
+
+	OnMapEnd();
+
+	/* Handle late load */
+	for (int i=1; i<=MaxClients; i++)
+	{
+		if (IsClientConnected(i))
+		{
+			OnClientConnected(i);	
+		}	
+	}
 }
 
 public void OnPluginEnd()
@@ -164,68 +175,41 @@ public void TF2_OnWaitingForPlayersEnd()
 	g_Warmup = false;
 }
 
-public void OnMapStart()
+public void OnMapEnd()
 {
+	g_RTVAllowed = false;
 	g_Voters = 0;
 	g_Votes = 0;
 	g_VotesNeeded = 0;
 	g_InChange = false;
-	
-	/* Handle late load */
-	for (int i=1; i<=MaxClients; i++)
-	{
-		if (IsClientConnected(i))
-		{
-			OnClientConnected(i);	
-		}	
-	}
-}
-
-public void OnMapEnd()
-{
-	g_Warmup = false;
-	g_CanRTV = false;	
-	g_RTVAllowed = false;
 }
 
 public void OnConfigsExecuted()
 {	
-	g_CanRTV = true;
-	g_RTVAllowed = false;
-	g_RTVTime = GetTime() + g_Cvar_Interval.IntValue;
 	CreateTimer(g_Cvar_InitialDelay.FloatValue, Timer_DelayRTV, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public void OnClientConnected(int client)
 {
-	if(IsFakeClient(client))
-		return;
-	
-	g_Voted[client] = false;
-
-	g_Voters++;
-	g_VotesNeeded = RoundToFloor(float(g_Voters) * g_Cvar_Needed.FloatValue);
-	
-	return;
+	if (!IsFakeClient(client))
+	{
+		g_Voters++;
+		g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
+	}
 }
 
 public void OnClientDisconnect(int client)
-{
-	if(IsFakeClient(client))
-		return;
-	
-	if(g_Voted[client])
+{	
+	if (g_Voted[client])
 	{
 		g_Votes--;
+		g_Voted[client] = false;
 	}
 	
-	g_Voters--;
-	
-	g_VotesNeeded = RoundToFloor(float(g_Voters) * g_Cvar_Needed.FloatValue);
-	
-	if (!g_CanRTV)
+	if (!IsFakeClient(client))
 	{
-		return;	
+		g_Voters--;
+		g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
 	}
 	
 	if (g_Votes && 
@@ -244,7 +228,7 @@ public void OnClientDisconnect(int client)
 
 public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
-	if (!g_CanRTV || !client)
+	if (!client || IsChatTrigger())
 	{
 		return;
 	}
@@ -261,7 +245,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 
 public Action Command_RTV(int client, int args)
 {
-	if (!g_CanRTV || !client)
+	if (!client)
 	{
 		return Plugin_Handled;
 	}
@@ -271,11 +255,68 @@ public Action Command_RTV(int client, int args)
 	return Plugin_Handled;
 }
 
+public Action Command_ForceRTV(int client, int args)
+{
+	if (!g_RTVAllowed)
+	{
+		g_RTVAllowed = true;
+	}
+
+	StartRTV();
+	
+	return Plugin_Handled;
+}
+
+
+void RTVUndoMenuHandler(Menu menu, MenuAction action, int client, int param2)
+{
+	if (action == MenuAction_Select)
+	{
+		if (param2 == 0) // Yes
+		{
+			if (g_Voted[client])
+			{
+				char name[MAX_NAME_LENGTH]; int r, g, b, a, color;
+				GetEntityRenderColor(client, r, g, b, a);
+				color = (r << 16) | (g << 8) | b;
+				if (color != 0xFFFFFF) {
+					Format(name, sizeof(name), "{#%06X}%N\x01", color, client);
+				}
+				else {
+					Format(name, sizeof(name), "%s%N\x01", GetClientTeam(client) == 2 ? "{red}" : GetClientTeam(client) == 3 ? "{blue}" : "{grey}", client);
+				}
+
+				g_Voted[client] = false;
+				if (g_Votes > 0) g_Votes--;
+				//CReplyToCommand(client, "[{lightgreen}Rock The Vote\x01] %t", "Cancelled Vote");
+				CPrintToChatAll("[{lightgreen}Rock The Vote\x01] %s: %t", name, "Cancelled Vote");
+			}
+		}
+	}
+	delete menu;
+}
+
+void ShowRTVUndoMenu(int client)
+{
+	char yes[64], no[64];
+	Format(yes, sizeof(yes), "%T", "Yes", client);
+	Format(no, sizeof(no), "%T", "No", client);
+
+	char title[128];
+	Format(title, sizeof(title), "%T", "Cancel vote", client);
+
+	Menu menu = new Menu(RTVUndoMenuHandler);
+	menu.SetTitle(title);
+	menu.AddItem("yes", yes);
+	menu.AddItem("no", no);
+	menu.Display(client, MENU_TIME_FOREVER);
+}
+
 void AttemptRTV(int client, bool isVoteMenu=false)
 {
 	if (!g_RTVAllowed  || (g_Cvar_RTVPostVoteAction.IntValue == 1 && HasEndOfMapVoteFinished()))
 	{
-		ReplyToCommand(client, "[SM] %t", "RTV Not Allowed");
+		CReplyToCommand(client, "[{lightgreen}Rock The Vote\x01] %t", "RTV Not Allowed");
 		if (isVoteMenu && g_NativeVotes)
 		{
 			if (g_Warmup)
@@ -300,13 +341,13 @@ void AttemptRTV(int client, bool isVoteMenu=false)
 		
 	if (!CanMapChooserStartVote())
 	{
-		ReplyToCommand(client, "[SM] %t", "RTV Started");
+		CReplyToCommand(client, "[{lightgreen}Rock The Vote\x01] %t", "RTV Started");
 		return;
 	}
 	
 	if (GetClientCount(true) < g_Cvar_MinPlayers.IntValue)
 	{
-		ReplyToCommand(client, "[SM] %t", "Minimal Players Not Met");
+		CReplyToCommand(client, "[{lightgreen}Rock The Vote\x01] %t", "Minimal Players Not Met");
 		if (isVoteMenu && g_NativeVotes)
 		{
 			NativeVotes_DisplayCallVoteFail(client, NativeVotesCallFail_Loading);
@@ -316,21 +357,24 @@ void AttemptRTV(int client, bool isVoteMenu=false)
 	
 	if (g_Voted[client])
 	{
-		ReplyToCommand(client, "[SM] %t", "Already Voted", g_Votes, g_VotesNeeded);
-		if (isVoteMenu && g_NativeVotes)
-		{
-			NativeVotes_DisplayCallVoteFail(client, NativeVotesCallFail_AlreadyActive);
-		}
+		ShowRTVUndoMenu(client);
 		return;
 	}	
 	
-	char name[MAX_NAME_LENGTH];
-	GetClientName(client, name, sizeof(name));
+	char name[MAX_NAME_LENGTH]; int r, g, b, a, color;
+	GetEntityRenderColor(client, r, g, b, a);
+	color = (r << 16) | (g << 8) | b;
+	if (color != 0xFFFFFF) {
+		Format(name, sizeof(name), "{#%06X}%N\x01", color, client);
+	}
+	else {
+		Format(name, sizeof(name), "%s%N\x01", GetClientTeam(client) == 2 ? "{red}" : GetClientTeam(client) == 3 ? "{blue}" : "{grey}", client);
+	}
 	
 	g_Votes++;
 	g_Voted[client] = true;
 	
-	PrintToChatAll("[SM] %t", "RTV Requested", name, g_Votes, g_VotesNeeded);
+	CPrintToChatAll("[{lightgreen}Rock The Vote\x01] %t", "RTV Requested", name, g_Votes, g_VotesNeeded);
 	
 	if (g_Votes >= g_VotesNeeded)
 	{
@@ -341,6 +385,8 @@ void AttemptRTV(int client, bool isVoteMenu=false)
 public Action Timer_DelayRTV(Handle timer)
 {
 	g_RTVAllowed = true;
+
+	return Plugin_Continue;
 }
 
 void StartRTV()
@@ -357,8 +403,9 @@ void StartRTV()
 		if (GetNextMap(map, sizeof(map)))
 		{
 			GetMapDisplayName(map, map, sizeof(map));
+			Format(map, sizeof(map), "\x05%s\x01", map);
 			
-			PrintToChatAll("[SM] %t", "Changing Maps", map);
+			CPrintToChatAll("[{lightgreen}Rock The Vote\x01] %t", "Changing Maps", map);
 			CreateTimer(5.0, Timer_ChangeMap, _, TIMER_FLAG_NO_MAPCHANGE);
 			g_InChange = true;
 			

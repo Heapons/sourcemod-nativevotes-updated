@@ -45,7 +45,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define VERSION "1.8.0 beta 1"
+#define VERSION "25w52a"
 
 public Plugin myinfo =
 {
@@ -53,7 +53,7 @@ public Plugin myinfo =
 	author = "AlliedModders LLC and Powerlord",
 	description = "Automated Map Voting",
 	version = VERSION,
-	url = "https://forums.alliedmods.net/showthread.php?t=208010"
+	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
 /* Valve ConVars */
@@ -306,7 +306,7 @@ public void OnMapEnd()
 	GetCurrentMap(map, sizeof(map));
 	g_OldMapList.PushString(map);
 				
-	if (g_OldMapList.Length > g_Cvar_ExcludeMaps.IntValue)
+	while (g_OldMapList.Length > g_Cvar_ExcludeMaps.IntValue)
 	{
 		g_OldMapList.Erase(0);
 	}	
@@ -336,7 +336,7 @@ public Action Command_SetNextmap(int client, int args)
 {
 	if (args < 1)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_setnextmap <map>");
+		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] Usage: sm_setnextmap <map>");
 		return Plugin_Handled;
 	}
 
@@ -346,13 +346,14 @@ public Action Command_SetNextmap(int client, int args)
 
 	if (FindMap(map, displayName, sizeof(displayName)) == FindMap_NotFound)
 	{
-		ReplyToCommand(client, "[SM] %t", "Map was not found", map);
+		CReplyToCommand(client, "[{lightgreen}MapChooser\x01] %t", "Map was not found", map);
 		return Plugin_Handled;
 	}
 	
 	GetMapDisplayName(displayName, displayName, sizeof(displayName));
+	Format(displayName, sizeof(displayName), "\x05%s\x01", displayName);
 	
-	ShowActivity(client, "%t", "Changed Next Map", displayName);
+	CShowActivity(client, "[{lightgreen}MapChooser\x01] %t", "Changed Next Map", displayName);
 	LogAction(client, -1, "\"%L\" changed nextmap to \"%s\"", client, map);
 
 	SetNextMap(map);
@@ -669,6 +670,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 			char displayName[PLATFORM_MAX_PATH];
 			g_NominateList.GetString(i, map, sizeof(map));
 			GetMapDisplayName(map, displayName, sizeof(displayName));
+			Format(displayName, sizeof(displayName), "\x05%s\x01", displayName);
 			
 			if (g_NativeVotes)
 			{
@@ -721,6 +723,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 			/* Insert the map and increment our count */
 			char displayName[PLATFORM_MAX_PATH];
 			GetMapDisplayName(map, displayName, sizeof(displayName));
+			Format(displayName, sizeof(displayName), "\x05%s\x01", displayName);
 			if (g_NativeVotes)
 			{
 				g_VoteNative.AddItem(map, displayName);
@@ -748,6 +751,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 			{
 				char displayName[PLATFORM_MAX_PATH];
 				GetMapDisplayName(map, displayName, sizeof(displayName));
+				Format(displayName, sizeof(displayName), "\x05%s\x01", displayName);
 				if (g_NativeVotes)
 				{
 					g_VoteNative.AddItem(map, displayName);
@@ -813,7 +817,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 	}
 
 	LogAction(-1, -1, "Voting for next map has started.");
-	PrintToChatAll("[SM] %t", "Nextmap Voting Started");
+	CPrintToChatAll("[{lightgreen}MapChooser\x01] %t", "Nextmap Voting Started");
 }
 
 public void Handler_NV_VoteFinishedGeneric(NativeVote menu,
@@ -900,7 +904,7 @@ public void Handler_VoteFinishedGenericShared(const char[] map,
 			}
 		}
 
-		PrintToChatAll("[SM] %t", "Current Map Extended", RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
+		CPrintToChatAll("[{lightgreen}MapChooser\x01] %t", "Current Map Extended", RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
 		LogAction(-1, -1, "Voting for next map has finished. The current map has been extended.");
 		
 		if (isNativeVotes)
@@ -916,7 +920,7 @@ public void Handler_VoteFinishedGenericShared(const char[] map,
 	}
 	else if (strcmp(map, VOTE_DONTCHANGE, false) == 0)
 	{
-		PrintToChatAll("[SM] %t", "Current Map Stays", RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
+		CPrintToChatAll("[{lightgreen}MapChooser\x01] %t", "Current Map Stays", RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
 		LogAction(-1, -1, "Voting for next map has finished. 'No Change' was the winner");
 		
 		if (isNativeVotes)
@@ -955,7 +959,7 @@ public void Handler_VoteFinishedGenericShared(const char[] map,
 			g_VoteNative.DisplayPass(displayName);
 		}
 		
-		PrintToChatAll("[SM] %t", "Nextmap Voting Finished", displayName, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
+		CPrintToChatAll("[{lightgreen}MapChooser\x01] %t", "Nextmap Voting Finished", displayName, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
 		LogAction(-1, -1, "Voting for next map has finished. Nextmap: %s.", map);
 	}	
 }
@@ -1005,7 +1009,7 @@ public void Handler_NV_MapVoteFinished(NativeVote menu,
 			float map2percent = float(item_votes[1])/ float(num_votes) * 100;
 			
 			
-			PrintToChatAll("[SM] %t", "Starting Runoff", g_Cvar_RunOffPercent.FloatValue, info1, map1percent, info2, map2percent);
+			CPrintToChatAll("[{lightgreen}MapChooser\x01] %t", "Starting Runoff", g_Cvar_RunOffPercent.FloatValue, info1, map1percent, info2, map2percent);
 			LogMessage("Voting for next map was indecisive, beginning runoff vote");
 					
 			return;
@@ -1075,7 +1079,7 @@ public void Handler_MapVoteFinished(Menu menu,
 			float map2percent = float(item_info[1][VOTEINFO_ITEM_VOTES])/ float(num_votes) * 100;
 			
 			
-			PrintToChatAll("[SM] %t", "Starting Runoff", g_Cvar_RunOffPercent.FloatValue, info1, map1percent, info2, map2percent);
+			CPrintToChatAll("[{lightgreen}MapChooser\x01] %t", "Starting Runoff", g_Cvar_RunOffPercent.FloatValue, info1, map1percent, info2, map2percent);
 			LogMessage("Voting for next map was indecisive, beginning runoff vote");
 					
 			return;
@@ -1098,7 +1102,7 @@ public int Handler_MapVoteMenu(Menu menu, MenuAction action, int param1, int par
 		case MenuAction_Display:
 		{
 	 		char buffer[255];
-			Format(buffer, sizeof(buffer), "%T", "Vote Nextmap", param1);
+			Format(buffer, sizeof(buffer), "[{lightgreen}MapChooser\x01] %t", "Vote Nextmap", param1);
 
 			Panel panel = view_as<Panel>(param2);
 			panel.SetTitle(buffer);
@@ -1112,12 +1116,12 @@ public int Handler_MapVoteMenu(Menu menu, MenuAction action, int param1, int par
 				menu.GetItem(param2, map, sizeof(map));
 				if (strcmp(map, VOTE_EXTEND, false) == 0)
 				{
-					Format(buffer, sizeof(buffer), "%T", "Extend Map", param1);
+					Format(buffer, sizeof(buffer), "%t", "Extend Map", param1);
 					return RedrawMenuItem(buffer);
 				}
 				else if (strcmp(map, VOTE_DONTCHANGE, false) == 0)
 				{
-					Format(buffer, sizeof(buffer), "%T", "Dont Change", param1);
+					Format(buffer, sizeof(buffer), "%t", "Dont Change", param1);
 					return RedrawMenuItem(buffer);					
 				}
 			}
@@ -1181,12 +1185,12 @@ public int Handler_NV_MapVoteMenu(NativeVote menu, MenuAction action, int param1
 				menu.GetItem(param2, map, sizeof(map));
 				if (strcmp(map, VOTE_EXTEND, false) == 0)
 				{
-					Format(buffer, sizeof(buffer), "%T", "Extend Map", param1);
+					Format(buffer, sizeof(buffer), "%t", "Extend Map", param1);
 					return view_as<int>(NativeVotes_RedrawVoteItem(buffer));
 				}
 				else if (strcmp(map, VOTE_DONTCHANGE, false) == 0)
 				{
-					Format(buffer, sizeof(buffer), "%T", "Dont Change", param1);
+					Format(buffer, sizeof(buffer), "%t", "Dont Change", param1);
 					return view_as<int>(NativeVotes_RedrawVoteItem(buffer));
 				}
 			}
