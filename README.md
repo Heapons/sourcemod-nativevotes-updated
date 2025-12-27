@@ -20,5 +20,5 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 - [x] Allow players to retract their rock-the-vote.
   - Execute `sm_rtv` again to undo.
 ## [Nominations](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_nominations.sp)
-- [] Download and nominate workshop maps.
+- [ ] Download and nominate workshop maps.
   - Inspired by [[TF2] Workshop Vote](https://forums.alliedmods.net/showthread.php?p=2717878).
