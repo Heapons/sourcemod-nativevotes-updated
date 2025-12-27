@@ -17,9 +17,6 @@ nv_plugs+=("nativevotes_voterp")
 # we start in git root
 pushd ./addons/sourcemod/scripting
 
-mkdir ../plugins/disabled -p || true
-
-
 for target in "${nv_plugs[@]}"; do
     spcomp64 -i"./include/" "${target}".sp -o ../plugins/"${target}".smx || exit 1
 done
