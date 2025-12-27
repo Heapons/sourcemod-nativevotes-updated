@@ -14,13 +14,6 @@ nv_plugs+=("nativevotes_nominations")
 nv_plugs+=("nativevotes_rockthevote")
 nv_plugs+=("nativevotes_voterp")
 
-nv_plugins_disabled=("nativevotes_votetest")
-nv_plugins_disabled+=("nativevotes_votemanager_test")
-nv_plugins_disabled+=("csgo_votestart_test")
-nv_plugins_disabled+=("votedelay_changelevel")
-nv_plugins_disabled+=("votediagnostics")
-nv_plugins_disabled+=("votefailed")
-
 # we start in git root
 pushd ./addons/sourcemod/scripting
 
@@ -29,10 +22,6 @@ mkdir ../plugins/disabled -p || true
 
 for target in "${nv_plugs[@]}"; do
     spcomp64 -i"./include/" "${target}".sp -o ../plugins/"${target}".smx || exit 1
-done
-
-for target in "${nv_plugins_disabled[@]}"; do
-    spcomp64 -i"./include/" "${target}".sp -o ../plugins/disabled/"${target}".smx || exit 1
 done
 
 popd
