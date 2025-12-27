@@ -6,10 +6,13 @@ versvers=$(spcomp64 -v | grep "Compiler" --color=never | cut -d " " -f 3 | cut -
 
 
 nv_plugs=("nativevotes")
-nv_plugs+=("nativevotes-basecommands")
+nv_plugs+=("nativevotes_basecommands")
+nv_plugs+=("nativevotes_basevotes")
+nv_plugs+=("nativevotes_funvotes")
 nv_plugs+=("nativevotes_mapchooser")
 nv_plugs+=("nativevotes_nominations")
 nv_plugs+=("nativevotes_rockthevote")
+nv_plugs+=("nativevotes_voterp")
 
 nv_plugins_disabled=("nativevotes_votetest")
 nv_plugins_disabled+=("nativevotes_votemanager_test")
