@@ -50,7 +50,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define VERSION "25w52a"
+#define VERSION "25w52b"
 
 public Plugin myinfo =
 {
@@ -309,6 +309,7 @@ void ShowRTVUndoMenu(int client)
 	menu.SetTitle(title);
 	menu.AddItem("yes", yes);
 	menu.AddItem("no", no);
+	menu.ExitButton = false;
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
