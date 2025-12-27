@@ -14,19 +14,6 @@ on:
       - '.gitignore'
       - 'LICENSE'
       - 'README.md'
-  workflow_dispatch:on:
-  push:
-    branches: [ master ]
-    paths-ignore:
-      - '.gitignore'
-      - 'LICENSE'
-      - 'README.md'
-  pull_request:
-    branches: [ master ]
-    paths-ignore:
-      - '.gitignore'
-      - 'LICENSE'
-      - 'README.md'
   workflow_dispatch:
 
 jobs:
@@ -73,3 +60,4 @@ jobs:
       with:
         tag_name: workflow-build${{ github.run_number }}
         files: build/nativevotes*
+

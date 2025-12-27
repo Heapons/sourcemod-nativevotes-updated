@@ -11,7 +11,7 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 - Colored chat.
   - [x] Team-colored player names.
   - [x] Highlight map names.
-    - [] Parse workshop map titles.
+    - [ ] Parse workshop map titles.
 - [x] Update [Nominations](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_nominations.sp) and [Rock The Vote](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_rockthevote.sp) to match with the latest [Sourcemod](https://github.com/alliedmodders/sourcemod/tree/master/plugins) version.
 - [x] Add [`sm_voterp`](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_voterp.sp).
   - Controls `tf_medieval_autorp` cvar.
