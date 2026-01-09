@@ -46,7 +46,7 @@ EngineVersion g_EngineVersion = Engine_Unknown;
 
 #include "nativevotes/data-keyvalues.sp"
 
-#define VERSION 							"25w52a"
+#define VERSION 							"26w02a"
 
 #define LOGTAG "NV"
 
@@ -88,7 +88,7 @@ ConVar g_Cvar_VoteDelay;
 
 //----------------------------------------------------------------------------
 // Used to track current vote data
-//new Handle:g_hVoteTimer;
+//Handle g_hVoteTimer;
 Handle g_hDisplayTimer;
 
 int g_Clients;
@@ -495,7 +495,7 @@ public Action Command_CallVote(int client, const char[] command, int argc)
 					(overrideType == NativeVotesOverride_ChgLevel ||
 					overrideType == NativeVotesOverride_NextLevel))
 				{
-					char map[PLATFORM_MAX_PATH];
+					char map[96];
 					
 					GetCmdArg(2, map, sizeof(map));
 					g_MapOverrides.GetString(map, argument, sizeof(argument));
@@ -557,7 +557,7 @@ public Action Command_CallVote(int client, const char[] command, int argc)
 					}
 					else
 					{
-						char map[PLATFORM_MAX_PATH];
+						char map[96];
 					
 						GetCmdArg(2, map, sizeof(map));
 						g_MapOverrides.GetString(map, argument, sizeof(argument));
@@ -937,7 +937,7 @@ VoteEnd(Handle:vote)
 		
 		if (!SendResultCallback(vote, num_votes, num_items, votes))
 		{
-			new Handle:handler = Data_GetHandler(g_hCurVote);
+			Handle handler = Data_GetHandler(g_hCurVote);
 			
 			Call_StartForward(handler);
 			Call_PushCell(g_CurVote);
@@ -952,7 +952,7 @@ VoteEnd(Handle:vote)
 
 bool:SendResultCallback(Handle:vote, num_votes, num_items, const votes[][])
 {
-	new Handle:voteResults = Data_GetResultCallback(g_CurVote);
+	Handle voteResults = Data_GetResultCallback(g_CurVote);
 	if (GetForwardFunctionCount(voteResults) == 0)
 	{
 		return false;
@@ -1300,8 +1300,7 @@ void StartVoting()
 
 public Action DisplayTimer(Handle timer)
 {
-	DrawHintProgress();
-	if (--g_TimeLeft == 0)
+	if (!Internal_IsVoteInProgress() || g_TimeLeft <= 0)
 	{
 		if (g_hDisplayTimer != null)
 		{
@@ -1310,7 +1309,8 @@ public Action DisplayTimer(Handle timer)
 		}
 		return Plugin_Stop;
 	}
-	
+	DrawHintProgress();
+	--g_TimeLeft;
 	return Plugin_Continue;
 }
 
@@ -1602,10 +1602,10 @@ public int Native_Close(Handle plugin, int numParams)
 	
 	// This bit is necessary because the Forward system appears to not remove these when the forward Handle is closed
 	// This was necessary in SM 1.5.x, but has a REALLY high probability of crashing in SM 1.6, plus is no longer needed
-	//new Handle:menuForward = Data_GetHandler(vote);
+	//Handle menuForward = Data_GetHandler(vote);
 	//RemoveAllFromForward(menuForward, plugin);
 	
-	//new Handle:voteResults = Data_GetResultCallback(vote);
+	//Handle voteResults = Data_GetResultCallback(vote);
 	//RemoveAllFromForward(voteResults, plugin);
 	
 	// Do the datatype-specific close operations

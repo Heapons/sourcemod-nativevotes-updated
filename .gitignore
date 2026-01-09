@@ -75,3 +75,6 @@ vector.inc
 version_auto.inc
 version.inc
 virtual_address.inc
+
+steam*
+ripext*

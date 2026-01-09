@@ -32,7 +32,7 @@
  * Version: $Id$
  */
 
-DisplayVoteKickMenu(client, target)
+void DisplayVoteKickMenu(int client, int target)
 {
 	g_voteClient[VOTE_CLIENTID] = target;
 	g_voteClient[VOTE_USERID] = GetClientUserId(target);
@@ -44,26 +44,26 @@ DisplayVoteKickMenu(client, target)
 		Format(playerName, sizeof(playerName), "{#%06X}%N\x01", color, target);
 	}
 	else {
-		Format(playerName, sizeof(playerName), "%s%N\x01", GetClientTeam(target) == 2 ? "{red}" : GetClientTeam(target) == 3 ? "{blue}" : "{grey}", target);
+		Format(playerName, sizeof(playerName), "{teamcolor}%N\x01", target);
 	}
 
 	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
 
-	LogAction(client, target, "\"%L\" initiated a kick vote against %s", client, playerName);
+	LogAction(client, target, "\"%L\" initiated a kick vote against %N", client, target);
 	CShowActivity(client, "%t", "Initiated Vote Kick", playerName);
-	
+
 	g_voteType = voteType:kick;
-	
+
 	if (g_NativeVotes)
 	{
-		new Handle:voteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Kick, MenuAction:MENU_ACTIONS_ALL);
+		Handle voteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Kick, view_as<MenuAction>(MENU_ACTIONS_ALL));
 		// No title, builtin type
 		NativeVotes_SetTarget(voteMenu, target);
 		NativeVotes_DisplayToAll(voteMenu, 20);
 	}
 	else
 	{
-		new Handle:voteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
+		Handle voteMenu = CreateMenu(Handler_VoteCallback, MENU_ACTIONS_ALL);
 		SetMenuTitle(voteMenu, "Votekick Player");
 		AddMenuItem(voteMenu, VOTE_YES, "Yes");
 		AddMenuItem(voteMenu, VOTE_NO, "No");
@@ -72,26 +72,18 @@ DisplayVoteKickMenu(client, target)
 	}
 }
 
-DisplayKickTargetMenu(client)
+void DisplayKickTargetMenu(int client)
 {
-	new Handle:menu = CreateMenu(MenuHandler_Kick);
-	
-	decl String:title[100];
+	Handle menu = CreateMenu(MenuHandler_Kick);
+	char title[100];
 	Format(title, sizeof(title), "%T:", "Kick vote", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
-	
 	AddTargetsToMenu(menu, client, false, false);
-	
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
-public AdminMenu_VoteKick(Handle:topmenu, 
-							  TopMenuAction:action,
-							  TopMenuObject:object_id,
-							  param,
-							  String:buffer[],
-							  maxlength)
+public void AdminMenu_VoteKick(Handle topmenu, TopMenuAction action, TopMenuObject object_id, int param, char[] buffer, int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -102,13 +94,13 @@ public AdminMenu_VoteKick(Handle:topmenu,
 		DisplayKickTargetMenu(param);
 	}
 	else if (action == TopMenuAction_DrawOption)
-	{	
+	{
 		/* disable this option if a vote is already running */
 		buffer[0] = !IsNewVoteAllowed() ? ITEMDRAW_IGNORE : ITEMDRAW_DEFAULT;
 	}
 }
 
-public MenuHandler_Kick(Handle:menu, MenuAction:action, param1, param2)
+public int MenuHandler_Kick(Handle menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -123,12 +115,10 @@ public MenuHandler_Kick(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_Select)
 	{
-		decl String:info[32], String:name[32];
-		new userid, target;
-		
+		char info[32], name[32];
+		int userid, target;
 		GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
 		userid = StringToInt(info);
-
 		if ((target = GetClientOfUserId(userid)) == 0)
 		{
 			PrintToChat(param1, "[{lightgreen}NativeVotes\x01] %t", "Player no longer available");
@@ -143,38 +133,33 @@ public MenuHandler_Kick(Handle:menu, MenuAction:action, param1, param2)
 			DisplayVoteKickMenu(param1, target);
 		}
 	}
+	return 0;
 }
 
-public Action:Command_Votekick(client, args)
+public Action Command_Votekick(int client, int args)
 {
 	if (args < 1)
 	{
 		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] Usage: sm_votekick <player> [reason]");
-		return Plugin_Handled;	
+		return Plugin_Handled;
 	}
-	
 	if (Internal_IsVoteInProgress())
 	{
 		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] %t", "Vote in Progress");
 		return Plugin_Handled;
-	}	
-	
+	}
 	if (!TestVoteDelay(client))
 	{
 		return Plugin_Handled;
 	}
-	
-	decl String:text[256], String:arg[64];
+	char text[256], arg[64];
 	GetCmdArgString(text, sizeof(text));
-	
-	new len = BreakString(text, arg, sizeof(arg));
-	
-	new target = FindTarget(client, arg);
+	int len = BreakString(text, arg, sizeof(arg));
+	int target = FindTarget(client, arg);
 	if (target == -1)
 	{
 		return Plugin_Handled;
 	}
-	
 	if (len != -1)
 	{
 		strcopy(g_voteArg, sizeof(g_voteArg), text[len]);
@@ -183,8 +168,6 @@ public Action:Command_Votekick(client, args)
 	{
 		g_voteArg[0] = '\0';
 	}
-	
 	DisplayVoteKickMenu(client, target);
-	
 	return Plugin_Handled;
 }

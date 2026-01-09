@@ -32,22 +32,22 @@
  * Version: $Id$
  */
 
-new Handle:g_MapList = INVALID_HANDLE;
-new g_mapCount;
+Handle g_MapList;
+int g_mapCount;
 
-new Handle:g_SelectedMaps;
-new bool:g_VoteMapInUse;
+Handle g_SelectedMaps;
+bool g_VoteMapInUse;
 
-DisplayVoteMapMenu(client, mapCount, String:maps[5][])
+void DisplayVoteMapMenu(int client, int mapCount, char maps[5][PLATFORM_MAX_PATH])
 {
 	LogAction(client, -1, "\"%L\" initiated a map vote.", client);
 	CShowActivity2(client, "[{lightgreen}NativeVotes\x01] ", "%t", "Initiated Vote Map");
 	
-	g_voteType = voteType:map;
+	g_voteType = map;
 
-	decl String:resolvedMaps[5][PLATFORM_MAX_PATH];
-	decl String:displayNames[5][PLATFORM_MAX_PATH];
-	for (new i = 0; i < mapCount; i++)
+	char resolvedMaps[5][PLATFORM_MAX_PATH];
+	char displayNames[5][PLATFORM_MAX_PATH];
+	for (int i = 0; i < mapCount; i++)
 	{
 		FindMap(maps[i], resolvedMaps[i], sizeof(resolvedMaps[]));
 		GetMapDisplayName(resolvedMaps[i], displayNames[i], sizeof(displayNames[]));
@@ -55,35 +55,33 @@ DisplayVoteMapMenu(client, mapCount, String:maps[5][])
 
 	if (g_NativeVotes && (mapCount == 1 || NativeVotes_IsVoteTypeSupported(NativeVotesType_NextLevelMult)) )
 	{
-		new Handle:voteMenu;
-		
+		Handle voteMenu;
 		if (mapCount == 1)
 		{
 			strcopy(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]), displayNames[0]);
-
-			voteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_ChgLevel, MenuAction:MENU_ACTIONS_ALL);
+			
+			voteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_ChgLevel, view_as<MenuAction>(MENU_ACTIONS_ALL));
 			
 			// No title, builtin type
 			NativeVotes_SetDetails(voteMenu, displayNames[0]);
 		}
 		else
 		{
-			voteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_NextLevelMult, MenuAction:MENU_ACTIONS_ALL);
-
+			voteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_NextLevelMult, view_as<MenuAction>(MENU_ACTIONS_ALL));
+			
 			g_voteInfo[VOTE_NAME][0] = '\0';
 			
 			// No title, builtin type
-			for (new i = 0; i < mapCount; i++)
+			for (int i = 0; i < mapCount; i++)
 			{
 				NativeVotes_AddItem(voteMenu, resolvedMaps[i], displayNames[i]);
 			}
 		}
-		
 		NativeVotes_DisplayToAll(voteMenu, 20);
 	}
 	else
 	{
-		new Handle:voteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
+		Handle voteMenu = CreateMenu(Handler_VoteCallback, MENU_ACTIONS_ALL);
 		
 		if (mapCount == 1)
 		{
@@ -98,134 +96,127 @@ DisplayVoteMapMenu(client, mapCount, String:maps[5][])
 			g_voteInfo[VOTE_NAME][0] = '\0';
 			
 			SetMenuTitle(voteMenu, "Map Vote");
-			for (new i = 0; i < mapCount; i++)
+			for (int i = 0; i < mapCount; i++)
 			{
 				AddMenuItem(voteMenu, resolvedMaps[i], displayNames[i]);
-			}    
+			}
 		}
-		
 		SetMenuExitButton(voteMenu, false);
 		VoteMenuToAll(voteMenu, 20);
 	}
 }
 
-ResetMenu()
+void ResetMenu()
 {
 	g_VoteMapInUse = false;
 	ClearArray(g_SelectedMaps);
 }
 
-ConfirmVote(client)
+void ConfirmVote(int client)
 {
-	new Handle:menu = CreateMenu(MenuHandler_Confirm);
+	Handle menu = CreateMenu(MenuHandler_Confirm);
+	char title[100];
 	
-	decl String:title[100];
 	Format(title, sizeof(title), "%T:", "Confirm Vote", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
-	decl String:itemtext[256];
+	char itemtext[256];
 	Format(itemtext, sizeof(itemtext), "%T", "Start the Vote", client);
 	AddMenuItem(menu, "Confirm", itemtext);
 	
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);	
+	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
-public MenuHandler_Confirm(Handle:menu, MenuAction:action, param1, param2)
+public int MenuHandler_Confirm(Handle menu, MenuAction action, int param1, int param2)
 {
-	if (action == MenuAction_End)
+	switch (action)
 	{
-		CloseHandle(menu);
-		g_VoteMapInUse = false;
-	}
-	else if (action == MenuAction_Cancel)
-	{
-		ResetMenu();
-		
-		if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+		case MenuAction_End:
 		{
-			DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
+			CloseHandle(menu);
+			g_VoteMapInUse = false;
 		}
-	}
-	else if (action == MenuAction_Select)
-	{
-		decl String:maps[5][64];
-		new selectedmaps = GetArraySize(g_SelectedMaps);
-		
-		for (new i = 0; i < selectedmaps; i++)
+		case MenuAction_Cancel:
 		{
-			GetArrayString(g_SelectedMaps, i, maps[i], sizeof(maps[]));
+			ResetMenu();
+			if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+			{
+				DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
+			}
 		}
-		
-		DisplayVoteMapMenu(param1, selectedmaps, maps);
-		
-		ResetMenu();
-	}
-}
-
-public MenuHandler_Map(Handle:menu, MenuAction:action, param1, param2)
-{
-	if (action == MenuAction_Cancel)
-	{		
-		if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+		case MenuAction_Select:
 		{
-			ConfirmVote(param1);
-		}
-		else // no action was selected.
-		{
-			/* Re-enable the menu option */
+			char maps[5][64];
+			int selectedmaps = GetArraySize(g_SelectedMaps);
+			for (int i = 0; i < selectedmaps; i++)
+			{
+				GetArrayString(g_SelectedMaps, i, maps[i], sizeof(maps[]));
+			}
+			DisplayVoteMapMenu(param1, selectedmaps, maps);
 			ResetMenu();
 		}
 	}
-	else if (action == MenuAction_DrawItem)
-	{
-		decl String:info[32], String:name[32];
-		
-		GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
-		
-		if (FindStringInArray(g_SelectedMaps, info) != -1)
-		{
-			return ITEMDRAW_IGNORE;
-		}
-		else
-		{
-			return ITEMDRAW_DEFAULT;
-		}
-	}
-	else if (action == MenuAction_Select)
-	{
-		decl String:info[32], String:name[32];
-		
-		GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
-		
-		PushArrayString(g_SelectedMaps, info);
-		
-		/* Redisplay the list */
-		if (GetArraySize(g_SelectedMaps) < 5)
-		{
-			DisplayMenu(g_MapList, param1, MENU_TIME_FOREVER);
-		}
-		else
-		{
-			ConfirmVote(param1);
-		}
-	}
-	else if (action == MenuAction_Display)
-	{
-		decl String:title[128];
-		Format(title, sizeof(title), "%T", "Please select a map", param1);
-		SetPanelTitle(Handle:param2, title);
-	}
-	
-	return 0;
+
+	return Plugin_Continue;
 }
 
-public AdminMenu_VoteMap(Handle:topmenu, 
-							  TopMenuAction:action,
-							  TopMenuObject:object_id,
-							  param,
-							  String:buffer[],
-							  maxlength)
+public int MenuHandler_Map(Handle menu, MenuAction action, int param1, int param2)
+{
+	switch (action)
+	{
+		case MenuAction_Cancel:
+		{
+			if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+			{
+				ConfirmVote(param1);
+			}
+			else // no action was selected.
+			{
+				/* Re-enable the menu option */
+				ResetMenu();
+			}
+		}
+		case MenuAction_DrawItem:
+		{
+			char info[32], name[32];
+			GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
+			if (FindStringInArray(g_SelectedMaps, info) != -1)
+			{
+				return ITEMDRAW_IGNORE;
+			}
+			else
+			{
+				return ITEMDRAW_DEFAULT;
+			}
+		}
+		case MenuAction_Select:
+		{
+			char info[32], name[32];
+			GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
+			PushArrayString(g_SelectedMaps, info);
+			/* Redisplay the list */
+			if (GetArraySize(g_SelectedMaps) < 5)
+			{
+				DisplayMenu(g_MapList, param1, MENU_TIME_FOREVER);
+			}
+			else
+			{
+				ConfirmVote(param1);
+			}
+		}
+		case MenuAction_Display:
+		{
+			char title[128];
+			Format(title, sizeof(title), "%T", "Please select a map", param1);
+			SetPanelTitle(view_as<Handle>(param2), title);
+		}
+	}
+	
+	return Plugin_Continue;
+}
+
+public void AdminMenu_VoteMap(Handle topmenu, TopMenuAction action, TopMenuObject object_id, int param, char[] buffer, int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -239,24 +230,24 @@ public AdminMenu_VoteMap(Handle:topmenu,
 			g_VoteMapInUse = true;
 			DisplayMenu(g_MapList, param, MENU_TIME_FOREVER);
 		}
-		else 
+		else
 		{
 			PrintToChat(param, "[{lightgreen}NativeVotes\x01] %T", "Map Vote In Use", param);
 		}
 	}
 	else if (action == TopMenuAction_DrawOption)
-	{	
+	{
 		/* disable this option if a vote is already running, theres no maps listed or someone else has already acessed this menu */
 		buffer[0] = (!IsNewVoteAllowed() || g_mapCount < 1 || g_VoteMapInUse) ? ITEMDRAW_IGNORE : ITEMDRAW_DEFAULT;
 	}
 }
 
-public Action:Command_Votemap(client, args)
+public Action Command_Votemap(int client, int args)
 {
 	if (args < 1)
 	{
 		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] Usage: sm_votemap <mapname> [mapname2] ... [mapname5]");
-		return Plugin_Handled;	
+		return Plugin_Handled;
 	}
 	
 	if (Internal_IsVoteInProgress())
@@ -264,49 +255,48 @@ public Action:Command_Votemap(client, args)
 		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] %t", "Vote in Progress");
 		return Plugin_Handled;
 	}
-		
-	if (!TestVoteDelay(client))
+	
+	if (!TestVoteDelay(client) && !CheckCommandAccess(client, "sm_votemap", ADMFLAG_CHANGEMAP))
 	{
 		return Plugin_Handled;
 	}
 	
-	decl String:text[256];
+	char text[256];
 	GetCmdArgString(text, sizeof(text));
-
-	decl String:maps[5][64];
-	new mapCount;	
-	new len, pos;
+	
+	char maps[5][PLATFORM_MAX_PATH];
+	int mapCount;
+	int len, pos;
 	
 	while (pos != -1 && mapCount < 5)
-	{	
+	{
 		pos = BreakString(text[len], maps[mapCount], sizeof(maps[]));
 		
 		if (!IsMapValid(maps[mapCount]))
 		{
 			CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] %t", "Map was not found", maps[mapCount]);
 			return Plugin_Handled;
-		}		
+		}
 
 		mapCount++;
 		
 		if (pos != -1)
 		{
 			len += pos;
-		}	
+		}
 	}
 
 	DisplayVoteMapMenu(client, mapCount, maps);
 	
-	return Plugin_Handled;	
+	return Plugin_Handled;
 }
 
-new Handle:g_map_array = INVALID_HANDLE;
-new g_map_serial = -1;
+Handle g_map_array = INVALID_HANDLE;
+int g_map_serial = -1;
 
-LoadMapList(Handle:menu)
+int LoadMapList(Handle menu)
 {
-	new Handle:map_array;
-	
+	Handle map_array;
 	if ((map_array = ReadMapList(g_map_array,
 			g_map_serial,
 			"sm_votemap menu",
@@ -323,10 +313,10 @@ LoadMapList(Handle:menu)
 	
 	RemoveAllMenuItems(menu);
 	
-	decl String:map_name[64];
-	new map_count = GetArraySize(g_map_array);
+	char map_name[96];
+	int map_count = GetArraySize(g_map_array);
 	
-	for (new i = 0; i < map_count; i++)
+	for (int i = 0; i < map_count; i++)
 	{
 		GetArrayString(g_map_array, i, map_name, sizeof(map_name));
 		AddMenuItem(menu, map_name, map_name);

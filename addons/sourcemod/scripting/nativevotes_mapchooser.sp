@@ -45,11 +45,11 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define VERSION "25w52a"
+#define VERSION "26w02a"
 
 public Plugin myinfo =
 {
-	name = "NativeVotes MapChooser",
+	name = "[NativeVotes] MapChooser",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Automated Map Voting",
 	version = VERSION,
@@ -302,7 +302,7 @@ public void OnMapEnd()
 	g_VoteTimer = null;
 	g_RetryTimer = null;
 	
-	char map[PLATFORM_MAX_PATH];
+	char map[96];
 	GetCurrentMap(map, sizeof(map));
 	g_OldMapList.PushString(map);
 				
@@ -321,7 +321,7 @@ public void OnClientDisconnect(int client)
 		return;
 	}
 	
-	char oldmap[PLATFORM_MAX_PATH];
+	char oldmap[96];
 	g_NominateList.GetString(index, oldmap, sizeof(oldmap));
 	Call_StartForward(g_NominationsResetForward);
 	Call_PushString(oldmap);
@@ -340,7 +340,7 @@ public Action Command_SetNextmap(int client, int args)
 		return Plugin_Handled;
 	}
 
-	char map[PLATFORM_MAX_PATH];
+	char map[96];
 	char displayName[PLATFORM_MAX_PATH];
 	GetCmdArg(1, map, sizeof(map));
 
@@ -640,7 +640,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 	 * like sm_mapvote from the adminmenu in the future.
 	 */
 	 
-	char map[PLATFORM_MAX_PATH];
+	char map[96];
 	
 	/* No input given - User our internal nominations and maplist */
 	if (inputlist == null)
@@ -834,7 +834,7 @@ public void Handler_NV_VoteFinishedGeneric(NativeVote menu,
 	
 	NativeVotes_FixResults(num_clients, client_indexes, client_votes, num_items, item_indexes, item_votes, client_info, item_info);
 	
-	char map[PLATFORM_MAX_PATH];
+	char map[96];
 	char displayName[PLATFORM_MAX_PATH];
 	menu.GetItem(item_indexes[0], map, sizeof(map), displayName, sizeof(displayName));
 	
@@ -848,7 +848,7 @@ public void Handler_VoteFinishedGeneric(Menu menu,
 						   int num_items,
 						   const int[][] item_info)
 {
-	char map[PLATFORM_MAX_PATH];
+	char map[96];
 	char displayName[PLATFORM_MAX_PATH];
 	menu.GetItem(item_info[0][VOTEINFO_ITEM_INDEX], map, sizeof(map), _, displayName, sizeof(displayName));
 	
@@ -1022,7 +1022,7 @@ public void Handler_NV_MapVoteFinished(NativeVote menu,
 // New in 1.5.1, used to fix runoff not working properly
 public Action Timer_NV_Runoff(Handle timer, DataPack data)
 {
-	char map[PLATFORM_MAX_PATH];
+	char map[96];
 	char info[PLATFORM_MAX_PATH];
 	
 	g_VoteNative = new NativeVote(Handler_NV_MapVoteMenu, NativeVotesType_NextLevelMult, NATIVEVOTES_ACTIONS_DEFAULT | MenuAction_DisplayItem);
@@ -1061,7 +1061,7 @@ public void Handler_MapVoteFinished(Menu menu,
 			g_VoteMenu.SetTitle("Runoff Vote Nextmap");
 			g_VoteMenu.VoteResultCallback = Handler_VoteFinishedGeneric;
 
-			char map[PLATFORM_MAX_PATH];
+			char map[96];
 			char info1[PLATFORM_MAX_PATH];
 			char info2[PLATFORM_MAX_PATH];
 			
@@ -1112,7 +1112,7 @@ public int Handler_MapVoteMenu(Menu menu, MenuAction action, int param1, int par
 		{
 			if (menu.ItemCount - 1 == param2)
 			{
-				char map[PLATFORM_MAX_PATH], buffer[255];
+				char map[96], buffer[255];
 				menu.GetItem(param2, map, sizeof(map));
 				if (strcmp(map, VOTE_EXTEND, false) == 0)
 				{
@@ -1133,7 +1133,7 @@ public int Handler_MapVoteMenu(Menu menu, MenuAction action, int param1, int par
 			if (param1 == VoteCancel_NoVotes && g_Cvar_NoVoteMode.BoolValue)
 			{
 				int count = menu.ItemCount;
-				char map[PLATFORM_MAX_PATH];
+				char map[96];
 				menu.GetItem(0, map, sizeof(map));
 				
 				// Make sure the first map in the menu isn't one of the special items.
@@ -1181,7 +1181,7 @@ public int Handler_NV_MapVoteMenu(NativeVote menu, MenuAction action, int param1
 		{
 			if (menu.ItemCount - 1 == param2)
 			{
-				char map[PLATFORM_MAX_PATH], buffer[255];
+				char map[96], buffer[255];
 				menu.GetItem(param2, map, sizeof(map));
 				if (strcmp(map, VOTE_EXTEND, false) == 0)
 				{
@@ -1202,7 +1202,7 @@ public int Handler_NV_MapVoteMenu(NativeVote menu, MenuAction action, int param1
 			if (param1 == VoteCancel_NoVotes && g_Cvar_NoVoteMode.BoolValue)
 			{
 				int count = menu.ItemCount;
-				char map[PLATFORM_MAX_PATH];
+				char map[96];
 				char displayName[PLATFORM_MAX_PATH];
 				menu.GetItem(0, map, sizeof(map));
 				
@@ -1248,7 +1248,7 @@ public Action Timer_ChangeMap(Handle hTimer, DataPack dp)
 {
 	g_ChangeMapInProgress = false;
 	
-	char map[PLATFORM_MAX_PATH];
+	char map[96];
 	
 	if (dp == null)
 	{
@@ -1285,7 +1285,7 @@ void CreateNextVote()
 {
 	g_NextMapList.Clear();
 	
-	char map[PLATFORM_MAX_PATH];
+	char map[96];
 	// tempMaps is a resolved map list
 	ArrayList tempMaps = new ArrayList(ByteCountToCells(PLATFORM_MAX_PATH));
 	
@@ -1351,7 +1351,7 @@ NominateResult InternalNominateMap(char[] map, bool force, int owner)
 	/* Look to replace an existing nomination by this client - Nominations made with owner = 0 aren't replaced */
 	if (owner && ((index = g_NominateOwners.FindValue(owner)) != -1))
 	{
-		char oldmap[PLATFORM_MAX_PATH];
+		char oldmap[96];
 		g_NominateList.GetString(index, oldmap, sizeof(oldmap));
 		Call_StartForward(g_NominationsResetForward);
 		Call_PushString(oldmap);
@@ -1393,7 +1393,7 @@ NominateResult InternalNominateMap(char[] map, bool force, int owner)
 	
 	while (g_NominateList.Length > g_Cvar_IncludeMaps.IntValue)
 	{
-		char oldmap[PLATFORM_MAX_PATH];
+		char oldmap[96];
 		g_NominateList.GetString(0, oldmap, sizeof(oldmap));
 		Call_StartForward(g_NominationsResetForward);
 		Call_PushString(oldmap);
@@ -1430,7 +1430,7 @@ bool InternalRemoveNominationByMap(char[] map)
 {	
 	for (int i = 0; i < g_NominateList.Length; i++)
 	{
-		char oldmap[PLATFORM_MAX_PATH];
+		char oldmap[96];
 		g_NominateList.GetString(i, oldmap, sizeof(oldmap));
 
 		if(strcmp(map, oldmap, false) == 0)
@@ -1473,7 +1473,7 @@ bool InternalRemoveNominationByOwner(int owner)
 
 	if (owner && ((index = g_NominateOwners.FindValue(owner)) != -1))
 	{
-		char oldmap[PLATFORM_MAX_PATH];
+		char oldmap[96];
 		g_NominateList.GetString(index, oldmap, sizeof(oldmap));
 
 		Call_StartForward(g_NominationsResetForward);
@@ -1534,7 +1534,7 @@ public int Native_GetExcludeMapList(Handle plugin, int numParams)
 		return;	
 	}
 	int size = g_OldMapList.Length;
-	char map[PLATFORM_MAX_PATH];
+	char map[96];
 	
 	for (int i=0; i<size; i++)
 	{
@@ -1554,7 +1554,7 @@ public int Native_GetNominatedMapList(Handle plugin, int numParams)
 	if (maparray == null)
 		return;
 
-	char map[PLATFORM_MAX_PATH];
+	char map[96];
 
 	for (int i = 0; i < g_NominateList.Length; i++)
 	{

@@ -216,14 +216,7 @@ NativeVote Data_CreateVote(NativeVotesType voteType, MenuAction actions)
 	vote.SetNum("actions", view_as<int>(actions));
 	vote.SetNum("result_callback", view_as<int>(voteResults));
 	vote.SetNum("initiator", NATIVEVOTES_SERVER_INDEX);
-	if (g_EngineVersion == Engine_TF2)
-	{
-		vote.SetNum("team", NATIVEVOTES_TF2_ALL_TEAMS);
-	}
-	else
-	{
-		vote.SetNum("team", NATIVEVOTES_ALL_TEAMS);
-	}
+	vote.SetNum("team", g_EngineVersion == Engine_TF2 ? NATIVEVOTES_TF2_ALL_TEAMS : NATIVEVOTES_ALL_TEAMS);
 	vote.SetNum("flags", 0);
 	vote.SetString("custom_title", "");
 	
@@ -310,30 +303,30 @@ void Data_CloseVote(KeyValues vote)
 	{
 		return;
 	}
-	
+
 	Handle handler = Data_GetHandler(vote);
 	if (handler != null)
 	{
 		delete handler;
 	}
-	
+
 	Handle voteResults = Data_GetResultCallback(vote);
 	if (voteResults != null)
 	{
 		delete voteResults;
 	}
-	
+
 	ArrayList infoArray = view_as<ArrayList>(vote.GetNum(INFO, view_as<int>(INVALID_HANDLE)));
 	if (infoArray != null)
 	{
 		delete infoArray;
 	}
-	
+
 	ArrayList displayArray = view_as<ArrayList>(vote.GetNum(DISPLAY, view_as<int>(INVALID_HANDLE)));
 	if (displayArray != null)
 	{
 		delete displayArray;
 	}
-	
+
 	delete vote;
 }

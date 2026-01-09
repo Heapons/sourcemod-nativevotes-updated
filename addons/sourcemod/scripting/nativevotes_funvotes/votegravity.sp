@@ -32,7 +32,7 @@
  * Version: $Id$
  */
 
-DisplayVoteGravityMenu(client,count,String:items[5][])
+void DisplayVoteGravityMenu(int client, int count, char items[5][64])
 {
 	LogAction(client, -1, "\"%L\" initiated a gravity vote.", client);
 	CShowActivity2(client, "[{lightgreen}NativeVotes\x01] ", "%t", "Initiated Vote Gravity");
@@ -41,18 +41,18 @@ DisplayVoteGravityMenu(client,count,String:items[5][])
 	
 	if (g_NativeVotes && (count == 1 || NativeVotes_IsVoteTypeSupported(NativeVotesType_Custom_Mult)) )
 	{
-		new Handle:hVoteMenu;
+		Handle hVoteMenu;
 		if (count == 1)
 		{
 			strcopy(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]), items[0]);
 
-			hVoteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Custom_YesNo, MenuAction:MENU_ACTIONS_ALL);
+			hVoteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Custom_YesNo, view_as<MenuAction>(MENU_ACTIONS_ALL));
 			NativeVotes_SetTitle(hVoteMenu, "Change Gravity To");
 			// No details for custom votes
 		}
 		else
 		{
-			hVoteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Custom_Mult, MenuAction:MENU_ACTIONS_ALL);
+			hVoteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Custom_Mult, view_as<MenuAction>(MENU_ACTIONS_ALL));
 			NativeVotes_SetTitle(hVoteMenu, "Gravity Vote");
 			for (new i = 0; i < count; i++)
 			{
@@ -63,7 +63,7 @@ DisplayVoteGravityMenu(client,count,String:items[5][])
 	}
 	else
 	{
-		new Handle:hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
+		Handle hVoteMenu = CreateMenu(Handler_VoteCallback, view_as<MenuAction>(MENU_ACTIONS_ALL));
 		
 		if (count == 1)
 		{
@@ -89,12 +89,7 @@ DisplayVoteGravityMenu(client,count,String:items[5][])
 	}
 }
 
-public AdminMenu_VoteGravity(Handle:topmenu, 
-							  TopMenuAction:action,
-							  TopMenuObject:object_id,
-							  param,
-							  String:buffer[],
-							  maxlength)
+public void AdminMenu_VoteGravity(Handle topmenu, TopMenuAction action, TopMenuObject object_id, int param, char[] buffer, int maxlength)
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
@@ -103,22 +98,22 @@ public AdminMenu_VoteGravity(Handle:topmenu,
 	else if (action == TopMenuAction_SelectOption)
 	{
 		/* Might need a better way of selecting the list of pre-defined gravity choices */
-		new String:items[5][5] ={"200","400","800","1600","3200"};
+		char items[5][5] ={"200","400","800","1600","3200"};
 		DisplayVoteGravityMenu(param,5, items);
 	}
 	else if (action == TopMenuAction_DrawOption)
-	{	
+	{
 		/* disable this option if a vote is already running */
 		buffer[0] = !Internal_IsNewVoteAllowed() ? ITEMDRAW_IGNORE : ITEMDRAW_DEFAULT;
 	}
 }
 
-public Action:Command_VoteGravity(client, args)
+public Action Command_VoteGravity(int client, int args)
 {
 	if (args < 1)
 	{
 		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] Usage: sm_votegravity <amount> [amount2] ... [amount5]");
-		return Plugin_Handled;	
+		return Plugin_Handled;
 	}
 	
 	if (Internal_IsVoteInProgress())
@@ -132,33 +127,33 @@ public Action:Command_VoteGravity(client, args)
 		return Plugin_Handled;
 	}
 	
-	decl String:text[256];
+	char text[256];
 	GetCmdArgString(text, sizeof(text));
-
-	decl String:items[5][64];
-	new count;	
-	new len, pos;
+	
+	char items[5][64];
+	int count;
+	int len, pos;
 	
 	while (pos != -1 && count < 5)
-	{	
+	{
 		pos = BreakString(text[len], items[count], sizeof(items[]));
 		
-		decl Float:temp;
+		float temp;
 		if (StringToFloatEx(items[count], temp) == 0)
 		{
 			CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] %t", "Invalid Amount");
 			return Plugin_Handled;
-		}		
+		}
 
 		count++;
 		
 		if (pos != -1)
 		{
 			len += pos;
-		}	
+		}
 	}
 	
 	DisplayVoteGravityMenu(client, count, items);
 	
-	return Plugin_Handled;	
+	return Plugin_Handled;
 }

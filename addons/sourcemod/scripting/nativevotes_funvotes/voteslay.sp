@@ -1,4 +1,4 @@
- /**
+/**
  * vim: set ts=4 :
  * =============================================================================
  * NativeVotes Fun Votes Plugin
@@ -32,7 +32,7 @@
  * Version: $Id$
  */
 
-DisplayVoteSlayMenu(client, target, String:name[])
+void DisplayVoteSlayMenu(int client, int target, char name[MAX_NAME_LENGTH])
 {
 	if (!IsPlayerAlive(target))
 	{
@@ -49,7 +49,7 @@ DisplayVoteSlayMenu(client, target, String:name[])
 		Format(playerName, sizeof(playerName), "{#%06X}%N\x01", color, target);
 	}
 	else {
-		Format(playerName, sizeof(playerName), "%s%N\x01", GetClientTeam(target) == 2 ? "{red}" : GetClientTeam(target) == 3 ? "{blue}" : "{grey}", target);
+		Format(playerName, sizeof(playerName), "{teamcolor}%N\x01", target);
 	}
 	// Use 'playerName' in printed messages, but keep g_voteInfo[VOTE_NAME] for vote panels
 	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
@@ -61,13 +61,13 @@ DisplayVoteSlayMenu(client, target, String:name[])
 	
 	if (g_NativeVotes)
 	{
-		new Handle:hVoteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Custom_YesNo, MenuAction:MENU_ACTIONS_ALL);
+		Handle hVoteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Custom_YesNo, view_as<MenuAction>(MENU_ACTIONS_ALL));
 		NativeVotes_SetTitle(hVoteMenu, "Voteslay Player");
 		NativeVotes_DisplayToAll(hVoteMenu, 20);
 	}
 	else
 	{
-		new Handle:hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
+		Handle hVoteMenu = CreateMenu(Handler_VoteCallback, view_as<MenuAction>(MENU_ACTIONS_ALL));
 		SetMenuTitle(hVoteMenu, "Voteslay Player");
 		AddMenuItem(hVoteMenu, VOTE_YES, "Yes");
 		AddMenuItem(hVoteMenu, VOTE_NO, "No");
@@ -76,11 +76,10 @@ DisplayVoteSlayMenu(client, target, String:name[])
 	}
 }
 
-DisplaySlayTargetMenu(client)
+void DisplaySlayTargetMenu(int client)
 {
-	new Handle:menu = CreateMenu(MenuHandler_Slay);
-	
-	decl String:title[100];
+	Handle menu = CreateMenu(MenuHandler_Slay);
+	char title[100];
 	Format(title, sizeof(title), "%T:", "Slay vote", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
@@ -90,95 +89,97 @@ DisplaySlayTargetMenu(client)
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
-public AdminMenu_VoteSlay(Handle:topmenu, 
-							  TopMenuAction:action,
-							  TopMenuObject:object_id,
-							  param,
-							  String:buffer[],
-							  maxlength)
+public void AdminMenu_VoteSlay(Handle topmenu, TopMenuAction action, TopMenuObject object_id, int param, char[] buffer, int maxlength)
 {
-	if (action == TopMenuAction_DisplayOption)
+	switch (action)
 	{
-		Format(buffer, maxlength, "%T", "Slay vote", param);
-	}
-	else if (action == TopMenuAction_SelectOption)
-	{
-		DisplaySlayTargetMenu(param);
-	}
-	else if (action == TopMenuAction_DrawOption)
-	{	
-		/* disable this option if a vote is already running */
-		buffer[0] = !Internal_IsNewVoteAllowed() ? ITEMDRAW_IGNORE : ITEMDRAW_DEFAULT;
-	}
-}
-
-public MenuHandler_Slay(Handle:menu, MenuAction:action, param1, param2)
-{
-	if (action == MenuAction_End)
-	{
-		CloseHandle(menu);
-	}
-	else if (action == MenuAction_Cancel)
-	{
-		if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+		case TopMenuAction_DisplayOption:
 		{
-			DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
+			Format(buffer, maxlength, "%T", "Slay vote", param);
 		}
-	}
-	else if (action == MenuAction_Select)
-	{
-		decl String:info[32], String:name[32];
-		new userid, target;
-		
-		GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
-		userid = StringToInt(info);
-
-		if ((target = GetClientOfUserId(userid)) == 0)
+		case TopMenuAction_SelectOption:
 		{
-			PrintToChat(param1, "[SM] %t", "Player no longer available");
+			DisplaySlayTargetMenu(param);
 		}
-		else if (!CanUserTarget(param1, target))
+		case TopMenuAction_DrawOption:
 		{
-			PrintToChat(param1, "[SM] %t", "Unable to target");
-		}
-		else if (!IsPlayerAlive(target))
-		{
-			PrintToChat(param1, "[SM] %t", "Player has since died");
-		}
-		else
-		{
-			DisplayVoteSlayMenu(param1, target, name);
+			/* disable this option if a vote is already running */
+			buffer[0] = !Internal_IsNewVoteAllowed() ? ITEMDRAW_IGNORE : ITEMDRAW_DEFAULT;
 		}
 	}
 }
 
-public Action:Command_VoteSlay(client, args)
+public int MenuHandler_Slay(Handle menu, MenuAction action, int param1, int param2)
+{
+	switch (action)
+	{
+		case MenuAction_End:
+		{
+			CloseHandle(menu);
+		}
+		case MenuAction_Cancel:
+		{
+			if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+			{
+				DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
+			}
+		}
+		case MenuAction_Select:
+		{
+			char info[32], name[32];
+			int userid, target;
+			GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
+			userid = StringToInt(info);
+			
+			if ((target = GetClientOfUserId(userid)) == 0)
+			{
+				PrintToChat(param1, "[SM] %t", "Player no longer available");
+			}
+			else if (!CanUserTarget(param1, target))
+			{
+				PrintToChat(param1, "[SM] %t", "Unable to target");
+			}
+			else if (!IsPlayerAlive(target))
+			{
+				PrintToChat(param1, "[SM] %t", "Player has since died");
+			}
+			else
+			{
+				DisplayVoteSlayMenu(param1, target, name);
+			}
+		}
+	}
+
+	return Plugin_Continue;
+}
+
+public Action Command_VoteSlay(int client, int args)
 {
 	if (args < 1)
 	{
 		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] Usage: sm_voteslay <player>");
-		return Plugin_Handled;	
+		return Plugin_Handled;
 	}
 	
 	if (Internal_IsVoteInProgress())
 	{
 		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] %t", "Vote in Progress");
 		return Plugin_Handled;
-	}	
+	}
 	
 	if (!TestVoteDelay(client))
 	{
 		return Plugin_Handled;
 	}
 	
-	decl String:text[256], String:arg[64];
+	char text[256], arg[64];
 	GetCmdArgString(text, sizeof(text));
 	
 	BreakString(text, arg, sizeof(arg));
 	
-	decl String:target_name[MAX_TARGET_LENGTH];
-	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
-	
+	char target_name[MAX_TARGET_LENGTH];
+	int target_list[MAXPLAYERS], target_count;
+	bool tn_is_ml;
 	if ((target_count = ProcessTargetString(
 			arg,
 			client,

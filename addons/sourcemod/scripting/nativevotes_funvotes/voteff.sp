@@ -32,7 +32,7 @@
  * Version: $Id$
  */
 
-DisplayVoteFFMenu(client)
+void DisplayVoteFFMenu(int client)
 {
 	if (Internal_IsVoteInProgress())
 	{
@@ -53,9 +53,9 @@ DisplayVoteFFMenu(client)
 	
 	if (g_NativeVotes)
 	{
-		new Handle:hVoteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Custom_YesNo, MenuAction:MENU_ACTIONS_ALL);
+		Handle hVoteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Custom_YesNo, view_as<MenuAction>(MENU_ACTIONS_ALL));
 		
-		if (GetConVarBool(g_Cvar_FF))
+		if (GetConVarBool(g_ConVars[mp_friendlyfire]))
 		{
 			NativeVotes_SetTitle(hVoteMenu, "Voteff Off");
 		}
@@ -67,9 +67,9 @@ DisplayVoteFFMenu(client)
 	}
 	else
 	{
-		new Handle:hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
+		Handle hVoteMenu = CreateMenu(Handler_VoteCallback, view_as<MenuAction>(MENU_ACTIONS_ALL));
 		
-		if (GetConVarBool(g_Cvar_FF))
+		if (GetConVarBool(g_ConVars[mp_friendlyfire]))
 		{
 			SetMenuTitle(hVoteMenu, "Voteff Off");
 		}
@@ -85,34 +85,32 @@ DisplayVoteFFMenu(client)
 	}
 }
 
-public AdminMenu_VoteFF(Handle:topmenu, 
-							  TopMenuAction:action,
-							  TopMenuObject:object_id,
-							  param,
-							  String:buffer[],
-							  maxlength)
+public void AdminMenu_VoteFF(Handle topmenu, TopMenuAction action, TopMenuObject object_id, int param, char[] buffer, int maxlength)
 {
-	if (action == TopMenuAction_DisplayOption)
+	switch (action)
 	{
-		Format(buffer, maxlength, "%T", "Vote FF", param);
-	}
-	else if (action == TopMenuAction_SelectOption)
-	{
-		DisplayVoteFFMenu(param);
-	}
-	else if (action == TopMenuAction_DrawOption)
-	{	
-		/* disable this option if a vote is already running */
-		buffer[0] = !Internal_IsNewVoteAllowed() ? ITEMDRAW_IGNORE : ITEMDRAW_DEFAULT;
+		case TopMenuAction_DisplayOption:
+		{
+			Format(buffer, maxlength, "%T", "Vote FF", param);
+		}
+		case TopMenuAction_SelectOption:
+		{
+			DisplayVoteFFMenu(param);
+		}
+		case TopMenuAction_DrawOption:
+		{
+			/* disable this option if a vote is already running */
+			buffer[0] = !Internal_IsNewVoteAllowed() ? ITEMDRAW_IGNORE : ITEMDRAW_DEFAULT;
+		}
 	}
 }
 
-public Action:Command_VoteFF(client, args)
+public Action Command_VoteFF(int client, int args)
 {
 	if (args > 0)
 	{
 		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] Usage: sm_voteff");
-		return Plugin_Handled;	
+		return Plugin_Handled;
 	}
 	
 	DisplayVoteFFMenu(client);

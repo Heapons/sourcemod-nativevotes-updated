@@ -40,11 +40,11 @@
 #include <adminmenu>
 #include <nativevotes>
 
-#define VERSION "25w52a"
+#define VERSION "26w02a"
 
 public Plugin:myinfo =
 {
-	name = "NativeVotes Basic Votes",
+	name = "[NativeVotes] Basic Votes",
 	author = "Powerlord and AlliedModders LLC",
 	description = "NativeVotes Basic Vote Commands",
 	version = VERSION,
@@ -54,10 +54,10 @@ public Plugin:myinfo =
 #define VOTE_NO "###no###"
 #define VOTE_YES "###yes###"
 
-//new Handle:g_hVoteMenu = INVALID_HANDLE;
+// Handle g_hVoteMenu;
 
-new Handle:g_Cvar_Limits[3] = {INVALID_HANDLE, ...};
-//new Handle:g_Cvar_VoteSay = INVALID_HANDLE;
+ConVar g_ConVars[question];
+// ConVar g_Cvar_VoteSay;
 
 enum voteType
 {
@@ -67,41 +67,40 @@ enum voteType
 	question
 }
 
-new voteType:g_voteType = voteType:question;
+voteType g_voteType = question;
 
 // Menu API does not provide us with a way to pass multiple peices of data with a single
 // choice, so some globals are used to hold stuff.
 //
-#define VOTE_CLIENTID	0
-#define VOTE_USERID	1
-new g_voteClient[2];		/* Holds the target's client id and user id */
+#define VOTE_CLIENTID 	0
+#define VOTE_USERID 	1
+int g_voteClient[2];    // Holds the target's client id and user id
 
-#define VOTE_NAME	0
-#define VOTE_AUTHID	1
-#define	VOTE_IP		2
-new String:g_voteInfo[3][65];	/* Holds the target's name, authid, and IP */
+#define VOTE_NAME 		0
+#define VOTE_AUTHID 	1
+#define VOTE_IP 		2
+char g_voteInfo[3][65]; // Holds the target's name, authid, and IP
 
-new String:g_voteArg[256];	/* Used to hold ban/kick reasons or vote questions */
+char g_voteArg[256];    // Used to hold ban/kick reasons or vote questions
 
-
-new Handle:hTopMenu = INVALID_HANDLE;
+Handle hTopMenu = INVALID_HANDLE;
 
 // NativeVotes
-new bool:g_NativeVotes;
+bool g_NativeVotes;
 
-//new g_Cvar_NativeVotesMenu = INVALID_HANDLE;
+//Handle g_Cvar_NativeVotesMenu = INVALID_HANDLE;
 
 #include "nativevotes_basevotes/votekick.sp"
 #include "nativevotes_basevotes/voteban.sp"
 #include "nativevotes_basevotes/votemap.sp"
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("basevotes.phrases");
 	LoadTranslations("plugin.basecommands");
 	LoadTranslations("basebans.phrases");
-	
+    
 	RegAdminCmd("sm_votemap", Command_Votemap, ADMFLAG_VOTE|ADMFLAG_CHANGEMAP, "sm_votemap <mapname> [mapname2] ... [mapname5] ");
 	RegAdminCmd("sm_votekick", Command_Votekick, ADMFLAG_VOTE|ADMFLAG_KICK, "sm_votekick <player> [reason]");
 	RegAdminCmd("sm_voteban", Command_Voteban, ADMFLAG_VOTE|ADMFLAG_BAN, "sm_voteban <player> [reason]");
@@ -115,33 +114,31 @@ public OnPluginStart()
 	}
 	*/
 
-	g_Cvar_Limits[0] = CreateConVar("sm_vote_map", "0.60", "percent required for successful map vote.", 0, true, 0.05, true, 1.0);
-	g_Cvar_Limits[1] = CreateConVar("sm_vote_kick", "0.60", "percent required for successful kick vote.", 0, true, 0.05, true, 1.0);
-	g_Cvar_Limits[2] = CreateConVar("sm_vote_ban", "0.60", "percent required for successful ban vote.", 0, true, 0.05, true, 1.0);
+	g_ConVars[map] = CreateConVar("sm_vote_map", "0.60", "percent required for successful map vote.", 0, true, 0.05, true, 1.0);
+	g_ConVars[kick] = CreateConVar("sm_vote_kick", "0.60", "percent required for successful kick vote.", 0, true, 0.05, true, 1.0);
+	g_ConVars[ban] = CreateConVar("sm_vote_ban", "0.60", "percent required for successful ban vote.", 0, true, 0.05, true, 1.0);
 	CreateConVar("nativevotes_basevotes_version", VERSION, "NativeVotes Basic Votes version", FCVAR_PLUGIN|FCVAR_NOTIFY|FCVAR_DONTRECORD|FCVAR_SPONLY);
-	
+    
 	g_SelectedMaps = CreateArray(PLATFORM_MAX_PATH);
-	
+    
 	g_MapList = CreateMenu(MenuHandler_Map, MenuAction_DrawItem|MenuAction_Display);
 	SetMenuTitle(g_MapList, "%T", "Please select a map", LANG_SERVER);
 	SetMenuExitBackButton(g_MapList, true);
-	
-	decl String:mapListPath[PLATFORM_MAX_PATH];
+    
+	char mapListPath[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, mapListPath, sizeof(mapListPath), "configs/adminmenu_maplist.ini");
 	SetMapListCompatBind("sm_votemap menu", mapListPath);
 }
 
-public OnAllPluginsLoaded()
+public void OnAllPluginsLoaded()
 {
 	if (FindPluginByFile("basevotes.smx") != INVALID_HANDLE)
 	{
-
 		LogMessage("Unloading basevotes to prevent conflicts...");
 		ServerCommand("sm plugins unload basevotes");
-		
-		decl String:oldPath[PLATFORM_MAX_PATH];
-		decl String:newPath[PLATFORM_MAX_PATH];
-		
+        
+		char oldPath[PLATFORM_MAX_PATH], newPath[PLATFORM_MAX_PATH];
+        
 		BuildPath(Path_SM, oldPath, sizeof(oldPath), "plugins/basevotes.smx");
 		BuildPath(Path_SM, newPath, sizeof(newPath), "plugins/disabled/basevotes.smx");
 		if (RenameFile(newPath, oldPath))
@@ -153,7 +150,7 @@ public OnAllPluginsLoaded()
 	}
 	
 	/* Account for late loading */
-	new Handle:topmenu;
+	Handle topmenu;
 	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
 	{
 		OnAdminMenuReady(topmenu);
@@ -162,39 +159,37 @@ public OnAllPluginsLoaded()
 	g_NativeVotes = LibraryExists("nativevotes") && NativeVotes_IsVoteTypeSupported(NativeVotesType_Custom_YesNo);
 }
 
-public OnLibraryAdded(const String:name[])
+public void OnLibraryAdded(const char[] name)
 {
-	new Handle:topmenu;
+	Handle topmenu;
 	if (StrEqual(name, "adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
 	{
 		OnAdminMenuReady(topmenu);
 	}
-	else
-	if (StrEqual(name, "nativevotes") && NativeVotes_IsVoteTypeSupported(NativeVotesType_Custom_YesNo))
+	else if (StrEqual(name, "nativevotes") && NativeVotes_IsVoteTypeSupported(NativeVotesType_Custom_YesNo))
 	{
 		g_NativeVotes = true;
 	}
 }
 
-public OnLibraryRemoved(const String:name[])
+public void OnLibraryRemoved(const char[] name)
 {
 	if (StrEqual(name, "adminmenu"))
 	{
 		hTopMenu = INVALID_HANDLE;
 	}
-	else
-	if (StrEqual(name, "nativevotes"))
+	else if (StrEqual(name, "nativevotes"))
 	{
 		g_NativeVotes = false;
 	}
 }
 
-public OnConfigsExecuted()
+public void OnConfigsExecuted()
 {
 	g_mapCount = LoadMapList(g_MapList);
 }
 
-public OnAdminMenuReady(Handle:topmenu)
+public void OnAdminMenuReady(Handle topmenu)
 {
 	/* Block us from being called twice */
 	if (topmenu == hTopMenu)
@@ -206,7 +201,7 @@ public OnAdminMenuReady(Handle:topmenu)
 	hTopMenu = topmenu;
 	
 	/* Build the "Voting Commands" category */
-	new TopMenuObject:voting_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_VOTINGCOMMANDS);
+	TopMenuObject voting_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_VOTINGCOMMANDS);
 
 	if (voting_commands != INVALID_TOPMENUOBJECT)
 	{
@@ -236,12 +231,12 @@ public OnAdminMenuReady(Handle:topmenu)
 	}
 }
 
-public Action:Command_Vote(client, args)
+public Action Command_Vote(int client, int args)
 {
 	if (args < 1)
 	{
 		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] Usage: sm_vote <question> [Answer1] [Answer2] ... [Answer5]");
-		return Plugin_Handled;	
+		return Plugin_Handled;    
 	}
 	
 	if (Internal_IsVoteInProgress())
@@ -255,54 +250,51 @@ public Action:Command_Vote(client, args)
 		return Plugin_Handled;
 	}
 	
-	decl String:text[256];
+	char text[256];
 	GetCmdArgString(text, sizeof(text));
 
-	decl String:answers[5][64];
-	new answerCount;	
-	new len = BreakString(text, g_voteArg, sizeof(g_voteArg));
-	new pos = len;
-	
+	char answers[5][64];
+	int answerCount;
+	int len = BreakString(text, g_voteArg, sizeof(g_voteArg));
+	int pos = len;
+
 	while (args > 1 && pos != -1 && answerCount < 5)
-	{	
+	{
 		pos = BreakString(text[len], answers[answerCount], sizeof(answers[]));
 		answerCount++;
-		
+	
 		if (pos != -1)
 		{
 			len += pos;
-		}	
+		}
 	}
-
 	LogAction(client, -1, "\"%L\" initiated a generic vote.", client);
 	CShowActivity2(client, "[{lightgreen}NativeVotes\x01] ", "%t", "Initiate Vote", g_voteArg);
-	
-	g_voteType = voteType:question;
-	new Handle:voteMenu;
-    
+	g_voteType = question;
+	Handle voteMenu;
+
 	if (g_NativeVotes && (answerCount < 2 || NativeVotes_IsVoteTypeSupported(NativeVotesType_Custom_Mult)) )
 	{
-		new NativeVotesType:nVoteType = answerCount < 2 ? NativeVotesType_Custom_YesNo : NativeVotesType_Custom_Mult;
-		
-		voteMenu = NativeVotes_Create(Handler_NativeVoteCallback, nVoteType, MenuAction:MENU_ACTIONS_ALL);
+		NativeVotesType nVoteType = answerCount < 2 ? NativeVotesType_Custom_YesNo : NativeVotesType_Custom_Mult;
+		voteMenu = NativeVotes_Create(Handler_NativeVoteCallback, nVoteType, view_as<MenuAction>(MENU_ACTIONS_ALL));
 		NativeVotes_SetTitle(voteMenu, g_voteArg);
-		
+
 		if (answerCount >= 2)
 		{
-			for (new i = 0; i < answerCount; i++)
+			for (int i = 0; i < answerCount; i++)
 			{
 				NativeVotes_AddItem(voteMenu, answers[i], answers[i]);
-			}	
+			}
 		}
-		
+
 		//NativeVotes_SetInitiator(voteMenu, client);
 		NativeVotes_DisplayToAll(voteMenu, 20);
 	}
 	else
 	{
-		voteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
+		voteMenu = CreateMenu(Handler_VoteCallback, view_as<MenuAction>(MENU_ACTIONS_ALL));
 		SetMenuTitle(voteMenu, "%s?", g_voteArg);
-		
+
 		if (answerCount < 2)
 		{
 			AddMenuItem(voteMenu, VOTE_YES, "Yes");
@@ -310,16 +302,16 @@ public Action:Command_Vote(client, args)
 		}
 		else
 		{
-			for (new i = 0; i < answerCount; i++)
+			for (int i = 0; i < answerCount; i++)
 			{
 				AddMenuItem(voteMenu, answers[i], answers[i]);
-			}	
+			}
 		}
-		
+
 		SetMenuExitButton(voteMenu, false);
-		VoteMenuToAll(voteMenu, 20);		
+		VoteMenuToAll(voteMenu, 20);
 	}
-	return Plugin_Handled;	
+	return Plugin_Handled;
 }
 
 public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
@@ -342,7 +334,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 				decl String:buffer[255];
 				Format(buffer, sizeof(buffer), "%T", title, param1, g_voteInfo[VOTE_NAME]);
 
-				new Handle:panel = Handle:param2;
+				Handle panel = Handle:param2;
 				SetPanelTitle(panel, buffer);
 			}
 		}
@@ -386,7 +378,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 			
 			if (g_voteType != voteType:question)
 			{
-				limit = GetConVarFloat(g_Cvar_Limits[g_voteType]);
+				limit = GetConVarFloat(g_ConVars[g_voteType]);
 			}
 			
 			/* :TODO: g_voteClient[userid] needs to be checked */
@@ -405,7 +397,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 				
 				switch (g_voteType)
 				{
-					case (voteType:question):
+					case question:
 					{
 						if (strcmp(item, VOTE_NO) == 0 || strcmp(item, VOTE_YES) == 0)
 						{
@@ -424,16 +416,16 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 						}
 					}
 					
-					case (voteType:map):
+					case map:
 					{
 						LogAction(-1, -1, "Changing map to %s due to vote.", item);
 						CPrintToChatAll("%t", "Changing map", item);
-						new Handle:dp;
+						DataPack dp;
 						CreateDataTimer(5.0, Timer_ChangeMap, dp);
 						WritePackString(dp, item);		
 					}
 						
-					case (voteType:kick):
+					case kick:
 					{
 						if (g_voteArg[0] == '\0')
 						{
@@ -450,7 +442,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 						
 					}
 						
-					case (voteType:ban):
+					case ban:
 					{
 						if (g_voteArg[0] == '\0')
 						{
@@ -475,7 +467,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 		}
 	}
 	
-	return 0;
+	return Plugin_Continue;
 }
 
 public Handler_NativeVoteCallback(Handle:menu, MenuAction:action, param1, param2)
@@ -535,7 +527,7 @@ public Handler_NativeVoteCallback(Handle:menu, MenuAction:action, param1, param2
 			
 			if (g_voteType != voteType:question)
 			{
-				limit = GetConVarFloat(g_Cvar_Limits[g_voteType]);
+				limit = GetConVarFloat(g_ConVars[g_voteType]);
 			}
 			
 			/* :TODO: g_voteClient[userid] needs to be checked */
@@ -555,7 +547,7 @@ public Handler_NativeVoteCallback(Handle:menu, MenuAction:action, param1, param2
 				
 				switch (g_voteType)
 				{
-					case (voteType:question):
+					case question:
 					{
 						if (nVoteType == NativeVotesType_Custom_YesNo)
 						{
@@ -576,7 +568,7 @@ public Handler_NativeVoteCallback(Handle:menu, MenuAction:action, param1, param2
 						}
 					}
 					
-					case (voteType:map):
+					case map:
 					{
 						if (nVoteType == NativeVotesType_ChgLevel)
 						{
@@ -587,12 +579,12 @@ public Handler_NativeVoteCallback(Handle:menu, MenuAction:action, param1, param2
 						NativeVotes_DisplayPassEx(menu, NativeVotesPass_ChgLevel, item);
 						LogAction(-1, -1, "Changing map to %s due to vote.", item);
 						CPrintToChatAll("%t", "Changing map", item);
-						new Handle:dp;
+						DataPack dp;
 						CreateDataTimer(5.0, Timer_ChangeMap, dp);
 						WritePackString(dp, item);		
 					}
 						
-					case (voteType:kick):
+					case kick:
 					{
 						if (g_voteArg[0] == '\0')
 						{
@@ -609,7 +601,7 @@ public Handler_NativeVoteCallback(Handle:menu, MenuAction:action, param1, param2
 						}
 					}
 						
-					case (voteType:ban):
+					case ban:
 					{
 						if (g_voteArg[0] == '\0')
 						{
@@ -636,7 +628,7 @@ public Handler_NativeVoteCallback(Handle:menu, MenuAction:action, param1, param2
 		}
 	}
 	
-	return 0;
+	return Plugin_Continue;
 }
 
 /*
@@ -660,40 +652,40 @@ VoteMenuClose()
 }
 */
 
-Float:GetVotePercent(votes, totalVotes)
+float GetVotePercent(int votes, int totalVotes)
 {
-	return FloatDiv(float(votes),float(totalVotes));
+	return float(votes) / float(totalVotes);
 }
 
-bool:TestVoteDelay(client)
+bool TestVoteDelay(int client)
 {
- 	new delay = Internal_CheckVoteDelay();
-	
- 	if (delay > 0)
- 	{
- 		if (delay > 60)
- 		{
- 			CReplyToCommand(client, "%t", "Vote Delay Minutes", delay % 60);
- 		}
- 		else
- 		{
- 			CReplyToCommand(client, "%t", "Vote Delay Seconds", delay);
- 		}
- 		
+	int delay = Internal_CheckVoteDelay();
+
+	if (delay > 0)
+	{
+		if (delay > 60)
+		{
+			CReplyToCommand(client, "%t", "Vote Delay Minutes", delay % 60);
+		}
+		else
+		{
+			CReplyToCommand(client, "%t", "Vote Delay Seconds", delay);
+		}
+
 		if (g_NativeVotes)
 		{
 			NativeVotes_DisplayCallVoteFail(client, NativeVotesCallFail_Recent, delay);
 		}
-		
- 		return false;
- 	}
- 	
+
+		return false;
+	}
+
 	return true;
 }
 
-public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
+public Action Timer_ChangeMap(Handle timer, DataPack dp)
 {
-	decl String:mapname[65];
+	char mapname[96];
 	
 	ResetPack(dp);
 	ReadPackString(dp, mapname, sizeof(mapname));
@@ -703,32 +695,29 @@ public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
 	return Plugin_Stop;
 }
 
-bool:Internal_IsVoteInProgress()
+bool Internal_IsVoteInProgress()
 {
 	if (g_NativeVotes)
 	{
 		return NativeVotes_IsVoteInProgress();
 	}
-	
-	return IsVoteInProgress();	
+	return IsVoteInProgress();
 }
 
-Internal_CheckVoteDelay()
+int Internal_CheckVoteDelay()
 {
 	if (g_NativeVotes)
 	{
 		return NativeVotes_CheckVoteDelay();
 	}
-	
-	return CheckVoteDelay();	
+	return CheckVoteDelay();
 }
 
-bool:Internal_IsNewVoteAllowed()
+bool Internal_IsNewVoteAllowed()
 {
 	if (g_NativeVotes)
 	{
 		return NativeVotes_IsNewVoteAllowed();
 	}
-
 	return IsNewVoteAllowed();
 }

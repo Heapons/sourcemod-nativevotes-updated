@@ -385,13 +385,14 @@ bool Game_IsGameSupported(char[] engineName="", int maxlength=0)
 
 	char gameDir[128];
 	GetGameFolderName(gameDir, sizeof(gameDir));
-	if ( !StrEqual(gameDir, "tf") )
+	if (!StrEqual(gameDir, "tf"))
 	{
 		isTF2SDKModHack = true;
 	}
 
-	//Fix for Open Fortress
-	if ( g_EngineVersion == Engine_SDK2013 && ( StrEqual(gameDir, "open_fortress") || StrEqual(gameDir, "tf2classic") || StrEqual(gameDir, "pf2") ) )
+	// Fix for TF2 sourcemods
+	// @note Regarding the 2025 SDK: https://github.com/alliedmodders/metamod-source/commit/dc41559c7905072feec38b6d45ea14c05da3b855
+	if (g_EngineVersion == Engine_HL2DM || (g_EngineVersion == Engine_SDK2013 && (StrEqual(gameDir, "open_fortress") || StrEqual(gameDir, "tf2classic") || StrEqual(gameDir, "pf2"))))
 	{
 		g_EngineVersion = Engine_TF2;
 	}
@@ -1872,7 +1873,7 @@ static L4D_ClientSelectedItem(Handle:vote, client, item)
 {
 	if (item > NATIVEVOTES_VOTE_INVALID && item <= Game_GetMaxItems())
 	{
-		new Handle:castEvent;
+		Handle castEvent;
 		
 		switch (item)
 		{
@@ -2345,9 +2346,9 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 		{
 			char option[8];
 			Format(option, sizeof(option), "%s%d", TF2CSGO_VOTE_PREFIX, i+1);
-			
 			char display[TRANSLATION_LENGTH];
 			Data_GetItemDisplay(vote, i, display, sizeof(display));
+			
 			optionsEvent.SetString(option, display);
 		}
 		optionsEvent.SetInt("count", itemCount);
@@ -2357,7 +2358,7 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 		}
 		optionsEvent.Fire();
 	}
-	
+
 	// Moved to mimic SourceSDK2013's server/vote_controller.cpp
 	// For whatever reason, while the other props are set first, this one's set after the vote_options event
 	if (CheckVoteController())
@@ -2376,7 +2377,6 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 		}
 	}
 
-
 	MenuAction actions = Data_GetActions(vote);
 
 	for (int i = 0; i < num_clients; ++i)
@@ -2391,12 +2391,12 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 		}
 		
 		g_curDisplayClient = 0;
-		
+
 		if (!bYesNo)
 		{
 			TF2CSGO_SendOptionsToClient(vote, clients[i]);
 		}
-		
+
 		Handle voteStart = StartMessageOne("VoteStart", clients[i], USERMSG_RELIABLE);
 		
 		if(g_bUserBuf)
@@ -2443,7 +2443,6 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 	}
 	
 	g_curDisplayClient = 0;
-	
 }
 
 static void TF2CSGO_SendOptionsToClient(NativeVote vote, int client)
@@ -2529,7 +2528,7 @@ static void CSGO_VotePass(const char[] translation, const char[] details, int te
 static void TF2_VotePass(const char[] translation, const char[] details, int team, int client=0)
 {
 	BfWrite votePass = null;
-	
+    
 	if (client <= 0)
 	{
 		votePass = UserMessageToBfWrite(StartMessageAll("VotePass", USERMSG_RELIABLE));
@@ -3076,7 +3075,6 @@ static bool CSGO_VoteTypeToTranslation(NativeVotesType voteType, char[] translat
 		
 		case NativeVotesType_NextLevelMult:
 		{
-			
 			strcopy(translation, maxlength, CSGO_VOTE_NEXTLEVEL_MULTIPLE_START);
 			bYesNo = false;
 		}
@@ -3349,25 +3347,13 @@ static stock NativeVotesType TF2_VoteStringToVoteType(const char[] voteString)
 	}
 	else if (StrEqual(voteString, TF2_VOTE_STRING_AUTOBALANCE, false))
 	{
-		if (g_Cvar_AutoBalance.BoolValue)
-		{
-			voteType = NativeVotesType_AutoBalanceOff;
-		}
-		else
-		{
-			voteType = NativeVotesType_AutoBalanceOn;
-		}
+		voteType = g_Cvar_AutoBalance.BoolValue ?
+				   NativeVotesType_AutoBalanceOff : NativeVotesType_AutoBalanceOn;
 	}
 	else if (StrEqual(voteString, TF2_VOTE_STRING_CLASSLIMIT, false))
 	{
-		if (g_Cvar_ClassLimit.IntValue)
-		{
-			voteType = NativeVotesType_ClassLimitsOff;
-		}
-		else
-		{
-			voteType = NativeVotesType_ClassLimitsOn;
-		}
+		voteType = g_Cvar_ClassLimit.IntValue ?
+				   NativeVotesType_ClassLimitsOff : NativeVotesType_ClassLimitsOn;
 	}
 	else if (StrEqual(voteString, TF2_VOTE_STRING_EXTEND, false))
 	{
@@ -3720,4 +3706,3 @@ stock bool Game_IsVoteTypeYesNo(NativeVotesType voteType)
 	
 	return true;
 }
-

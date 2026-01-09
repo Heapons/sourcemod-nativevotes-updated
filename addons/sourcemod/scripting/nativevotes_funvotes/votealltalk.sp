@@ -32,7 +32,7 @@
  * Version: $Id$
  */
 
-DisplayVoteAllTalkMenu(client)
+void DisplayVoteAllTalkMenu(int client)
 {
 	if (Internal_IsVoteInProgress())
 	{
@@ -53,11 +53,11 @@ DisplayVoteAllTalkMenu(client)
 
 	if (g_NativeVotes)
 	{
-		new Handle:hVoteMenu;
+		Handle hVoteMenu;
 		if (NativeVotes_IsVoteTypeSupported(NativeVotesType_AlltalkOn))
 		{
 			new NativeVotesType:nVoteType;
-			if (GetConVarBool(g_Cvar_Alltalk))
+			if (GetConVarBool(g_ConVars[sv_alltalk]))
 			{
 				nVoteType = NativeVotesType_AlltalkOff;
 			}
@@ -65,13 +65,13 @@ DisplayVoteAllTalkMenu(client)
 			{
 				nVoteType = NativeVotesType_AlltalkOn;
 			}
-			hVoteMenu = NativeVotes_Create(Handler_NativeVoteCallback, nVoteType, MenuAction:MENU_ACTIONS_ALL);
+			hVoteMenu = NativeVotes_Create(Handler_NativeVoteCallback, nVoteType, view_as<MenuAction>(MENU_ACTIONS_ALL));
 		}
 		else
 		{
-			hVoteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Custom_YesNo, MenuAction:MENU_ACTIONS_ALL);
+			hVoteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Custom_YesNo, view_as<MenuAction>(MENU_ACTIONS_ALL));
 
-			if (GetConVarBool(g_Cvar_Alltalk))
+			if (GetConVarBool(g_ConVars[sv_alltalk]))
 			{
 				NativeVotes_SetTitle(hVoteMenu, "Votealltalk Off");
 			}
@@ -85,9 +85,9 @@ DisplayVoteAllTalkMenu(client)
 	}
 	else
 	{
-		new Handle:hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
+		Handle hVoteMenu = CreateMenu(Handler_VoteCallback, MENU_ACTIONS_ALL);
 		
-		if (GetConVarBool(g_Cvar_Alltalk))
+		if (GetConVarBool(g_ConVars[sv_alltalk]))
 		{
 			SetMenuTitle(hVoteMenu, "Votealltalk Off");
 		}
@@ -104,34 +104,32 @@ DisplayVoteAllTalkMenu(client)
 }
 
 
-public AdminMenu_VoteAllTalk(Handle:topmenu, 
-							  TopMenuAction:action,
-							  TopMenuObject:object_id,
-							  param,
-							  String:buffer[],
-							  maxlength)
+public void AdminMenu_VoteAllTalk(Handle topmenu, TopMenuAction action, TopMenuObject object_id, int param, char[] buffer, int maxlength)
 {
-	if (action == TopMenuAction_DisplayOption)
+	switch (action)
 	{
-		Format(buffer, maxlength, "%T", "Alltalk vote", param);
-	}
-	else if (action == TopMenuAction_SelectOption)
-	{
-		DisplayVoteAllTalkMenu(param);
-	}
-	else if (action == TopMenuAction_DrawOption)
-	{	
-		/* disable this option if a vote is already running */
-		buffer[0] = !Internal_IsNewVoteAllowed() ? ITEMDRAW_IGNORE : ITEMDRAW_DEFAULT;
+		case TopMenuAction_DisplayOption:
+		{
+			Format(buffer, maxlength, "%T", "Alltalk vote", param);
+		}
+		case TopMenuAction_SelectOption:
+		{
+			DisplayVoteAllTalkMenu(param);
+		}
+		case TopMenuAction_DrawOption:
+		{
+			/* disable this option if a vote is already running */
+			buffer[0] = !Internal_IsNewVoteAllowed() ? ITEMDRAW_IGNORE : ITEMDRAW_DEFAULT;
+		}
 	}
 }
 
-public Action:Command_VoteAlltalk(client, args)
+public Action Command_VoteAlltalk(int client, int args)
 {
 	if (args > 0)
 	{
 		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] Usage: sm_votealltalk");
-		return Plugin_Handled;	
+		return Plugin_Handled;
 	}
 	
 	DisplayVoteAllTalkMenu(client);

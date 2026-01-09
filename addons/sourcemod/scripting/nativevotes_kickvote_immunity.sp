@@ -41,7 +41,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define VERSION "25w52a"
+#define VERSION "26w02a"
 
 ConVar g_Cvar_Votes;
 ConVar g_Cvar_KickVote;
@@ -52,7 +52,7 @@ bool g_bRegistered = false;
 bool g_bMapActive = false;
 
 public Plugin myinfo = {
-	name			= "NativeVotes Kick Vote Immunity",
+	name			= "[NativeVotes] Kick Vote Immunity",
 	author			= "Powerlord",
 	description		= "Causes TF2 kick votes to fail against people who the current user can't target.",
 	version			= VERSION,

@@ -38,7 +38,7 @@
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
 
-#define VERSION "25w52a"
+#define VERSION "26w02a"
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -46,7 +46,7 @@ TopMenu hTopMenu;
 
 public Plugin myinfo = 
 {
-	name = "NativeVotes Basic Commands",
+	name = "[NativeVotes] Basic Commands",
 	author = "Powerlord and AlliedModders LLC",
 	description = "Revote and Cancel support for NativeVotes",
 	version = VERSION,
