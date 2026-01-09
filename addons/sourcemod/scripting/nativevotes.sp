@@ -80,11 +80,19 @@ int g_NextVote = 0;
 
 //----------------------------------------------------------------------------
 // CVars
-ConVar g_Cvar_VoteHintbox;
-ConVar g_Cvar_VoteChat;
-ConVar g_Cvar_VoteConsole;
-ConVar g_Cvar_VoteClientConsole;
-ConVar g_Cvar_VoteDelay;
+enum
+{
+	progress_hintbox,
+	progress_chat,
+	progress_console,
+	progress_client_console,
+	vote_delay,
+	bots_allowed,
+
+	MAX_CONVARS
+}
+
+ConVar g_ConVars[MAX_CONVARS];
 
 //----------------------------------------------------------------------------
 // Used to track current vote data
@@ -157,7 +165,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	if (!Game_IsGameSupported(engineName, sizeof(engineName)))
 	{
 		Format(error, err_max, "Unsupported game: %s", engineName);
-		//strcopy(error, err_max, "Unsupported game");
 		return APLRes_Failure;
 	}
 	
@@ -252,16 +259,16 @@ public void OnPluginStart()
 	
 	CreateConVar("nativevotes_version", VERSION, "NativeVotes API version", FCVAR_DONTRECORD | FCVAR_NOTIFY);
 
-	g_Cvar_VoteHintbox = CreateConVar("nativevotes_progress_hintbox", "0", "Show current vote progress in a hint box", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_Cvar_VoteChat = CreateConVar("nativevotes_progress_chat", "0", "Show current vote progress as chat messages", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_Cvar_VoteConsole = CreateConVar("nativevotes_progress_console", "0", "Show current vote progress as console messages", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_Cvar_VoteClientConsole = CreateConVar("nativevotes_progress_client_console", "0", "Show current vote progress as console messages to clients", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_Cvar_VoteDelay = CreateConVar("nativevotes_vote_delay", "30", "Sets the recommended time in between public votes", FCVAR_NONE, true, 0.0);
-	
+	g_ConVars[progress_hintbox]  	   = CreateConVar("nativevotes_progress_hintbox", "0", "Show current vote progress in a hint box", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_ConVars[progress_chat] 		   = CreateConVar("nativevotes_progress_chat", "0", "Show current vote progress as chat messages", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_ConVars[progress_console]  	   = CreateConVar("nativevotes_progress_console", "0", "Show current vote progress as console messages", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_ConVars[progress_client_console] = CreateConVar("nativevotes_progress_client_console", "0", "Show current vote progress as console messages to clients", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_ConVars[vote_delay] 		 	   = CreateConVar("nativevotes_vote_delay", "30", "Sets the recommended time in between public votes", FCVAR_NONE, true, 0.0);
+	g_ConVars[bots_allowed] 		   = FindConVar("sv_vote_bots_allowed");
+
 	Game_InitializeCvars();
 	
-	HookConVarChange(g_Cvar_VoteDelay, OnVoteDelayChange);
-
+	HookConVarChange(g_ConVars[vote_delay], OnVoteDelayChange);
 	AddCommandListener(Command_Vote, "vote"); // All games, command listeners aren't case sensitive
 	
 	sv_vote_holder_may_vote_no = FindConVar("sv_vote_holder_may_vote_no");
@@ -718,7 +725,7 @@ void OnVoteSelect(NativeVote vote, int client, int item)
 			
 			Game_UpdateVoteCounts(g_hVotes, g_TotalClients);
 			
-			if (g_Cvar_VoteChat.BoolValue || g_Cvar_VoteConsole.BoolValue || g_Cvar_VoteClientConsole.BoolValue)
+			if (g_ConVars[progress_chat].BoolValue || g_ConVars[progress_console].BoolValue || g_ConVars[progress_clientconsole].BoolValue)
 			{
 				char choice[128];
 				char name[MAX_NAME_LENGTH+1];
@@ -726,12 +733,12 @@ void OnVoteSelect(NativeVote vote, int client, int item)
 				
 				GetClientName(client, name, MAX_NAME_LENGTH);
 				
-				if (g_Cvar_VoteConsole.BoolValue)
+				if (g_ConVars[progress_console].BoolValue)
 				{
 					PrintToServer("[%s] %T", LOGTAG, "Voted For", LANG_SERVER, name, choice);
 				}
 				
-				if (g_Cvar_VoteChat.BoolValue || g_Cvar_VoteClientConsole.BoolValue)
+				if (g_ConVars[progress_chat].BoolValue || g_ConVars[progress_clientconsole].BoolValue)
 				{
 					char phrase[30];
 					
@@ -744,12 +751,12 @@ void OnVoteSelect(NativeVote vote, int client, int item)
 						strcopy(phrase, sizeof(phrase), "Voted For");
 					}
 					
-					if (g_Cvar_VoteChat.BoolValue)
+					if (g_ConVars[progress_chat].BoolValue)
 					{
 						CPrintToChatAll("[%s] %t", LOGTAG, phrase, name, choice);
 					}
 					
-					if (g_Cvar_VoteClientConsole.BoolValue)
+					if (g_ConVars[progress_clientconsole].BoolValue)
 					{
 						for (int i = 1; i <= MaxClients; i++)
 						{
@@ -1000,7 +1007,7 @@ bool:SendResultCallback(Handle:vote, num_votes, num_items, const votes[][])
 
 void DrawHintProgress()
 {
-	if (!g_Cvar_VoteHintbox.BoolValue)
+	if (!g_ConVars[progress_hintbox].BoolValue)
 	{
 		return;
 	}
@@ -1019,7 +1026,7 @@ void DrawHintProgress()
 
 void BuildVoteLeaders()
 {
-	if (g_NumVotes == 0 || !g_Cvar_VoteHintbox.BoolValue)
+	if (g_NumVotes == 0 || !g_ConVars[progress_hintbox].BoolValue)
 	{
 		return;
 	}
@@ -1075,7 +1082,7 @@ void DecrementPlayerCount()
 
 void EndVoting()
 {
-	int voteDelay = g_Cvar_VoteDelay.IntValue;
+	int voteDelay = g_ConVars[vote_delay].IntValue;
 	if (voteDelay < 1)
 	{
 		g_NextVote = 0;
@@ -1145,7 +1152,7 @@ bool StartVote(NativeVote vote, int num_clients, int[] clients, int max_time, in
 	/* Due to hibernating servers, we no longer use GameTime, but instead standard timestamps.
 	 */
 
-	int voteDelay = g_Cvar_VoteDelay.IntValue;
+	int voteDelay = g_ConVars[vote_delay].IntValue;
 	if (voteDelay < 1)
 	{
 		g_NextVote = 0;
@@ -1294,6 +1301,23 @@ void StartVoting()
 		if (initiator > 0 && initiator <= MaxClients && IsClientConnected(initiator) && Internal_IsClientInVotePool(initiator))
 		{
 			Game_VoteYes(initiator);
+		}
+	}
+
+	// sv_vote_bots_allowed
+	if (g_ConVars[allow_bots].BoolValue)
+	{
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			if (!IsFakeClient(i))
+			{
+				continue;
+			}
+
+			if (Internal_IsClientInVotePool(i))
+			{
+				Game_VoteRandom(i);
+			}
 		}
 	}
 }
@@ -2017,9 +2041,9 @@ public int Native_RedrawClientVote(Handle plugin, int numParams)
 	
 	if (!Internal_IsVoteInProgress())
 	{
-		// When revoting in TF2, NativeVotes_IsVoteInProgress always gets skipped because of Game_IsVoteInProgress() 
-		// 	TF2s vote controller will stay alive a few seconds after the vote is complete
-		// 	If one tries to revote right as a vote completes, it will throw an error
+		// When revoting in TF2, NativeVotes_IsVoteInProgress always gets skipped because of Game_IsVoteInProgress()
+		// TF2's vote controller will stay alive a few seconds after the vote is complete
+		// If one tries to revote right as a vote completes, it will throw an error
 		LogError("No vote is in progress");
 		return false;
 	}

@@ -68,15 +68,15 @@
 #define L4D_VOTE_CHANGELEVEL_PASSED			"#L4D_vote_passed_chapter_change"
 
 // User vote to return to lobby.
-#define L4D_VOTE_RETURNTOLOBBY_START			"#L4D_vote_return_to_lobby"
+#define L4D_VOTE_RETURNTOLOBBY_START		"#L4D_vote_return_to_lobby"
 #define L4D_VOTE_RETURNTOLOBBY_PASSED		"#L4D_vote_passed_return_to_lobby"
 
 // User vote to change difficulty.
 #define L4D_VOTE_CHANGEDIFFICULTY_START		"#L4D_vote_change_difficulty"
-#define L4D_VOTE_CHANGEDIFFICULTY_PASSED		"#L4D_vote_passed_change_difficulty"
+#define L4D_VOTE_CHANGEDIFFICULTY_PASSED	"#L4D_vote_passed_change_difficulty"
 
 // While not a vote string, it works just as well.
-#define L4D_VOTE_CUSTOM					"#L4D_TargetID_Player"
+#define L4D_VOTE_CUSTOM						"#L4D_TargetID_Player"
 
 //----------------------------------------------------------------------------
 // L4D2
@@ -95,7 +95,7 @@
 #define TF2CSGO_VOTE_STRING_RESTART			"RestartGame"
 #define TF2CSGO_VOTE_STRING_CHANGELEVEL		"ChangeLevel"
 #define TF2CSGO_VOTE_STRING_NEXTLEVEL		"NextLevel"
-#define TF2CSGO_VOTE_STRING_SCRAMBLE			"ScrambleTeams"
+#define TF2CSGO_VOTE_STRING_SCRAMBLE		"ScrambleTeams"
 
 //----------------------------------------------------------------------------
 // TF2
@@ -121,16 +121,16 @@
 #define TF2_VOTE_MENU_SCRAMBLE				"#Vote_ScrambleTeams"
 #define TF2_VOTE_MENU_CHANGEMISSION			"#Vote_ChangeMission"
 #define TF2_VOTE_MENU_ETERNAWEEN			"#Vote_Eternaween"
-#define TF2_VOTE_MENU_AUTOBALANCE_ON			"#Vote_TeamAutoBalance_Enable"
+#define TF2_VOTE_MENU_AUTOBALANCE_ON		"#Vote_TeamAutoBalance_Enable"
 #define TF2_VOTE_MENU_AUTOBALANCE_OFF		"#Vote_TeamAutoBalance_Disable"
 #define TF2_VOTE_MENU_CLASSLIMIT_ON			"#Vote_ClassLimit_Enable"
-#define TF2_VOTE_MENU_CLASSLIMIT_OFF			"#Vote_ClassLimit_Disable"
+#define TF2_VOTE_MENU_CLASSLIMIT_OFF		"#Vote_ClassLimit_Disable"
 #define TF2_VOTE_MENU_EXTEND				"#Vote_ExtendLevel"
 
 // User vote to kick user.
 #define TF2_VOTE_KICK_IDLE_START			"#TF_vote_kick_player_idle"
-#define TF2_VOTE_KICK_SCAMMING_START			"#TF_vote_kick_player_scamming"
-#define TF2_VOTE_KICK_CHEATING_START			"#TF_vote_kick_player_cheating"
+#define TF2_VOTE_KICK_SCAMMING_START		"#TF_vote_kick_player_scamming"
+#define TF2_VOTE_KICK_CHEATING_START		"#TF_vote_kick_player_cheating"
 #define TF2_VOTE_KICK_START					"#TF_vote_kick_player_other"
 #define TF2_VOTE_KICK_PASSED				"#TF_vote_passed_kick_player"
 
@@ -145,16 +145,17 @@
 // User vote to change next level.
 #define TF2_VOTE_NEXTLEVEL_SINGLE_START		"#TF_vote_nextlevel"
 #define TF2_VOTE_NEXTLEVEL_MULTIPLE_START	"#TF_vote_nextlevel_choices" // Started by server
-#define TF2_VOTE_NEXTLEVEL_EXTEND_PASSED		"#TF_vote_passed_nextlevel_extend" // Also used for extend vote
+#define TF2_VOTE_NEXTLEVEL_EXTEND_PASSED	"#TF_vote_passed_nextlevel_extend" // Also used for extend vote
 #define TF2_VOTE_NEXTLEVEL_PASSED			"#TF_vote_passed_nextlevel"
 
-// User vote to scramble teams.  Can be immediate or end of round.
+// User vote to scramble teams.
+// Can be immediate or end of round.
 #define TF2_VOTE_SCRAMBLE_IMMEDIATE_START	"#TF_vote_scramble_teams"
-#define TF2_VOTE_SCRAMBLE_ROUNDEND_START		"#TF_vote_should_scramble_round"
+#define TF2_VOTE_SCRAMBLE_ROUNDEND_START	"#TF_vote_should_scramble_round"
 #define TF2_VOTE_SCRAMBLE_PASSED			"#TF_vote_passed_scramble_teams"
 
 // User vote to change MvM mission
-#define TF2_VOTE_CHANGEMISSION_START			"#TF_vote_changechallenge"
+#define TF2_VOTE_CHANGEMISSION_START		"#TF_vote_changechallenge"
 #define TF2_VOTE_CHANGEMISSION_PASSED		"#TF_vote_passed_changechallenge"
 
 // User vote for eternaween
@@ -185,7 +186,7 @@
 #define TF2_VOTE_EXTEND_START				"#TF_vote_extendlevel"
 
 // While not a vote string, it works just as well.
-#define TF2_VOTE_CUSTOM					"#TF_playerid_noteam"
+#define TF2_VOTE_CUSTOM						"#TF_playerid_noteam"
 
 // TF2 (and SDK2013?) VoteFail / CallVoteFail reasons
 enum
@@ -416,7 +417,6 @@ void Game_InitializeCvars()
 		{
 			g_Cvar_Votes_Enabled = FindConVar("sv_allow_votes");
 		}
-		
 		case Engine_TF2:
 		{
 			g_Cvar_Votes_Enabled = FindConVar("sv_allow_votes");
@@ -453,7 +453,6 @@ NativeVotesKickType Game_GetKickType(const char[] param1, int &target)
 			target = StringToInt(param1);
 			kickType = NativeVotesKickType_Generic;
 		}
-		
 		case Engine_TF2:
 		{
 			char params[2][20];
@@ -520,7 +519,6 @@ int Game_ParseVote(const char[] option)
 		{
 			item = L4DL4D2_ParseVote(option);
 		}
-		
 		case Engine_CSGO:
 		{
 			item = CSGO_ParseVote(option);
@@ -543,7 +541,6 @@ int Game_GetMaxItems()
 		{
 			return L4DL4D2_COUNT;
 		}
-		
 		case Engine_CSGO, Engine_TF2:
 		{
 			return TF2CSGO_COUNT;
@@ -563,12 +560,10 @@ bool Game_CheckVoteType(NativeVotesType type)
 		{
 			returnVal = L4D_CheckVoteType(type);
 		}
-		
 		case Engine_Left4Dead2:
 		{
 			returnVal = L4D2_CheckVoteType(type);
 		}
-		
 		case Engine_CSGO:
 		{
 			returnVal = CSGO_CheckVoteType(type);
@@ -593,17 +588,14 @@ bool Game_CheckVotePassType(NativeVotesPassType type)
 		{
 			returnVal = L4D_CheckVotePassType(type);
 		}
-		
 		case Engine_Left4Dead2:
 		{
 			returnVal = L4D2_CheckVotePassType(type);
 		}
-		
 		case Engine_CSGO:
 		{
 			returnVal = CSGO_CheckVotePassType(type);
 		}
-		
 		case Engine_TF2:
 		{
 			returnVal = TF2_CheckVotePassType(type);
@@ -639,12 +631,10 @@ bool Game_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 		{
 			L4D_DisplayVote(vote, num_clients);
 		}
-		
 		case Engine_Left4Dead2:
 		{
 			L4D2_DisplayVote(vote, clients, num_clients);
 		}
-		
 		case Engine_CSGO, Engine_TF2:
 		{
 			TF2CSGO_DisplayVote(vote, clients, num_clients);
@@ -691,18 +681,15 @@ void Game_DisplayRawVoteFail(int[] clients, int numClients, NativeVotesFailType 
 		{
 			L4D_VoteFail(team);
 		}
-		
 		case Engine_Left4Dead2:
 		{
 			L4D2_VoteFail(clients, numClients, team);
 		}
-		
 		case Engine_CSGO:
 		{
 			int reasonType = VoteFailTypeToInt(reason);
 			CSGO_VoteFail(clients, numClients, reasonType, team);
 		}
-		
 		case Engine_TF2:
 		{
 			int reasonType = VoteFailTypeToInt(reason);
@@ -740,11 +727,9 @@ void Game_DisplayRawVotePass(NativeVotesPassType passType, int team, int client=
 			if (client <= 0)
 			{
 				L4DL4D2_VotePassToTranslation(passType, translation, sizeof(translation));
-				
 				L4D_VotePass(translation, details, team);
 			}
 		}
-		
 		case Engine_Left4Dead2:
 		{
 			L4DL4D2_VotePassToTranslation(passType, translation, sizeof(translation));
@@ -755,25 +740,21 @@ void Game_DisplayRawVotePass(NativeVotesPassType passType, int team, int client=
 				{
 					L4D2_VotePass(translation, L4D2_VOTE_ALLTALK_ENABLE, team, client);
 				}
-				
 				case NativeVotesPass_AlltalkOff:
 				{
 					L4D2_VotePass(translation, L4D2_VOTE_ALLTALK_DISABLE, team, client);
 				}
-				
 				default:
 				{
 					L4D2_VotePass(translation, details, team, client);
 				}
 			}
 		}
-		
 		case Engine_CSGO:
 		{
 			CSGO_VotePassToTranslation(passType, translation, sizeof(translation));
 			CSGO_VotePass(translation, details, team, client);
 		}
-		
 		case Engine_TF2:
 		{
 			TF2_VotePassToTranslation(passType, translation, sizeof(translation));
@@ -801,17 +782,14 @@ void Game_DisplayRawVotePassCustom(const char[] translation, int team, int clien
 		{
 			ThrowNativeError(SP_ERROR_NATIVE, "NativeVotes_DisplayPassCustom is not supported on L4D");
 		}
-		
 		case Engine_Left4Dead2:
 		{
 			L4D2_VotePass(L4D_VOTE_CUSTOM, translation, team, client);
 		}
-		
 		case Engine_CSGO:
 		{
 			CSGO_VotePass(CSGO_VOTE_CUSTOM, translation, team, client);
 		}
-		
 		case Engine_TF2:
 		{
 			TF2_VotePass(TF2_VOTE_CUSTOM, translation, team, client);
@@ -835,12 +813,10 @@ void Game_DisplayCallVoteFail(int client, NativeVotesCallFailType reason, int ti
 		{
 			L4DL4D2_CallVoteFail(client, reasonType);
 		}
-		
 		case Engine_CSGO:
 		{
 			CSGO_CallVoteFail(client, reasonType, time);
 		}
-		
 		case Engine_TF2:
 		{
 			TF2_CallVoteFail(client, reasonType, time);
@@ -863,7 +839,6 @@ void Game_ClientSelectedItem(NativeVote vote, int client, int item)
 		{
 			L4DL4D2_ClientSelectedItem(client, item);
 		}
-		
 		case Engine_CSGO:
 		{
 			CSGO_ClientSelectedItem(vote, client, item);
@@ -877,7 +852,6 @@ void Game_ClientSelectedItem(NativeVote vote, int client, int item)
 		{
 			L4D_ClientSelectedItem(vote, client, item);
 		}
-		
 		case Engine_Left4Dead2:
 		{
 			L4D2_ClientSelectedItem(client, item);
@@ -894,7 +868,6 @@ void Game_UpdateVoteCounts(ArrayList hVoteCounts, int totalClients)
 		{
 			L4DL4D2_UpdateVoteCounts(hVoteCounts, totalClients);
 		}
-		
 		case Engine_CSGO, Engine_TF2:
 		{
 			TF2CSGO_UpdateVoteCounts(hVoteCounts);
@@ -906,26 +879,26 @@ void Game_DisplayVoteSetup(int client, ArrayList hVoteTypes)
 {
 	switch (g_EngineVersion)
 	{
+		/*
 		case Engine_Left4Dead:
 		{
-			//L4D_DisplayVoteSetup(client, voteTypes);
+			L4D_DisplayVoteSetup(client, voteTypes);
 		}
-		
 		case Engine_Left4Dead2:
 		{
-			//L4D2_DisplayVoteSetup(client, voteTypes);
+			L4D2_DisplayVoteSetup(client, voteTypes);
 		}
-		
+		*/
 		case Engine_TF2:
 		{
 			TF2_DisplayVoteSetup(client, hVoteTypes);
 		}
-		
+		/*
 		case Engine_CSGO:
 		{
-			//CSGO_DisplayVoteSetup(client, hVoteTypes);
+			CSGO_DisplayVoteSetup(client, hVoteTypes);
 		}
-		
+		*/
 	}
 }
 
@@ -938,12 +911,10 @@ stock void Game_VoteTypeToTranslation(NativeVotesType voteType, char[] translati
 		{
 			L4DL4D2_VoteTypeToTranslation(voteType, translation, maxlength);
 		}
-		
 		case Engine_CSGO:
 		{
 			CSGO_VoteTypeToTranslation(voteType, translation, maxlength);
 		}
-		
 		case Engine_TF2:
 		{
 			TF2_VoteTypeToTranslation(voteType, translation, maxlength);
@@ -959,7 +930,6 @@ stock void Game_UpdateClientCount(int num_clients)
 		{
 			L4DL4D2_UpdateClientCount(num_clients);
 		}
-		
 		case Engine_CSGO, Engine_TF2:
 		{
 			TF2CSGO_UpdateClientCount(num_clients);
@@ -975,7 +945,6 @@ public Action Game_ResetVote(Handle timer)
 		{
 			L4DL4D2_ResetVote();
 		}
-		
 		case Engine_CSGO, Engine_TF2:
 		{
 			TF2CSGO_ResetVote();
@@ -992,7 +961,6 @@ void Game_VoteYes(int client)
 		{
 			FakeClientCommand(client, "Vote Yes");
 		}
-		
 		case Engine_CSGO, Engine_TF2:
 		{
 			FakeClientCommand(client, "vote option1");
@@ -1008,10 +976,33 @@ void Game_VoteNo(int client)
 		{
 			FakeClientCommand(client, "Vote No");
 		}
-		
 		case Engine_CSGO, Engine_TF2:
 		{
 			FakeClientCommand(client, "vote option2");
+		}
+	}
+}
+
+void Game_VoteRandom(int client)
+{
+	switch (g_EngineVersion)
+	{
+		case Engine_Left4Dead, Engine_Left4Dead2:
+		{
+			int random = GetRandomInt(0, 1);
+			if (random == 0)
+			{
+				FakeClientCommand(client, "Vote Yes");
+			}
+			else
+			{
+				FakeClientCommand(client, "Vote No");
+			}
+		}
+		case Engine_CSGO, Engine_TF2:
+		{
+			int random = GetRandomInt(1, 5);
+			FakeClientCommand(client, "vote option%d", random);
 		}
 	}
 }
@@ -1024,7 +1015,6 @@ bool Game_IsVoteInProgress()
 		{
 			return L4DL4D2_IsVoteInProgress();
 		}
-		
 		case Engine_CSGO, Engine_TF2:
 		{
 			return TF2CSGO_IsVoteInProgress();
@@ -1177,112 +1167,90 @@ static NativeVotesPassType VoteTypeToVotePass(NativeVotesType voteType)
 		{
 			passType = NativeVotesPass_Custom;
 		}
-		
 		case NativeVotesType_ChgCampaign:
 		{
 			passType = NativeVotesPass_ChgCampaign;
 		}
-		
 		case NativeVotesType_ChgDifficulty:
 		{
 			passType = NativeVotesPass_ChgDifficulty;
 		}
-		
 		case NativeVotesType_ReturnToLobby:
 		{
 			passType = NativeVotesPass_ReturnToLobby;
 		}
-		
 		case NativeVotesType_AlltalkOn:
 		{
 			passType = NativeVotesPass_AlltalkOn;
 		}
-		
 		case NativeVotesType_AlltalkOff:
 		{
 			passType = NativeVotesPass_AlltalkOff;
 		}
-		
 		case NativeVotesType_Restart:
 		{
 			passType = NativeVotesPass_Restart;
 		}
-		
 		case NativeVotesType_Kick, NativeVotesType_KickIdle, NativeVotesType_KickScamming, NativeVotesType_KickCheating:
 		{
 			passType = NativeVotesPass_Kick;
 		}
-		
 		case NativeVotesType_ChgLevel:
 		{
 			passType = NativeVotesPass_ChgLevel;
 		}
-		
 		case NativeVotesType_NextLevel, NativeVotesType_NextLevelMult:
 		{
 			passType = NativeVotesPass_NextLevel;
 		}
-		
 		case NativeVotesType_ScrambleNow, NativeVotesType_ScrambleEnd:
 		{
 			passType = NativeVotesPass_Scramble;
 		}
-		
 		case NativeVotesType_ChgMission:
 		{
 			passType = NativeVotesPass_ChgMission;
 		}
-		
 		case NativeVotesType_SwapTeams:
 		{
 			passType = NativeVotesPass_SwapTeams;
 		}
-		
 		case NativeVotesType_Surrender:
 		{
 			passType = NativeVotesPass_Surrender;
 		}
-		
 		case NativeVotesType_Rematch:
 		{
 			passType = NativeVotesPass_Rematch;
 		}
-		
 		case NativeVotesType_Continue:
 		{
 			passType = NativeVotesPass_Continue;
 		}
-		
 		case NativeVotesType_StartRound:
 		{
 			passType = NativeVotesPass_StartRound;
 		}
-		
 		case NativeVotesType_Eternaween:
 		{
 			passType = NativeVotesPass_Eternaween;
 		}
-		
 		case NativeVotesType_AutoBalanceOn:
 		{
 			passType = NativeVotesPass_AutoBalanceOn;
 		}
-		
 		case NativeVotesType_AutoBalanceOff:
 		{
 			passType = NativeVotesPass_AutoBalanceOff;
 		}
-		
 		case NativeVotesType_ClassLimitsOn:
 		{
 			passType = NativeVotesPass_ClassLimitsOn;
 		}
-		
 		case NativeVotesType_ClassLimitsOff:
 		{
 			passType = NativeVotesPass_ClassLimitsOff;
 		}
-		
 		case NativeVotesType_Extend:
 		{
 			passType = NativeVotesPass_Extend;
@@ -1315,19 +1283,16 @@ static int VoteCallFailTypeToInt(NativeVotesCallFailType failType)
 				{
 					return VOTE_FAILED_GENERIC;
 				}
-				
 				case NativeVotesCallFail_Loading:
 				{
 					return VOTE_FAILED_TRANSITIONING_PLAYERS;
 				}
-				
 				case NativeVotesCallFail_Recent:
 				{
 					return VOTE_FAILED_FAILED_RECENTLY;
 				}
 			}
 		}
-		
 		case Engine_TF2:
 		{
 			switch (failType)
@@ -1336,94 +1301,76 @@ static int VoteCallFailTypeToInt(NativeVotesCallFailType failType)
 				{
 					return VOTE_FAILED_GENERIC;
 				}
-				
 				case NativeVotesCallFail_Loading:
 				{
 					return VOTE_FAILED_TRANSITIONING_PLAYERS;
 				}
-				
 				case NativeVotesCallFail_Recent:
 				{
 					return VOTE_FAILED_FAILED_RECENTLY;
 				}
-				
 				case NativeVotesCallFail_Disabled:
 				{
 					return VOTE_FAILED_ISSUE_DISABLED;
 				}
-				
 				case NativeVotesCallFail_MapNotFound:
 				{
 					return VOTE_FAILED_MAP_NOT_FOUND;
 				}
-				
 				case NativeVotesCallFail_SpecifyMap:
 				{
 					return VOTE_FAILED_MAP_NAME_REQUIRED;
 				}
-				
 				case NativeVotesCallFail_Failed:
 				{
 					return VOTE_FAILED_FAILED_RECENTLY;
 				}
-				
 				case NativeVotesCallFail_WrongTeam:
 				{
 					return VOTE_FAILED_TEAM_CANT_CALL;
 				}
-				
 				case NativeVotesCallFail_Waiting:
 				{
 					return VOTE_FAILED_WAITINGFORPLAYERS;
 				}
-				
 				case NativeVotesCallFail_PlayerNotFound:
 				{
 					return VOTE_FAILED_PLAYERNOTFOUND;
 				}
-				
 				case NativeVotesCallFail_CantKickAdmin:
 				{
 					return VOTE_FAILED_CANNOT_KICK_ADMIN;
 				}
-				
 				case NativeVotesCallFail_ScramblePending:
 				{
 					return VOTE_FAILED_SCRAMBLE_IN_PROGRESS;
 				}
-				
 				case NativeVotesCallFail_Spectators:
 				{
 					return VOTE_FAILED_SPECTATOR;
 				}
-				
 				case NativeVotesCallFail_LevelSet:
 				{
 					return VOTE_FAILED_NEXTLEVEL_SET;
 				}
-				
 				case NativeVotesCallFail_MapNotValid:
 				{
 					return VOTE_FAILED_MAP_NOT_VALID;
 				}
-				
 				case NativeVotesCallFail_KickTime:
 				{
 					return VOTE_FAILED_CANNOT_KICK_FOR_TIME;
 				}
-				
 				case NativeVotesCallFail_KickDuringRound:
 				{
 					return VOTE_FAILED_CANNOT_KICK_DURING_ROUND;
 				}
-				
 				case NativeVotesCallFail_AlreadyActive:
 				{
 					return VOTE_FAILED_MODIFICATION_ALREADY_ACTIVE;
 				}
 			}
 		}
-		
 		case Engine_CSGO:
 		{
 			switch (failType)
@@ -1432,137 +1379,110 @@ static int VoteCallFailTypeToInt(NativeVotesCallFailType failType)
 				{
 					return CSGO_VOTE_FAILED_GENERIC;
 				}
-				
 				case NativeVotesCallFail_Loading:
 				{
 					return CSGO_VOTE_FAILED_TRANSITIONING_PLAYERS;
 				}
-				
 				case NativeVotesCallFail_Recent:
 				{
 					return CSGO_VOTE_FAILED_RATE_EXCEEDED;
 				}
-				
 				case NativeVotesCallFail_Disabled:
 				{
 					return CSGO_VOTE_FAILED_ISSUE_DISABLED;
 				}
-				
 				case NativeVotesCallFail_MapNotFound:
 				{
 					return CSGO_VOTE_FAILED_MAP_NOT_FOUND;
 				}
-				
 				case NativeVotesCallFail_SpecifyMap:
 				{
 					return CSGO_VOTE_FAILED_MAP_NAME_REQUIRED;
 				}
-				
 				case NativeVotesCallFail_Failed:
 				{
 					return CSGO_VOTE_FAILED_FAILED_RECENTLY;
 				}
-				
 				case NativeVotesCallFail_WrongTeam:
 				{
 					return CSGO_VOTE_FAILED_TEAM_CANT_CALL;
 				}
-				
 				case NativeVotesCallFail_Warmup:
 				{
 					return CSGO_VOTE_FAILED_WARMUP;
 				}
-				
 				case NativeVotesCallFail_PlayerNotFound:
 				{
 					return CSGO_VOTE_FAILED_PLAYERNOTFOUND;
 				}
-				
 				case NativeVotesCallFail_CantKickAdmin:
 				{
 					return CSGO_VOTE_FAILED_CANNOT_KICK_ADMIN;
 				}
-				
 				case NativeVotesCallFail_ScramblePending:
 				{
 					return CSGO_VOTE_FAILED_SCRAMBLE_IN_PROGRESS;
 				}
-				
 				case NativeVotesCallFail_Spectators:
 				{
 					return CSGO_VOTE_FAILED_SPECTATOR;
 				}
-				
 				case NativeVotesCallFail_LevelSet:
 				{
 					return CSGO_VOTE_FAILED_NEXTLEVEL_SET;
 				}
-				
 				case NativeVotesCallFail_KickFailed:
 				{
 					return CSGO_VOTE_FAILED_FAILED_RECENTLY_KICK;
 				}
-				
 				case NativeVotesCallFail_MapFailed:
 				{
 					return CSGO_VOTE_FAILED_FAILED_RECENTLY_MAP;
 				}
-				
 				case NativeVotesCallFail_SwapFailed:
 				{
 					return CSGO_VOTE_FAILED_FAILED_RECENTLY_SWAP;
 				}
-				
 				case NativeVotesCallFail_ScrambleFailed:
 				{
 					return CSGO_VOTE_FAILED_FAILED_RECENTLY_SCRAMBLE;
 				}
-				
 				case NativeVotesCallFail_RestartFailed:
 				{
 					return CSGO_VOTE_FAILED_FAILED_RECENTLY_RESTART;
 				}
-				
 				case NativeVotesCallFail_SwapPending:
 				{
 					return CSGO_VOTE_FAILED_SWAP_IN_PROGRESS;
 				}
-				
 				case NativeVotesCallFail_Unknown2:
 				{
 					return CSGO_VOTE_FAILED_UNKNOWN1;
 				}
-				
 				case NativeVotesCallFail_CantSurrender:
 				{
 					return CSGO_VOTE_FAILED_SURRENDER_ABANDON;
 				}
-				
 				case NativeVotesCallFail_Unknown3:
 				{
 					return CSGO_VOTE_FAILED_UNKNOWN2;
 				}
-				
 				case NativeVotesCallFail_MatchPaused:
 				{
 					return CSGO_VOTE_FAILED_PAUSED;
 				}
-				
 				case NativeVotesCallFail_NotPaused:
 				{
 					return CSGO_VOTE_FAILED_NOT_PAUSED;
 				}
-				
 				case NativeVotesCallFail_NotWarmup:
 				{
 					return CSGO_VOTE_FAILED_NOT_WARMUP;
 				}
-				
 				case NativeVotesCallFail_MinPlayers:
 				{
 					return CSGO_VOTE_FAILED_MIN_PLAYERS;
 				}
-				
 				case NativeVotesCallFail_RoundEnded:
 				{
 					return CSGO_VOTE_FAILED_ROUND_ENDED;
@@ -1582,87 +1502,70 @@ static void GetEngineVersionName(EngineVersion version, char[] printName, int ma
 		{
 			strcopy(printName, maxlength, "Unknown");
 		}
-		
 		case Engine_Original:				
 		{
 			strcopy(printName, maxlength, "Original");
 		}
-		
 		case Engine_SourceSDK2006:
 		{
 			strcopy(printName, maxlength, "Source SDK 2006");
 		}
-		
 		case Engine_SourceSDK2007:
 		{
 			strcopy(printName, maxlength, "Source SDK 2007");
 		}
-		
 		case Engine_Left4Dead:
 		{
 			strcopy(printName, maxlength, "Left 4 Dead ");
 		}
-		
 		case Engine_DarkMessiah:
 		{
 			strcopy(printName, maxlength, "Dark Messiah");
 		}
-		
 		case Engine_Left4Dead2:
 		{
 			strcopy(printName, maxlength, "Left 4 Dead 2");
 		}
-		
 		case Engine_AlienSwarm:
 		{
 			strcopy(printName, maxlength, "Alien Swarm");
 		}
-		
 		case Engine_BloodyGoodTime:
 		{
 			strcopy(printName, maxlength, "Bloody Good Time");
 		}
-		
 		case Engine_EYE:
 		{
 			strcopy(printName, maxlength, "E.Y.E. Divine Cybermancy");
 		}
-		
 		case Engine_Portal2:
 		{
 			strcopy(printName, maxlength, "Portal 2");
 		}
-		
 		case Engine_CSGO:
 		{
 			strcopy(printName, maxlength, "Counter-Strike: Global Offensive");
 		}
-		
 		case Engine_CSS:
 		{
 			strcopy(printName, maxlength, "Counter-Strike: Source");
 		}
-		
 		case Engine_DOTA:
 		{
 			strcopy(printName, maxlength, "DOTA 2");
 		}
-		
 		case Engine_HL2DM:
 		{
 			strcopy(printName, maxlength, "Half-Life 2: Deathmatch");
 		}
-		
 		case Engine_DODS:
 		{
 			strcopy(printName, maxlength, "Day of Defeat: Source");
 		}
-		
 		case Engine_TF2:
 		{
 			strcopy(printName, maxlength, "Team Fortress 2");
 		}
-		
 		case Engine_NuclearDawn:
 		{
 			strcopy(printName, maxlength, "Nuclear Dawn");
@@ -1755,32 +1658,26 @@ static void L4DL4D2_VoteTypeToTranslation(NativeVotesType voteType, char[] trans
 		{
 			strcopy(translation, maxlength, L4D_VOTE_CHANGECAMPAIGN_START);
 		}
-		
 		case NativeVotesType_ChgDifficulty:
 		{
 			strcopy(translation, maxlength, L4D_VOTE_CHANGEDIFFICULTY_START);
 		}
-		
 		case NativeVotesType_ReturnToLobby:
 		{
 			strcopy(translation, maxlength, L4D_VOTE_RETURNTOLOBBY_START);
 		}
-		
 		case NativeVotesType_AlltalkOn, NativeVotesType_AlltalkOff:
 		{
 			strcopy(translation, maxlength, L4D2_VOTE_ALLTALK_START);
 		}
-		
 		case NativeVotesType_Restart:
 		{
 			strcopy(translation, maxlength, L4D_VOTE_RESTART_START);
 		}
-		
 		case NativeVotesType_Kick:
 		{
 			strcopy(translation, maxlength, L4D_VOTE_KICK_START);
 		}
-		
 		case NativeVotesType_ChgLevel:
 		{
 			strcopy(translation, maxlength, L4D_VOTE_CHANGELEVEL_START);
@@ -1801,37 +1698,30 @@ static void L4DL4D2_VotePassToTranslation(NativeVotesPassType passType, char[] t
 		{
 			strcopy(translation, maxlength, L4D_VOTE_CUSTOM);
 		}
-		
 		case NativeVotesPass_ChgCampaign:
 		{
 			strcopy(translation, maxlength, L4D_VOTE_CHANGECAMPAIGN_PASSED);
 		}
-		
 		case NativeVotesPass_ChgDifficulty:
 		{
 			strcopy(translation, maxlength, L4D_VOTE_CHANGEDIFFICULTY_PASSED);
 		}
-		
 		case NativeVotesPass_ReturnToLobby:
 		{
 			strcopy(translation, maxlength, L4D_VOTE_RETURNTOLOBBY_PASSED);
 		}
-		
 		case NativeVotesPass_AlltalkOn, NativeVotesPass_AlltalkOff:
 		{
 			strcopy(translation, maxlength, L4D2_VOTE_ALLTALK_PASSED);
 		}
-		
 		case NativeVotesPass_Restart:
 		{
 			strcopy(translation, maxlength, L4D_VOTE_RESTART_PASSED);
 		}
-		
 		case NativeVotesPass_Kick:
 		{
 			strcopy(translation, maxlength, L4D_VOTE_KICK_PASSED);
 		}
-		
 		case NativeVotesPass_ChgLevel:
 		{
 			strcopy(translation, maxlength, L4D_VOTE_CHANGELEVEL_PASSED);
@@ -2014,12 +1904,10 @@ static void L4D2_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 		{
 			strcopy(details, MAX_VOTE_DETAILS_LENGTH, L4D2_VOTE_ALLTALK_ENABLE);
 		}
-		
 		case NativeVotesType_AlltalkOff:
 		{
 			strcopy(details, MAX_VOTE_DETAILS_LENGTH, L4D2_VOTE_ALLTALK_DISABLE);
 		}
-		
 		case NativeVotesType_Custom_YesNo, NativeVotesType_Custom_Mult:
 		{
 			Data_GetTitle(vote, details, MAX_VOTE_DETAILS_LENGTH);
@@ -2293,7 +2181,6 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 			bYesNo = CSGO_VoteTypeToTranslation(voteType, translation, sizeof(translation));
 			CSGO_VoteTypeToVoteOtherTeamString(voteType, otherTeamString, sizeof(otherTeamString));
 		}
-		
 		case Engine_TF2:
 		{
 			bYesNo = TF2_VoteTypeToTranslation(voteType, translation, sizeof(translation));
@@ -2699,7 +2586,6 @@ static bool TF2_CheckVoteType(NativeVotesType voteType)
 		{
 			return true;
 		}
-		
 		case NativeVotesType_Custom_Mult, NativeVotesType_NextLevelMult:
 		{
 			return true;
@@ -2736,94 +2622,76 @@ static bool TF2_VoteTypeToTranslation(NativeVotesType voteType, char[] translati
 			strcopy(translation, maxlength, TF2_VOTE_CUSTOM);
 			bYesNo = false;
 		}
-		
 		case NativeVotesType_Restart:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_RESTART_START);
 		}
-		
 		case NativeVotesType_Kick:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_KICK_START);
 		}
-		
 		case NativeVotesType_KickIdle:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_KICK_IDLE_START);
 		}
-		
 		case NativeVotesType_KickScamming:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_KICK_SCAMMING_START);
 		}
-		
 		case NativeVotesType_KickCheating:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_KICK_CHEATING_START);
 		}
-		
 		case NativeVotesType_ChgLevel:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_CHANGELEVEL_START);
 		}
-		
 		case NativeVotesType_NextLevel:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_NEXTLEVEL_SINGLE_START);
 		}
-		
 		case NativeVotesType_NextLevelMult:
 		{
 			
 			strcopy(translation, maxlength, TF2_VOTE_NEXTLEVEL_MULTIPLE_START);
 			bYesNo = false;
 		}
-		
 		case NativeVotesType_ScrambleNow:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_SCRAMBLE_IMMEDIATE_START);
 		}
-		
 		case NativeVotesType_ScrambleEnd:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_SCRAMBLE_ROUNDEND_START);
 		}
-		
 		case NativeVotesType_ChgMission:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_CHANGEMISSION_START);
 		}
-		
 		case NativeVotesType_StartRound:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_ROUND_START);
 		}
-		
 		case NativeVotesType_Eternaween:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_ETERNAWEEN_START);
 		}
-		
 		case NativeVotesType_AutoBalanceOn:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_AUTOBALANCE_ENABLE_START);
 		}
-		
 		case NativeVotesType_AutoBalanceOff:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_AUTOBALANCE_DISABLE_START);
 		}
-		
 		case NativeVotesType_ClassLimitsOn:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_CLASSLIMITS_ENABLE_START);
 		}
-		
 		case NativeVotesType_ClassLimitsOff:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_CLASSLIMITS_DISABLE_START);
 		}
-		
 		case NativeVotesType_Extend:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_EXTEND_START);
@@ -2846,27 +2714,22 @@ static void TF2_VotePassToTranslation(NativeVotesPassType passType, char[] trans
 		{
 			strcopy(translation, maxlength, TF2_VOTE_RESTART_PASSED);
 		}
-		
 		case NativeVotesPass_Kick:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_KICK_PASSED);
 		}
-		
 		case NativeVotesPass_ChgLevel:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_CHANGELEVEL_PASSED);
 		}
-		
 		case NativeVotesPass_NextLevel:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_NEXTLEVEL_PASSED);
 		}
-		
 		case NativeVotesPass_Extend:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_NEXTLEVEL_EXTEND_PASSED);
 		}
-		
 		case NativeVotesPass_Scramble:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_SCRAMBLE_PASSED);
@@ -2876,32 +2739,26 @@ static void TF2_VotePassToTranslation(NativeVotesPassType passType, char[] trans
 		{
 			strcopy(translation, maxlength, TF2_VOTE_CHANGEMISSION_PASSED);
 		}
-		
 		case NativeVotesPass_StartRound:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_ROUND_PASSED);
 		}
-		
 		case NativeVotesPass_Eternaween:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_ETERNAWEEN_PASSED);
 		}
-		
 		case NativeVotesPass_AutoBalanceOn:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_AUTOBALANCE_ENABLE_PASSED);
 		}
-		
 		case NativeVotesPass_AutoBalanceOff:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_AUTOBALANCE_DISABLE_PASSED);
 		}
-		
 		case NativeVotesPass_ClassLimitsOn:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_CLASSLIMITS_ENABLE_PASSED);
 		}
-		
 		case NativeVotesPass_ClassLimitsOff:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_CLASSLIMITS_DISABLE_PASSED);
@@ -2999,7 +2856,6 @@ static bool CSGO_CheckVoteType(NativeVotesType voteType)
 		{
 			return true;
 		}
-		
 		case NativeVotesType_Custom_Mult, NativeVotesType_NextLevelMult:
 		{
 			// Until/unless Valve fixes their menu code, this is false.
@@ -3037,68 +2893,55 @@ static bool CSGO_VoteTypeToTranslation(NativeVotesType voteType, char[] translat
 			strcopy(translation, maxlength, CSGO_VOTE_CUSTOM);
 			bYesNo = false;
 		}
-		
 		case NativeVotesType_Restart:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_RESTART_START);
 		}
-		
 		case NativeVotesType_Kick:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_KICK_START);
 		}
-		
 		case NativeVotesType_KickIdle:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_KICK_IDLE_START);
 		}
-		
 		case NativeVotesType_KickScamming:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_KICK_SCAMMING_START);
 		}
-		
 		case NativeVotesType_KickCheating:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_KICK_CHEATING_START);
 		}
-		
 		case NativeVotesType_ChgLevel:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_CHANGELEVEL_START);
 		}
-		
 		case NativeVotesType_NextLevel:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_NEXTLEVEL_SINGLE_START);
 		}
-		
 		case NativeVotesType_NextLevelMult:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_NEXTLEVEL_MULTIPLE_START);
 			bYesNo = false;
 		}
-		
 		case NativeVotesType_ScrambleNow:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_SCRAMBLE_START);
 		}
-		
 		case NativeVotesType_SwapTeams:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_SWAPTEAMS_START);
 		}
-		
 		case NativeVotesType_Surrender:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_SURRENDER_START);
 		}
-		
 		case NativeVotesType_Rematch:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_REMATCH_START);
 		}
-		
 		case NativeVotesType_Continue:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_CONTINUE_START);
@@ -3121,47 +2964,38 @@ static void CSGO_VotePassToTranslation(NativeVotesPassType passType, char[] tran
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_RESTART_PASSED);
 		}
-		
 		case NativeVotesPass_Kick:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_KICK_PASSED);
 		}
-		
 		case NativeVotesPass_ChgLevel:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_CHANGELEVEL_PASSED);
 		}
-		
 		case NativeVotesPass_NextLevel:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_NEXTLEVEL_PASSED);
 		}
-		
 		case NativeVotesPass_Extend:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_NEXTLEVEL_EXTEND_PASSED);
 		}
-		
 		case NativeVotesPass_Scramble:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_SCRAMBLE_PASSED);
 		}
-		
 		case NativeVotesPass_SwapTeams:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_SWAPTEAMS_PASSED);
 		}
-		
 		case NativeVotesPass_Surrender:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_SURRENDER_PASSED);
 		}
-		
 		case NativeVotesPass_Rematch:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_REMATCH_PASSED);
 		}
-		
 		case NativeVotesPass_Continue:
 		{
 			strcopy(translation, maxlength, CSGO_VOTE_CONTINUE_PASSED);
@@ -3182,12 +3016,10 @@ static void CSGO_VoteTypeToVoteOtherTeamString(NativeVotesType voteType, char[] 
 		{
 			strcopy(otherTeamString, maxlength, CSGO_VOTE_KICK_OTHERTEAM);
 		}
-		
 		case NativeVotesType_Surrender:
 		{
 			strcopy(otherTeamString, maxlength, CSGO_VOTE_SURRENDER_OTHERTEAM);
 		}
-		
 		case NativeVotesType_Continue:
 		{
 			strcopy(otherTeamString, maxlength, CSGO_VOTE_CONTINUE_OTHERTEAM);
@@ -3211,27 +3043,22 @@ static stock int TF2CSGO_GetVoteType(NativeVotesType voteType)
 		{
 			valveVoteType = ValveVote_Restart;
 		}
-		
 		case NativeVotesType_Custom_Mult, NativeVotesType_NextLevel, NativeVotesType_NextLevelMult:
 		{
 			valveVoteType = ValveVote_NextLevel;
 		}
-		
 		case NativeVotesType_Kick, NativeVotesType_KickIdle, NativeVotesType_KickScamming, NativeVotesType_KickCheating:
 		{
 			valveVoteType = ValveVote_Kick;
 		}
-		
 		case NativeVotesType_ChgLevel:
 		{
 			valveVoteType = ValveVote_ChangeLevel;
 		}
-		
 		case NativeVotesType_ScrambleNow, NativeVotesType_ScrambleEnd:
 		{
 			valveVoteType = ValveVote_Scramble;
 		}
-		
 		case NativeVotesType_SwapTeams:
 		{
 			valveVoteType = ValveVote_SwapTeams;
@@ -3253,61 +3080,51 @@ static stock bool TF2_VoteTypeToVoteString(NativeVotesType voteType, char[] vote
 			strcopy(voteString, maxlength, TF2CSGO_VOTE_STRING_KICK);
 			valid = true;
 		}
-		
 		case NativeVotesType_ChgLevel:
 		{
 			strcopy(voteString, maxlength, TF2CSGO_VOTE_STRING_CHANGELEVEL);
 			valid = true;
 		}
-		
 		case NativeVotesType_NextLevel:
 		{
 			strcopy(voteString, maxlength, TF2CSGO_VOTE_STRING_NEXTLEVEL);
 			valid = true;
 		}
-		
 		case NativeVotesType_Restart:
 		{
 			strcopy(voteString, maxlength, TF2CSGO_VOTE_STRING_RESTART);
 			valid = true;
 		}
-		
 		case NativeVotesType_ScrambleEnd, NativeVotesType_ScrambleNow:
 		{
 			strcopy(voteString, maxlength, TF2CSGO_VOTE_STRING_SCRAMBLE);
 			valid = true;
 		}
-		
 		case NativeVotesType_Eternaween:
 		{
 			strcopy(voteString, maxlength, TF2_VOTE_STRING_ETERNAWEEN);
 			valid = true;
 		}
-		
 		case NativeVotesType_AutoBalanceOn:
 		{
 			strcopy(voteString, maxlength, TF2_VOTE_STRING_AUTOBALANCE);
 			valid = true;
 		}
-		
 		case NativeVotesType_AutoBalanceOff:
 		{
 			strcopy(voteString, maxlength, TF2_VOTE_STRING_AUTOBALANCE);
 			valid = true;
 		}
-		
 		case NativeVotesType_ClassLimitsOn:
 		{
 			strcopy(voteString, maxlength, TF2_VOTE_STRING_CLASSLIMIT);
 			valid = true;
 		}
-		
 		case NativeVotesType_ClassLimitsOff:
 		{
 			strcopy(voteString, maxlength, TF2_VOTE_STRING_CLASSLIMIT);
 			valid = true;
 		}
-		
 		case NativeVotesType_Extend:
 		{
 			strcopy(voteString, maxlength, TF2_VOTE_STRING_EXTEND);
@@ -3381,42 +3198,34 @@ static stock NativeVotesOverride TF2_VoteTypeToVoteOverride(NativeVotesType vote
 		{
 			overrideType = NativeVotesOverride_Kick;
 		}
-		
 		case NativeVotesType_ChgLevel:
 		{
 			overrideType = NativeVotesOverride_ChgLevel;
 		}
-		
 		case NativeVotesType_NextLevel:
 		{
 			overrideType = NativeVotesOverride_NextLevel;
 		}
-		
 		case NativeVotesType_Restart:
 		{
 			overrideType = NativeVotesOverride_Restart;
 		}
-		
 		case NativeVotesType_ScrambleEnd, NativeVotesType_ScrambleNow:
 		{
 			overrideType = NativeVotesOverride_Scramble;
 		}
-		
 		case NativeVotesType_Eternaween:
 		{
 			overrideType = NativeVotesOverride_Eternaween;
 		}
-		
 		case NativeVotesType_AutoBalanceOn, NativeVotesType_AutoBalanceOff:
 		{
 			overrideType = NativeVotesOverride_AutoBalance;
 		}
-		
 		case NativeVotesType_ClassLimitsOn, NativeVotesType_ClassLimitsOff:
 		{
 			overrideType = NativeVotesOverride_ClassLimits;
 		}
-		
 		case NativeVotesType_Extend:
 		{
 			overrideType = NativeVotesOverride_Extend;
@@ -3436,47 +3245,38 @@ static stock NativeVotesType TF2_VoteOverrideToVoteType(NativeVotesOverride over
 		{
 			voteType = NativeVotesType_Restart;
 		}
-		
 		case NativeVotesOverride_Kick:
 		{
 			voteType = NativeVotesType_Kick;
 		}
-		
 		case NativeVotesOverride_ChgLevel:
 		{
 			voteType = NativeVotesType_ChgLevel;
 		}
-		
 		case NativeVotesOverride_NextLevel:
 		{
 			voteType = NativeVotesType_NextLevel;
 		}
-		
 		case NativeVotesOverride_Scramble:
 		{
 			voteType = NativeVotesType_ScrambleNow;
 		}
-		
 		case NativeVotesOverride_ChgMission:
 		{
 			voteType = NativeVotesType_ChgMission;
 		}
-		
 		case NativeVotesOverride_Eternaween:
 		{
 			voteType = NativeVotesType_Eternaween;
 		}
-		
 		case NativeVotesOverride_AutoBalance:
 		{
 			voteType = NativeVotesType_AutoBalanceOn;
 		}
-		
 		case NativeVotesOverride_ClassLimits:
 		{
 			voteType = NativeVotesType_ClassLimitsOn;
 		}
-		
 		case NativeVotesOverride_Extend:
 		{
 			voteType = NativeVotesType_Extend;
@@ -3548,49 +3348,41 @@ static stock bool TF2_OverrideTypeToVoteString(NativeVotesOverride overrideType,
 			strcopy(voteString, maxlength, TF2CSGO_VOTE_STRING_KICK);
 			valid = true;
 		}
-		
 		case NativeVotesOverride_ChgLevel:
 		{
 			strcopy(voteString, maxlength, TF2CSGO_VOTE_STRING_CHANGELEVEL);
 			valid = true;
 		}
-		
 		case NativeVotesOverride_NextLevel:
 		{
 			strcopy(voteString, maxlength, TF2CSGO_VOTE_STRING_NEXTLEVEL);
 			valid = true;
 		}
-		
 		case NativeVotesOverride_Restart:
 		{
 			strcopy(voteString, maxlength, TF2CSGO_VOTE_STRING_RESTART);
 			valid = true;
 		}
-		
 		case NativeVotesOverride_Scramble:
 		{
 			strcopy(voteString, maxlength, TF2CSGO_VOTE_STRING_SCRAMBLE);
 			valid = true;
 		}
-		
 		case NativeVotesOverride_Eternaween:
 		{
 			strcopy(voteString, maxlength, TF2_VOTE_STRING_ETERNAWEEN);
 			valid = true;
 		}
-		
 		case NativeVotesOverride_AutoBalance:
 		{
 			strcopy(voteString, maxlength, TF2_VOTE_STRING_AUTOBALANCE);
 			valid = true;
 		}
-		
 		case NativeVotesOverride_ClassLimits:
 		{
 			strcopy(voteString, maxlength, TF2_VOTE_STRING_CLASSLIMIT);
 			valid = true;
 		}
-		
 		case NativeVotesOverride_Extend:
 		{
 			strcopy(voteString, maxlength, TF2_VOTE_STRING_EXTEND);
@@ -3615,37 +3407,31 @@ static stock bool TF2_OverrideTypeToTranslationString(NativeVotesOverride overri
 			strcopy(translationString, maxlength, TF2_VOTE_MENU_KICK);
 			valid = true;
 		}
-		
 		case NativeVotesOverride_ChgLevel:
 		{
 			strcopy(translationString, maxlength, TF2_VOTE_MENU_CHANGELEVEL);
 			valid = true;
 		}
-		
 		case NativeVotesOverride_NextLevel:
 		{
 			strcopy(translationString, maxlength, TF2_VOTE_MENU_NEXTLEVEL);
 			valid = true;
 		}
-		
 		case NativeVotesOverride_Restart:
 		{
 			strcopy(translationString, maxlength, TF2_VOTE_MENU_RESTART);
 			valid = true;
 		}
-		
 		case NativeVotesOverride_Scramble:
 		{
 			strcopy(translationString, maxlength, TF2_VOTE_MENU_SCRAMBLE);
 			valid = true;
 		}
-		
 		case NativeVotesOverride_Eternaween:
 		{
 			strcopy(translationString, maxlength, TF2_VOTE_MENU_ETERNAWEEN);
 			valid = true;
 		}
-		
 		case NativeVotesOverride_AutoBalance:
 		{
 			if (GetConVarBool(g_Cvar_AutoBalance))
@@ -3658,7 +3444,6 @@ static stock bool TF2_OverrideTypeToTranslationString(NativeVotesOverride overri
 			}
 			valid = true;
 		}
-		
 		case NativeVotesOverride_ClassLimits:
 		{
 			if (GetConVarInt(g_Cvar_ClassLimit))
@@ -3671,7 +3456,6 @@ static stock bool TF2_OverrideTypeToTranslationString(NativeVotesOverride overri
 			}
 			valid = true;
 		}
-		
 		case NativeVotesOverride_Extend:
 		{
 			strcopy(translationString, maxlength, TF2_VOTE_MENU_EXTEND);
