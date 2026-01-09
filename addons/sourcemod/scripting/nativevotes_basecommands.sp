@@ -99,31 +99,29 @@ public Action Command_CancelVote(int client, const char[] command, int argc)
 	}
 }
 
-public void AdminMenu_CancelVote(Handle topmenu, 
-							  	 TopMenuAction action,
-							  	 TopMenuObject object_id,
-							  	 int param,
-							  	 char[] buffer,
-							  	 int maxlength)
+public void AdminMenu_CancelVote(Handle topmenu, TopMenuAction action, TopMenuObject object_id, int param, char[] buffer, int maxlength)
 {
-	if (action == TopMenuAction_DisplayOption)
+	switch (action)
 	{
-		Format(buffer, maxlength, "%T", "Cancel vote", param);
-	}
-	else if (action == TopMenuAction_SelectOption)
-	{
-		PerformCancelVote(param);
-		RedisplayAdminMenu(topmenu, param);	
-	}
-	else if (action == TopMenuAction_DrawOption)
-	{
-		buffer[0] = NativeVotes_IsVoteInProgress() ? ITEMDRAW_DEFAULT : ITEMDRAW_IGNORE;
+		case TopMenuAction_DisplayOption:
+		{
+			Format(buffer, maxlength, "%T", "Cancel vote", param);
+		}
+		case TopMenuAction_SelectOption:
+		{
+			PerformCancelVote(param);
+			RedisplayAdminMenu(topmenu, param);	
+		}
+		case TopMenuAction_DrawOption:
+		{
+			buffer[0] = NativeVotes_IsVoteInProgress() ? ITEMDRAW_DEFAULT : ITEMDRAW_IGNORE;
+		}
 	}
 }
 
 public Action Command_ReVote(int client, const char[] command, int argc)
 {
-	if (client == 0)
+	if (client <= 0)
 	{
 		return Plugin_Continue;
 	}
