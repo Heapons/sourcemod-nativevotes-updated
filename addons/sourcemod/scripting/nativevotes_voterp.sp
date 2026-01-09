@@ -59,14 +59,14 @@ Action Command_VoteRP(int client, int args)
 
     if (NativeVotes_IsVoteInProgress())
     {
-        PrintToChat(client, "[{lightgreen}NativeVotes\x01] A vote is already in progress.");
+        CPrintToChat(client, "[{lightgreen}NativeVotes\x01] A vote is already in progress.");
         return Plugin_Handled;
     }
 
     bool isMedieval = g_ConVars[tf_medieval].BoolValue || GameRules_GetProp("m_bPlayingMedieval") || FindEntityByClassname(-1, "tf_logic_medieval") != -1;
     if (!isMedieval)
     {
-        PrintToChat(client, "[{lightgreen}NativeVotes\x01] This vote is only available in Medieval Mode.");
+        CPrintToChat(client, "[{lightgreen}NativeVotes\x01] This vote is only available in Medieval Mode.");
         return Plugin_Handled;
     }
 

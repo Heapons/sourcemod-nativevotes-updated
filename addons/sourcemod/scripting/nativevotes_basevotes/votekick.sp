@@ -102,38 +102,42 @@ public void AdminMenu_VoteKick(Handle topmenu, TopMenuAction action, TopMenuObje
 
 public int MenuHandler_Kick(Handle menu, MenuAction action, int param1, int param2)
 {
-	if (action == MenuAction_End)
+	switch (action)
 	{
-		CloseHandle(menu);
-	}
-	else if (action == MenuAction_Cancel)
-	{
-		if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+		case MenuAction_End:
 		{
-			DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
+			CloseHandle(menu);
+		}
+		case MenuAction_Cancel:
+		{
+			if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+			{
+				DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
+			}
+		}
+		case MenuAction_Select:
+		{
+			char info[32], name[32];
+			int userid, target;
+			GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
+			userid = StringToInt(info);
+			if ((target = GetClientOfUserId(userid)) == 0)
+			{
+				CPrintToChat(param1, "[{lightgreen}NativeVotes\x01] %t", "Player no longer available");
+			}
+			else if (!CanUserTarget(param1, target))
+			{
+				CPrintToChat(param1, "[{lightgreen}NativeVotes\x01] %t", "Unable to target");
+			}
+			else
+			{
+				g_voteArg[0] = '\0';
+				DisplayVoteKickMenu(param1, target);
+			}
 		}
 	}
-	else if (action == MenuAction_Select)
-	{
-		char info[32], name[32];
-		int userid, target;
-		GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
-		userid = StringToInt(info);
-		if ((target = GetClientOfUserId(userid)) == 0)
-		{
-			PrintToChat(param1, "[{lightgreen}NativeVotes\x01] %t", "Player no longer available");
-		}
-		else if (!CanUserTarget(param1, target))
-		{
-			PrintToChat(param1, "[{lightgreen}NativeVotes\x01] %t", "Unable to target");
-		}
-		else
-		{
-			g_voteArg[0] = '\0';
-			DisplayVoteKickMenu(param1, target);
-		}
-	}
-	return 0;
+
+	return Plugin_Continue;
 }
 
 public Action Command_Votekick(int client, int args)

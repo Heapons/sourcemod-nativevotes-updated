@@ -133,15 +133,15 @@ public int MenuHandler_Slay(Handle menu, MenuAction action, int param1, int para
 			
 			if ((target = GetClientOfUserId(userid)) == 0)
 			{
-				PrintToChat(param1, "[SM] %t", "Player no longer available");
+				CPrintToChat(param1, "[SM] %t", "Player no longer available");
 			}
 			else if (!CanUserTarget(param1, target))
 			{
-				PrintToChat(param1, "[SM] %t", "Unable to target");
+				CPrintToChat(param1, "[SM] %t", "Unable to target");
 			}
 			else if (!IsPlayerAlive(target))
 			{
-				PrintToChat(param1, "[SM] %t", "Player has since died");
+				CPrintToChat(param1, "[SM] %t", "Player has since died");
 			}
 			else
 			{

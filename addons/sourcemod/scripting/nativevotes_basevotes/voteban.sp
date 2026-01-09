@@ -124,11 +124,11 @@ public int MenuHandler_Ban(Handle menu, MenuAction action, int param1, int param
 			userid = StringToInt(info);
 			if ((target = GetClientOfUserId(userid)) == 0)
 			{
-				PrintToChat(param1, "[{lightgreen}NativeVotes\x01] %t", "Player no longer available");
+				CPrintToChat(param1, "[{lightgreen}NativeVotes\x01] %t", "Player no longer available");
 			}
 			else if (!CanUserTarget(param1, target))
 			{
-				PrintToChat(param1, "[{lightgreen}NativeVotes\x01] %t", "Unable to target");
+				CPrintToChat(param1, "[{lightgreen}NativeVotes\x01] %t", "Unable to target");
 			}
 			else
 			{

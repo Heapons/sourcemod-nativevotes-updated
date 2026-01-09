@@ -218,27 +218,30 @@ public int MenuHandler_Map(Handle menu, MenuAction action, int param1, int param
 
 public void AdminMenu_VoteMap(Handle topmenu, TopMenuAction action, TopMenuObject object_id, int param, char[] buffer, int maxlength)
 {
-	if (action == TopMenuAction_DisplayOption)
+	switch (action)
 	{
-		Format(buffer, maxlength, "%T", "Map vote", param);
-	}
-	else if (action == TopMenuAction_SelectOption)
-	{
-		if (!g_VoteMapInUse)
+		case TopMenuAction_DisplayOption:
 		{
-			ResetMenu();
-			g_VoteMapInUse = true;
-			DisplayMenu(g_MapList, param, MENU_TIME_FOREVER);
+			Format(buffer, maxlength, "%T", "Map vote", param);
 		}
-		else
+		case TopMenuAction_SelectOption:
 		{
-			PrintToChat(param, "[{lightgreen}NativeVotes\x01] %T", "Map Vote In Use", param);
+			if (!g_VoteMapInUse)
+			{
+				ResetMenu();
+				g_VoteMapInUse = true;
+				DisplayMenu(g_MapList, param, MENU_TIME_FOREVER);
+			}
+			else
+			{
+				CPrintToChat(param, "[{lightgreen}NativeVotes\x01] %T", "Map Vote In Use", param);
+			}
 		}
-	}
-	else if (action == TopMenuAction_DrawOption)
-	{
-		/* disable this option if a vote is already running, theres no maps listed or someone else has already acessed this menu */
-		buffer[0] = (!IsNewVoteAllowed() || g_mapCount < 1 || g_VoteMapInUse) ? ITEMDRAW_IGNORE : ITEMDRAW_DEFAULT;
+		case TopMenuAction_DrawOption:
+		{
+			/* disable this option if a vote is already running, theres no maps listed or someone else has already acessed this menu */
+			buffer[0] = (!IsNewVoteAllowed() || g_mapCount < 1 || g_VoteMapInUse) ? ITEMDRAW_IGNORE : ITEMDRAW_DEFAULT;
+		}
 	}
 }
 

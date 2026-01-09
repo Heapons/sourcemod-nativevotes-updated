@@ -132,15 +132,15 @@ public int MenuHandler_Burn(Handle menu, MenuAction action, int param1, int para
 			userid = StringToInt(info);
 			if ((target = GetClientOfUserId(userid)) == 0)
 			{
-				PrintToChat(param1, "[{lightgreen}NativeVotes\x01] %t", "Player no longer available");
+				CPrintToChat(param1, "[{lightgreen}NativeVotes\x01] %t", "Player no longer available");
 			}
 			else if (!CanUserTarget(param1, target))
 			{
-				PrintToChat(param1, "[{lightgreen}NativeVotes\x01] %t", "Unable to target");
+				CPrintToChat(param1, "[{lightgreen}NativeVotes\x01] %t", "Unable to target");
 			}
 			else if (!IsPlayerAlive(target))
 			{
-				PrintToChat(param1, "[{lightgreen}NativeVotes\x01] %t", "Player has since died");
+				CPrintToChat(param1, "[{lightgreen}NativeVotes\x01] %t", "Player has since died");
 			}
 			else
 			{
