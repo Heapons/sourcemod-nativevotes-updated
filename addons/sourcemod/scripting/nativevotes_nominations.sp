@@ -171,7 +171,7 @@ public void OnNominationRemoved(const char[] map, int owner)
 {
 	int status;
 	
-	char resolvedmap[96];
+	char resolvedMap[96];
 	FindMap(map, resolvedMap, sizeof(resolvedMap));
 	
 	/* Is the map in our list? */
@@ -198,7 +198,7 @@ public Action Command_Addmap(int client, int args)
 	}
 	
 	char mapname[96];
-	char resolvedmap[96];
+	char resolvedMap[96];
 	GetCmdArg(1, mapname, sizeof(mapname));
 
 	if (FindMap(mapname, resolvedMap, sizeof(resolvedMap)) == FindMap_NotFound)
@@ -487,7 +487,7 @@ void BuildMapMenu()
 	char map[96];
 	
 	ArrayList excludeMaps;
-	char currentmap[96];
+	char currentMap[96];
 	
 	if (g_Cvar_ExcludeOld.BoolValue)
 	{	
