@@ -8,7 +8,7 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 # To-Do (Wishlist...?)
 ## General
 - [x] Include [NativeVotes BaseVotes and FunVotes](https://github.com/powerlord/sourcemod-nativevotes-basevotes) in this repository.
-- Colored chat.
+- [ ] Chat tweaks.
   - [x] Team-colored player names.
   - [x] Highlight map names.
     - [ ] Parse workshop map titles.
