@@ -43,7 +43,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define VERSION "26w02a"
+#define VERSION "26w02b"
 
 public Plugin myinfo =
 {
@@ -54,21 +54,29 @@ public Plugin myinfo =
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
-ConVar g_Cvar_ExcludeOld;
-ConVar g_Cvar_ExcludeCurrent;
-ConVar g_Cvar_MaxMatches;
+enum
+{
+	excludeold,
+	excludecurrent,
+	maxmatches,
+	//allow_workshop,
+
+	MAX_CONVARS
+}
+
+ConVar g_ConVars[MAX_CONVARS];
 
 Menu g_MapMenu = null;
 ArrayList g_MapList = null;
 int g_mapFileSerial = -1;
 
-#define MAPSTATUS_ENABLED (1<<0)
-#define MAPSTATUS_DISABLED (1<<1)
-#define MAPSTATUS_EXCLUDE_CURRENT (1<<2)
-#define MAPSTATUS_EXCLUDE_PREVIOUS (1<<3)
-#define MAPSTATUS_EXCLUDE_NOMINATED (1<<4)
+#define MAPSTATUS_ENABLED  		   	(1<<0)
+#define MAPSTATUS_DISABLED 		   	(1<<1)
+#define MAPSTATUS_EXCLUDE_CURRENT  	(1<<2)
+#define MAPSTATUS_EXCLUDE_PREVIOUS 	(1<<3)
+#define MAPSTATUS_EXCLUDE_NOMINATED	(1<<4)
 
-StringMap g_mapTrie = null;
+StringMap g_MapTrie = null;
 
 // NativeVotes
 bool g_NativeVotes;
@@ -87,16 +95,17 @@ public void OnPluginStart()
 	
 	CreateConVar("nativevotes_nominations_version", VERSION, "NativeVotes Nominations version", FCVAR_DONTRECORD|FCVAR_NOTIFY|FCVAR_SPONLY);
 
-	g_Cvar_ExcludeOld = CreateConVar("sm_nominate_excludeold", "1", "Specifies if the current map should be excluded from the Nominations list", 0, true, 0.00, true, 1.0);
-	g_Cvar_ExcludeCurrent = CreateConVar("sm_nominate_excludecurrent", "1", "Specifies if the MapChooser excluded maps should also be excluded from Nominations", 0, true, 0.00, true, 1.0);
-	g_Cvar_MaxMatches = CreateConVar("sm_nominate_maxfound", "0", "Maximum number of nomination matches to add to the menu. 0 = infinite.", _, true, 0.0);
-	
+	g_ConVars[excludeold] 	  	= CreateConVar("sm_nominate_excludeold", "1", "Specifies if the current map should be excluded from the Nominations list", 0, true, 0.0, true, 1.0);
+	g_ConVars[excludecurrent] 	= CreateConVar("sm_nominate_excludecurrent", "1", "Specifies if the MapChooser excluded maps should also be excluded from Nominations", 0, true, 0.0, true, 1.0);
+	g_ConVars[maxmatches] 	  	= CreateConVar("sm_nominate_maxfound", "0", "Maximum number of nomination matches to add to the menu. 0 = infinite.", _, true, 0.0);
+	//g_ConVars[allow_workshop] = CreateConVar("sm_nominate_allow_workshop", "0", "Specifies if unlisted workshop maps should be allowed to be nominated", 0, true, 0.0, true, 1.0);
+
 	RegConsoleCmd("sm_nominate", Command_Nominate);
 	
 	RegAdminCmd("sm_nominate_addmap", Command_Addmap, ADMFLAG_CHANGEMAP, "sm_nominate_addmap <mapname> - Forces a map to be on the next mapvote.");
-	RegAdminCmd("sm_reload_nominations", Cmd_ReloadNominations, ADMFLAG_RCON, "Reload the nomination map cycle in-place");
-	
-	g_mapTrie = new StringMap();
+	RegAdminCmd("sm_reload_nominations", Command_ReloadNominations, ADMFLAG_RCON, "Reload the nomination map cycle in-place");
+
+	g_MapTrie = new StringMap();
 }
 
 public void OnPluginEnd()
@@ -175,7 +184,7 @@ public void OnNominationRemoved(const char[] map, int owner)
 	FindMap(map, resolvedMap, sizeof(resolvedMap));
 	
 	/* Is the map in our list? */
-	if (!g_mapTrie.GetValue(resolvedMap, status))
+	if (!g_MapTrie.GetValue(resolvedMap, status))
 	{
 		return;	
 	}
@@ -186,7 +195,7 @@ public void OnNominationRemoved(const char[] map, int owner)
 		return;
 	}
 	
-	g_mapTrie.SetValue(resolvedMap, MAPSTATUS_ENABLED);
+	g_MapTrie.SetValue(resolvedMap, MAPSTATUS_ENABLED);
 }
 
 public Action Command_Addmap(int client, int args)
@@ -213,7 +222,7 @@ public Action Command_Addmap(int client, int args)
 	Format(displayName, sizeof(displayName), "\x05%s\x01", displayName);
 	
 	int status;
-	if (!g_mapTrie.GetValue(resolvedMap, status))
+	if (!g_MapTrie.GetValue(resolvedMap, status))
 	{
 		CReplyToCommand(client, "[{lightgreen}Nominations\x01] %t", "Map Not In Pool", displayName);
 		return Plugin_Handled;		
@@ -228,10 +237,8 @@ public Action Command_Addmap(int client, int args)
 		
 		return Plugin_Handled;	
 	}
-	
-	
-	g_mapTrie.SetValue(resolvedMap, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
-
+		
+	g_MapTrie.SetValue(resolvedMap, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
 	
 	CReplyToCommand(client, "[{lightgreen}Nominations\x01] %t", "Map Inserted", displayName);
 	LogAction(client, -1, "\"%L\" inserted map \"%s\".", client, mapname);
@@ -239,7 +246,7 @@ public Action Command_Addmap(int client, int args)
 	return Plugin_Handled;		
 }
 
-Action Cmd_ReloadNominations(int client, int args)
+Action Command_ReloadNominations(int client, int args)
 {
     OnConfigsExecuted();
     return Plugin_Handled;
@@ -256,7 +263,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 	{
 		ReplySource old = SetCmdReplySource(SM_REPLY_TO_CHAT);
 		
-		OpenNominationMenu(client);
+		Command_Nominate(client, 0);
 		
 		SetCmdReplySource(old);
 	}
@@ -273,10 +280,18 @@ public Action Command_Nominate(int client, int args)
 	
 	if (args == 0)
 	{
-		OpenNominationMenu(client);
-		return Plugin_Handled;
+		// https://github.com/ValveSoftware/source-sdk-2013/blob/7191ecc418e28974de8be3a863eebb16b974a7ef/src/game/server/tf/tf_voteissues.h#L116
+	    if (g_NativeVotes && NativeVotes_AreVoteCommandsSupported())
+	    {
+	       FakeClientCommand(client, "callvote");
+	    }
+		else
+	    {
+			OpenNominationMenu(client);
+		}
+	    return Plugin_Handled;
 	}
-	
+
 	char mapname[96];
 	GetCmdArg(1, mapname, sizeof(mapname));
 	
@@ -295,7 +310,7 @@ public Action Command_Nominate(int client, int args)
 		// Get the result and nominate it
 		g_MapList.GetString(results.Get(0), mapResult, sizeof(mapResult));
 		AttemptNominate(client, mapResult, sizeof(mapResult), false);
-}
+	}
 	else if (matches > 1)
 	{
 		if (source == SM_REPLY_TO_CONSOLE)
@@ -340,7 +355,7 @@ int FindMatchingMaps(ArrayList mapList, ArrayList results, const char[] input)
 	int matches = 0;
 	char map[96];
 
-	int maxmatches = g_Cvar_MaxMatches.IntValue;
+	int maxmatches = g_ConVars[maxmatches].IntValue;
 
 	for (int i = 0; i < map_count; i++)
 	{
@@ -381,7 +396,7 @@ void AttemptNominate(int client, const char[] map, int size, bool isVoteMenu)
 	Format(displayName, sizeof(displayName), "\x05%s\x01", displayName);
 	
 	int status;
-	if (!g_mapTrie.GetValue(mapname, status))
+	if (!g_MapTrie.GetValue(mapname, status))
 	{
 		CReplyToCommand(client, "[{lightgreen}Nominations\x01] %t", "Map Not In Pool", displayName);
 		if (isVoteMenu && g_NativeVotes)
@@ -449,7 +464,7 @@ void AttemptNominate(int client, const char[] map, int size, bool isVoteMenu)
 	
 	/* Map was nominated! - Disable the menu item and update the trie */
 	
-	g_mapTrie.SetValue(mapname, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
+	g_MapTrie.SetValue(mapname, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
 	
 	char name[MAX_NAME_LENGTH]; int r, g, b, a, color;
 	GetEntityRenderColor(client, r, g, b, a);
@@ -480,7 +495,7 @@ void BuildMapMenu()
 {
 	delete g_MapMenu;
 
-	g_mapTrie.Clear();
+	g_MapTrie.Clear();
 	
 	g_MapMenu = new Menu(MenuHandler_MapSelect, MENU_ACTIONS_DEFAULT|MenuAction_DrawItem|MenuAction_DisplayItem);
 
@@ -489,13 +504,13 @@ void BuildMapMenu()
 	ArrayList excludeMaps;
 	char currentMap[96];
 	
-	if (g_Cvar_ExcludeOld.BoolValue)
+	if (g_ConVars[excludeold].BoolValue)
 	{	
 		excludeMaps = new ArrayList(ByteCountToCells(PLATFORM_MAX_PATH));
 		GetExcludeMapList(excludeMaps);
 	}
 	
-	if (g_Cvar_ExcludeCurrent.BoolValue)
+	if (g_ConVars[excludecurrent].BoolValue)
 	{
 		GetCurrentMap(currentMap, sizeof(currentMap));
 	}
@@ -511,7 +526,7 @@ void BuildMapMenu()
 		char displayName[PLATFORM_MAX_PATH];
 		GetMapDisplayName(map, displayName, sizeof(displayName));
 
-		if (g_Cvar_ExcludeCurrent.BoolValue)
+		if (g_ConVars[excludecurrent].BoolValue)
 		{
 			if (StrEqual(map, currentMap))
 			{
@@ -520,7 +535,7 @@ void BuildMapMenu()
 		}
 		
 		/* Dont bother with this check if the current map check passed */
-		if (g_Cvar_ExcludeOld.BoolValue && status == MAPSTATUS_ENABLED)
+		if (g_ConVars[excludeold].BoolValue && status == MAPSTATUS_ENABLED)
 		{
 			if (excludeMaps.FindString(map) != -1)
 			{
@@ -529,7 +544,7 @@ void BuildMapMenu()
 		}
 		
 		g_MapMenu.AddItem(map, displayName);
-		g_mapTrie.SetValue(map, status);
+		g_MapTrie.SetValue(map, status);
 	}
 
 	g_MapMenu.ExitButton = true;
@@ -554,7 +569,7 @@ public int MenuHandler_MapSelect(Menu menu, MenuAction action, int param1, int p
 			menu.GetItem(param2, map, sizeof(map));
 			
 			int status;
-			if (!g_mapTrie.GetValue(map, status))
+			if (!g_MapTrie.GetValue(map, status))
 			{
 				LogError("Menu selection of item not in trie. Major logic problem somewhere.");
 				return ITEMDRAW_DEFAULT;
@@ -574,7 +589,7 @@ public int MenuHandler_MapSelect(Menu menu, MenuAction action, int param1, int p
 			
 			int status;
 			
-			if (!g_mapTrie.GetValue(mapname, status))
+			if (!g_MapTrie.GetValue(mapname, status))
 			{
 				LogError("Menu selection of item not in trie. Major logic problem somewhere.");
 				return 0;
@@ -689,7 +704,7 @@ public Action NativeVotes_OverrideMaps(StringMap mapList)
 		BuildMapMenu();
 	}
 	
-	if (g_mapTrie.Size == 0)
+	if (g_MapTrie.Size == 0)
 	{
 		LogMessage("No maps loaded.");
 		return Plugin_Continue;
@@ -698,7 +713,7 @@ public Action NativeVotes_OverrideMaps(StringMap mapList)
 	// We don't care about the current list, replace it with our own
 	mapList.Clear();
 	
-	StringMapSnapshot snapshot = g_mapTrie.Snapshot();
+	StringMapSnapshot snapshot = g_MapTrie.Snapshot();
 	int length = snapshot.Length;
 	
 	for (int i = 0; i < length; i++)
@@ -709,7 +724,7 @@ public Action NativeVotes_OverrideMaps(StringMap mapList)
 		
 		int flags;
 		
-		if (!g_mapTrie.GetValue(map, flags) || flags & MAPSTATUS_DISABLED == MAPSTATUS_DISABLED)
+		if (!g_MapTrie.GetValue(map, flags) || flags & MAPSTATUS_DISABLED == MAPSTATUS_DISABLED)
 		{
 			continue;
 		}

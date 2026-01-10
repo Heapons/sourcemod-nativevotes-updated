@@ -42,7 +42,7 @@
 #include <adminmenu>
 #include <nativevotes>
 
-#define VERSION "26w02a"
+#define VERSION "26w02b"
 
 public Plugin myinfo =
 {
@@ -122,14 +122,14 @@ public void OnPluginStart()
 	RegAdminCmd("sm_votealltalk", Command_VoteAlltalk, ADMFLAG_VOTE, "sm_votealltalk");
 	RegAdminCmd("sm_voteff", Command_VoteFF, ADMFLAG_VOTE, "sm_voteff");
 
-	g_ConVars[sv_gravity] = FindConVar("sv_gravity");
-	g_ConVars[sv_alltalk] = FindConVar("sv_alltalk");
+	g_ConVars[sv_gravity] 	   = FindConVar("sv_gravity");
+	g_ConVars[sv_alltalk] 	   = FindConVar("sv_alltalk");
 	g_ConVars[mp_friendlyfire] = FindConVar("mp_friendlyfire");
-	g_ConVars[vote_gravity] = CreateConVar("sm_vote_gravity", "0.60", "Percent required for successful gravity vote.", 0, true, 0.05, true, 1.0);
-	g_ConVars[vote_burn] = CreateConVar("sm_vote_burn", "0.60", "Percent required for successful burn vote.", 0, true, 0.05, true, 1.0);
-	g_ConVars[vote_slay] = CreateConVar("sm_vote_slay", "0.60", "Percent required for successful slay vote.", 0, true, 0.05, true, 1.0);
-	g_ConVars[vote_alltalk] = CreateConVar("sm_vote_alltalk", "0.60", "Percent required for successful alltalk vote.", 0, true, 0.05, true, 1.0);
-	g_ConVars[vote_ff] = CreateConVar("sm_vote_ff", "0.60", "Percent required for successful friendly fire vote.", 0, true, 0.05, true, 1.0);
+	g_ConVars[vote_gravity]    = CreateConVar("sm_vote_gravity", "0.60", "Percent required for successful gravity vote.", 0, true, 0.05, true, 1.0);
+	g_ConVars[vote_burn] 	   = CreateConVar("sm_vote_burn", "0.60", "Percent required for successful burn vote.", 0, true, 0.05, true, 1.0);
+	g_ConVars[vote_slay] 	   = CreateConVar("sm_vote_slay", "0.60", "Percent required for successful slay vote.", 0, true, 0.05, true, 1.0);
+	g_ConVars[vote_alltalk]    = CreateConVar("sm_vote_alltalk", "0.60", "Percent required for successful alltalk vote.", 0, true, 0.05, true, 1.0);
+	g_ConVars[vote_ff] 		   = CreateConVar("sm_vote_ff", "0.60", "Percent required for successful friendly fire vote.", 0, true, 0.05, true, 1.0);
 	CreateConVar("nativevotes_funvotes_version", VERSION, "NativeVotes Fun Votes version", FCVAR_PLUGIN|FCVAR_NOTIFY|FCVAR_DONTRECORD|FCVAR_SPONLY);
 }
 

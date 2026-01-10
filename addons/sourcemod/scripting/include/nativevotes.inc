@@ -1396,7 +1396,7 @@ typedef NativeVotes_CallVoteVisCheck = function Action (int client, NativeVotesO
  * Are vote commands supported by this game?
  * 
  * @return			true if they are supported, false if not.
- *                     As of this writing, only TF2 will return true
+ *                  As of this writing, only TF2 will return true
  */
 native bool NativeVotes_AreVoteCommandsSupported();
 

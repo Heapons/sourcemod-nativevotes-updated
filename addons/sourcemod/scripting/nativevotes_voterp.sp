@@ -14,7 +14,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define VERSION "26w02a"
+#define VERSION "26w02b"
 
 public Plugin myinfo =
 {
@@ -47,7 +47,7 @@ public void OnPluginStart()
 
     g_ConVars[vote_duration] = CreateConVar("sm_voterp_voteduration", "20", "Specifies how long the rp vote should be available for.", _, true, 5.0);
 
-    RegConsoleCmd("sm_voterp", Command_VoteRP, "Vote to enable/disable tf_medieval_autorp");
+    RegConsoleCmd("sm_voterp", Command_VoteRP, "Vote to toggle 'tf_medieval_autorp'.");
 }
 
 Action Command_VoteRP(int client, int args)

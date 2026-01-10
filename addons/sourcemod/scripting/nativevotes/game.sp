@@ -983,30 +983,6 @@ void Game_VoteNo(int client)
 	}
 }
 
-void Game_VoteRandom(int client)
-{
-	switch (g_EngineVersion)
-	{
-		case Engine_Left4Dead, Engine_Left4Dead2:
-		{
-			int random = GetRandomInt(0, 1);
-			if (random == 0)
-			{
-				FakeClientCommand(client, "Vote Yes");
-			}
-			else
-			{
-				FakeClientCommand(client, "Vote No");
-			}
-		}
-		case Engine_CSGO, Engine_TF2:
-		{
-			int random = GetRandomInt(1, 5);
-			FakeClientCommand(client, "vote option%d", random);
-		}
-	}
-}
-
 bool Game_IsVoteInProgress()
 {
 	switch (g_EngineVersion)

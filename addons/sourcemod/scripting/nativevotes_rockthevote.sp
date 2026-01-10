@@ -50,7 +50,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define VERSION "26w02a"
+#define VERSION "26w02b"
 
 public Plugin myinfo =
 {
@@ -232,7 +232,7 @@ public void OnClientDisconnect(int client)
 
 public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
-	if (!client || IsChatTrigger())
+	if (client <= 0 || IsChatTrigger())
 	{
 		return;
 	}
@@ -241,7 +241,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 	{
 		ReplySource old = SetCmdReplySource(SM_REPLY_TO_CHAT);
 		
-		AttemptRTV(client);
+		Command_RTV(client, 0);
 		
 		SetCmdReplySource(old);
 	}
@@ -249,7 +249,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 
 public Action Command_RTV(int client, int args)
 {
-	if (!client)
+	if (client <= 0)
 	{
 		return Plugin_Handled;
 	}
@@ -270,7 +270,6 @@ public Action Command_ForceRTV(int client, int args)
 	
 	return Plugin_Handled;
 }
-
 
 void MenuHandler_UndoRTV(Menu menu, MenuAction action, int client, int param2)
 {
@@ -484,7 +483,7 @@ void RemoveVoteHandler()
 
 public Action Menu_RTV(int client, NativeVotesOverride overrideType, const char[] voteArgument)
 {
-	if (!client || NativeVotes_IsVoteInProgress())
+	if (client <= 0 || NativeVotes_IsVoteInProgress())
 	{
 		return Plugin_Handled;
 	}
@@ -497,6 +496,11 @@ public Action Menu_RTV(int client, NativeVotesOverride overrideType, const char[
 	
 	ReplySource old = SetCmdReplySource(SM_REPLY_TO_CHAT);
 	
+	// awful hack, but whatever
+	char mapname[96];
+	strcopy(mapname, sizeof(mapname), voteArgument);
+	FakeClientCommand(client, "sm_nominate %s", voteArgument);
+
 	AttemptRTV(client, true);
 	
 	SetCmdReplySource(old);

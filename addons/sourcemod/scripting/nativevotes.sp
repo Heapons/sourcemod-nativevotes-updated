@@ -46,7 +46,7 @@ EngineVersion g_EngineVersion = Engine_Unknown;
 
 #include "nativevotes/data-keyvalues.sp"
 
-#define VERSION 							"26w02a"
+#define VERSION 							"26w02b"
 
 #define LOGTAG "NV"
 
@@ -87,10 +87,9 @@ enum
 	progress_console,
 	progress_client_console,
 	vote_delay,
-	bots_allowed,
 
 	MAX_CONVARS
-}
+};
 
 ConVar g_ConVars[MAX_CONVARS];
 
@@ -264,11 +263,10 @@ public void OnPluginStart()
 	g_ConVars[progress_console]  	   = CreateConVar("nativevotes_progress_console", "0", "Show current vote progress as console messages", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_ConVars[progress_client_console] = CreateConVar("nativevotes_progress_client_console", "0", "Show current vote progress as console messages to clients", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_ConVars[vote_delay] 		 	   = CreateConVar("nativevotes_vote_delay", "30", "Sets the recommended time in between public votes", FCVAR_NONE, true, 0.0);
-	g_ConVars[bots_allowed] 		   = FindConVar("sv_vote_bots_allowed");
+	g_ConVars[vote_delay].AddChangeHook(OnVoteDelayChange);
 
 	Game_InitializeCvars();
 	
-	HookConVarChange(g_ConVars[vote_delay], OnVoteDelayChange);
 	AddCommandListener(Command_Vote, "vote"); // All games, command listeners aren't case sensitive
 	
 	sv_vote_holder_may_vote_no = FindConVar("sv_vote_holder_may_vote_no");
@@ -725,7 +723,7 @@ void OnVoteSelect(NativeVote vote, int client, int item)
 			
 			Game_UpdateVoteCounts(g_hVotes, g_TotalClients);
 			
-			if (g_ConVars[progress_chat].BoolValue || g_ConVars[progress_console].BoolValue || g_ConVars[progress_clientconsole].BoolValue)
+			if (g_ConVars[progress_chat].BoolValue || g_ConVars[progress_console].BoolValue || g_ConVars[progress_client_console].BoolValue)
 			{
 				char choice[128];
 				char name[MAX_NAME_LENGTH+1];
@@ -738,7 +736,7 @@ void OnVoteSelect(NativeVote vote, int client, int item)
 					PrintToServer("[%s] %T", LOGTAG, "Voted For", LANG_SERVER, name, choice);
 				}
 				
-				if (g_ConVars[progress_chat].BoolValue || g_ConVars[progress_clientconsole].BoolValue)
+				if (g_ConVars[progress_chat].BoolValue || g_ConVars[progress_client_console].BoolValue)
 				{
 					char phrase[30];
 					
@@ -756,7 +754,7 @@ void OnVoteSelect(NativeVote vote, int client, int item)
 						CPrintToChatAll("[%s] %t", LOGTAG, phrase, name, choice);
 					}
 					
-					if (g_ConVars[progress_clientconsole].BoolValue)
+					if (g_ConVars[progress_client_console].BoolValue)
 					{
 						for (int i = 1; i <= MaxClients; i++)
 						{
@@ -1301,23 +1299,6 @@ void StartVoting()
 		if (initiator > 0 && initiator <= MaxClients && IsClientConnected(initiator) && Internal_IsClientInVotePool(initiator))
 		{
 			Game_VoteYes(initiator);
-		}
-	}
-
-	// sv_vote_bots_allowed
-	if (g_ConVars[allow_bots].BoolValue)
-	{
-		for (int i = 1; i <= MaxClients; i++)
-		{
-			if (!IsFakeClient(i))
-			{
-				continue;
-			}
-
-			if (Internal_IsClientInVotePool(i))
-			{
-				Game_VoteRandom(i);
-			}
 		}
 	}
 }
