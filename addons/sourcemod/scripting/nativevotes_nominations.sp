@@ -48,7 +48,7 @@ public Plugin myinfo =
 	name = "[NativeVotes] Map Nominations",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Provides Map Nominations",
-	version = "26w02d",
+	version = "26w02e",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -469,10 +469,12 @@ void AttemptNominate(int client, const char[] map, int size, bool isVoteMenu)
 	char name[MAX_NAME_LENGTH]; int r, g, b, a, color;
 	GetEntityRenderColor(client, r, g, b, a);
 	color = (r << 16) | (g << 8) | b;
-	if (color != 0xFFFFFF) {
+	if (color != 0xFFFFFF)
+	{
 		Format(name, sizeof(name), "{#%06X}%N\x01", color, client);
 	}
-	else {
+	else
+	{
 		Format(name, sizeof(name), "{teamcolor}%N\x01", client);
 	}
 

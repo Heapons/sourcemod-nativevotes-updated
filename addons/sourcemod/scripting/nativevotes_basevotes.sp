@@ -46,7 +46,7 @@ public Plugin:myinfo =
 	name = "[NativeVotes] Basic Votes",
 	author = "Powerlord and AlliedModders LLC",
 	description = "NativeVotes Basic Vote Commands",
-	version = "26w02d",
+	version = "26w02e",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -392,7 +392,21 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 			else
 			{
 				CPrintToChatAll("%t", "Vote Successful", RoundToNearest(100.0*percent), totalVotes);
-				
+
+				int r, g, b, a, color;
+				GetEntityRenderColor(client, r, g, b, a);
+				color = (r << 16) | (g << 8) | b;
+				if (color != 0xFFFFFF)
+				{
+					Format(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[VOTE_NAME]), "{#%06X}%N\x01", color, client);
+				}
+				else
+				{
+					Format(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[VOTE_NAME]), "{teamcolor}%N\x01", client);
+				}
+
+				int client = GetClientOfUserId(g_voteClient[VOTE_USERID]);
+
 				switch (g_voteType)
 				{
 					case question:
@@ -413,7 +427,6 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 							CPrintToChatAll("%t", "Vote End", g_voteArg, item);
 						}
 					}
-					
 					case map:
 					{
 						LogAction(-1, -1, "Changing map to %s due to vote.", item);
@@ -422,7 +435,6 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 						CreateDataTimer(5.0, Timer_ChangeMap, dp);
 						WritePackString(dp, item);		
 					}
-						
 					case kick:
 					{
 						if (g_voteArg[0] == '\0')
@@ -432,14 +444,13 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 						
 						if (GetClientOfUserId(g_voteClient[VOTE_USERID]) > 0 && !IsClientInKickQueue(g_voteClient[VOTE_CLIENTID]))
 						{
-							CPrintToChatAll("%t", "Kicked target", "_s", g_voteInfo[VOTE_NAME]);					
+							CPrintToChatAllEx(client, "%t", "Kicked target", "_s", g_voteInfo[VOTE_NAME]);					
 							LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote kick successful, kicked \"%L\" (reason \"%s\")", g_voteClient[VOTE_CLIENTID], g_voteArg);
 
 							KickClient(g_voteClient[VOTE_CLIENTID], "%s", g_voteArg);
 						}
 						
 					}
-						
 					case ban:
 					{
 						if (g_voteArg[0] == '\0')
@@ -449,7 +460,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 						
 						if (GetClientOfUserId(g_voteClient[VOTE_USERID]) > 0)
 						{
-							CPrintToChatAll("%t", "Banned player", g_voteInfo[VOTE_NAME], 30);
+							CPrintToChatAllEx(client, "%t", "Banned player", g_voteInfo[VOTE_NAME], 30);
 							LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote ban successful, banned \"%L\" (minutes \"30\") (reason \"%s\")", g_voteClient[VOTE_CLIENTID], g_voteArg);
 
 							BanClient(g_voteClient[VOTE_CLIENTID],

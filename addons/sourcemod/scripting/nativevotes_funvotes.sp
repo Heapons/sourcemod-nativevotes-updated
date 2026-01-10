@@ -42,13 +42,12 @@
 #include <adminmenu>
 #include <nativevotes>
 
-
 public Plugin myinfo =
 {
 	name = "[NativeVotes] Fun Votes",
 	author = "Powerlord and AlliedModders LLC",
 	description = "NativeVotes Fun Vote Commands",
-	version = "26w02d",
+	version = "26w02e",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -322,6 +321,20 @@ public int Handler_VoteCallback(Handle menu, MenuAction action, int param1, int 
 			{
 				CPrintToChatAll("%t", "Vote Successful", RoundToNearest(100.0*percent), totalVotes);
 				
+				int r, g, b, a, color;
+				GetEntityRenderColor(client, r, g, b, a);
+				color = (r << 16) | (g << 8) | b;
+				if (color != 0xFFFFFF)
+				{
+					Format(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[VOTE_NAME]), "{#%06X}%N\x01", color, client);
+				}
+				else
+				{
+					Format(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[VOTE_NAME]), "{teamcolor}%N\x01", client);
+				}
+
+				int client = GetClientOfUserId(g_voteClient[VOTE_USERID]);
+		
 				switch (g_voteType)
 				{
 					case gravity:
@@ -330,31 +343,27 @@ public int Handler_VoteCallback(Handle menu, MenuAction action, int param1, int 
 						LogAction(-1, -1, "Changing gravity to %s due to vote.", item);
 						SetConVarInt(g_ConVars[sv_gravity], StringToInt(item));
 					}
-					
 					case burn:
 					{
-						CPrintToChatAll("%t", "Set target on fire", "_s", g_voteInfo[VOTE_NAME]);					
+						CPrintToChatAllEx(client, "%t", "Set target on fire", "_s", g_voteInfo[VOTE_NAME]);					
 						LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote burn successful, igniting \"%L\"", g_voteClient[VOTE_CLIENTID]);
 						
 						IgniteEntity(g_voteClient[VOTE_CLIENTID], 19.8);	
 					}
-					
 					case slay:
 					{
-						CPrintToChatAll("%t", "Slayed player", g_voteInfo[VOTE_NAME]);					
+						CPrintToChatAllEx(client, "%t", "Slayed player", "_s", g_voteInfo[VOTE_NAME]);					
 						LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote slay successful, slaying \"%L\"", g_voteClient[VOTE_CLIENTID]);
 						
 						ExtinguishEntity(g_voteClient[VOTE_CLIENTID]);
 						ForcePlayerSuicide(g_voteClient[VOTE_CLIENTID]);
 					}
-					
 					case alltalk:
 					{
 						CPrintToChatAll("%t", "Cvar changed", "sv_alltalk", (GetConVarBool(g_ConVars[sv_alltalk]) ? "0" : "1"));
 						LogAction(-1, -1, "Changing alltalk to %s due to vote.", (GetConVarBool(g_ConVars[sv_alltalk]) ? "0" : "1"));
 						SetConVarBool(g_ConVars[sv_alltalk], !GetConVarBool(g_ConVars[sv_alltalk]));
 					}
-					
 					case ff:
 					{
 						CPrintToChatAll("%t", "Cvar changed", "mp_friendlyfire", (GetConVarBool(g_ConVars[mp_friendlyfire]) ? "0" : "1"));
