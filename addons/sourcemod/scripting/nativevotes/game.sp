@@ -580,7 +580,6 @@ bool Game_CheckVoteType(NativeVotesType type)
 		{
 			returnVal = CSGO_CheckVoteType(type);
 		}
-
 		case Engine_TF2:
 		{
 			returnVal = TF2_CheckVoteType(type);
@@ -1714,7 +1713,6 @@ static void L4DL4D2_VotePassToTranslation(NativeVotesPassType passType, char[] t
 		{
 			strcopy(translation, maxlength, L4D_VOTE_CHANGELEVEL_PASSED);
 		}
-		
 		default:
 		{
 			strcopy(translation, maxlength, L4D_VOTE_CUSTOM);
@@ -2155,7 +2153,6 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 			Data_GetTitle(vote, details, MAX_VOTE_DETAILS_LENGTH);
 			bCustom = true;
 		}
-		
 		default:
 		{
 			Data_GetDetails(vote, details, MAX_VOTE_DETAILS_LENGTH);
@@ -2640,7 +2637,6 @@ static bool TF2_VoteTypeToTranslation(NativeVotesType voteType, char[] translati
 		}
 		case NativeVotesType_NextLevelMult:
 		{
-			
 			strcopy(translation, maxlength, TF2_VOTE_NEXTLEVEL_MULTIPLE_START);
 			bYesNo = false;
 		}

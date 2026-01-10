@@ -4,6 +4,8 @@
 *.log
 *.smx
 
+.*
+
 admin.inc
 adminmenu.inc
 adt_array.inc

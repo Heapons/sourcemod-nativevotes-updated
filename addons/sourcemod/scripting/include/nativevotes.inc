@@ -33,8 +33,6 @@
 #include <sourcemod>
 #include <multicolors>
 
-// NativeVotes 1.1 series
-
 #if defined _nativevotes_included
  #endinput
 #endif

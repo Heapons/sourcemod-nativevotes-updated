@@ -42,14 +42,13 @@
 #include <adminmenu>
 #include <nativevotes>
 
-#define VERSION "26w02c"
 
 public Plugin myinfo =
 {
 	name = "[NativeVotes] Fun Votes",
 	author = "Powerlord and AlliedModders LLC",
 	description = "NativeVotes Fun Vote Commands",
-	version = VERSION,
+	version = "26w02d",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -130,8 +129,7 @@ public void OnPluginStart()
 	g_ConVars[vote_slay] 	   = CreateConVar("sm_vote_slay", "0.60", "Percent required for successful slay vote.", 0, true, 0.05, true, 1.0);
 	g_ConVars[vote_alltalk]    = CreateConVar("sm_vote_alltalk", "0.60", "Percent required for successful alltalk vote.", 0, true, 0.05, true, 1.0);
 	g_ConVars[vote_ff] 		   = CreateConVar("sm_vote_ff", "0.60", "Percent required for successful friendly fire vote.", 0, true, 0.05, true, 1.0);
-	CreateConVar("nativevotes_funvotes_version", VERSION, "NativeVotes Fun Votes version", FCVAR_PLUGIN|FCVAR_NOTIFY|FCVAR_DONTRECORD|FCVAR_SPONLY);
-}
+	}
 
 public void OnAllPluginsLoaded()
 {

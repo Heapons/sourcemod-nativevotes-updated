@@ -14,14 +14,12 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define VERSION "26w02c"
-
 public Plugin myinfo =
 {
 	name = "[NativeVotes] Medieval Auto-RP",
 	author = "Heapons",
 	description = "Provides Medieval Auto-RP voting.",
-	version = VERSION,
+	version = "26w02d",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 

@@ -45,14 +45,12 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define VERSION "26w02c"
-
 public Plugin myinfo =
 {
 	name = "[NativeVotes] MapChooser",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Automated Map Voting",
-	version = VERSION,
+	version = "26w02d",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -138,9 +136,7 @@ public void OnPluginStart()
 	g_OldMapList = new ArrayList(arraySize);
 	g_NextMapList = new ArrayList(arraySize);
 
-	CreateConVar("nativevotes_mapchooser_version", VERSION, "NativeVotes MapChooser version", FCVAR_DONTRECORD|FCVAR_NOTIFY|FCVAR_SPONLY);
-	
-	g_ConVars[mapvote_endvote] 		 = CreateConVar("sm_mapvote_endvote", "1", "Specifies if MapChooser should run an end of map vote", _, true, 0.0, true, 1.0);
+		g_ConVars[mapvote_endvote] 		 = CreateConVar("sm_mapvote_endvote", "1", "Specifies if MapChooser should run an end of map vote", _, true, 0.0, true, 1.0);
 	g_ConVars[mapvote_start] 		 = CreateConVar("sm_mapvote_start", "3.0", "Specifies when to start the vote based on time remaining.", _, true, 1.0);
 	g_ConVars[mapvote_startround]    = CreateConVar("sm_mapvote_startround", "2.0", "Specifies when to start the vote based on rounds remaining. Use 0 on TF2 to start vote during bonus round time", _, true, 0.0);
 	g_ConVars[mapvote_startfrags]    = CreateConVar("sm_mapvote_startfrags", "5.0", "Specifies when to start the vote base on frags remaining.", _, true, 1.0);

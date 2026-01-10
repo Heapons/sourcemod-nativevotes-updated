@@ -43,14 +43,12 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define VERSION "26w02c"
-
 public Plugin myinfo =
 {
 	name = "[NativeVotes] Map Nominations",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Provides Map Nominations",
-	version = VERSION,
+	version = "26w02d",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -95,8 +93,7 @@ public void OnPluginStart()
 	int arraySize = ByteCountToCells(PLATFORM_MAX_PATH);
 	g_MapList = new ArrayList(arraySize);
 	
-	CreateConVar("nativevotes_nominations_version", VERSION, "NativeVotes Nominations version", FCVAR_DONTRECORD|FCVAR_NOTIFY|FCVAR_SPONLY);
-
+	
 	g_ConVars[excludeold] 	  	 = CreateConVar("sm_nominate_excludeold", "1", "Specifies if the current map should be excluded from the Nominations list", 0, true, 0.0, true, 1.0);
 	g_ConVars[excludecurrent] 	 = CreateConVar("sm_nominate_excludecurrent", "1", "Specifies if the MapChooser excluded maps should also be excluded from Nominations", 0, true, 0.0, true, 1.0);
 	g_ConVars[maxmatches] 	  	 = CreateConVar("sm_nominate_maxfound", "0", "Maximum number of nomination matches to add to the menu. 0 = infinite.", _, true, 0.0);

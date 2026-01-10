@@ -41,8 +41,6 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define VERSION "26w02c"
-
 ConVar g_Cvar_Votes;
 ConVar g_Cvar_KickVote;
 ConVar g_Cvar_KickVoteMvM;
@@ -70,8 +68,7 @@ public void OnPluginStart()
 	HookConVarChange(g_Cvar_KickVoteMvM, Cvar_CheckEnable);
 	
 	LoadTranslations("common.phrases");
-	CreateConVar("nativevotes_kickvote_immunity_version", VERSION, "NativeVotes Kickvote Immunity version", FCVAR_NOTIFY|FCVAR_DONTRECORD|FCVAR_SPONLY);
-}
+	}
 
 public void OnAllPluginsLoaded()
 {

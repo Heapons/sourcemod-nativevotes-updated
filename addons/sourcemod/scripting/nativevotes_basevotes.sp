@@ -40,14 +40,13 @@
 #include <adminmenu>
 #include <nativevotes>
 
-#define VERSION "26w02c"
 
 public Plugin:myinfo =
 {
 	name = "[NativeVotes] Basic Votes",
 	author = "Powerlord and AlliedModders LLC",
 	description = "NativeVotes Basic Vote Commands",
-	version = VERSION,
+	version = "26w02d",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -117,8 +116,7 @@ public void OnPluginStart()
 	g_ConVars[map] = CreateConVar("sm_vote_map", "0.60", "percent required for successful map vote.", 0, true, 0.05, true, 1.0);
 	g_ConVars[kick] = CreateConVar("sm_vote_kick", "0.60", "percent required for successful kick vote.", 0, true, 0.05, true, 1.0);
 	g_ConVars[ban] = CreateConVar("sm_vote_ban", "0.60", "percent required for successful ban vote.", 0, true, 0.05, true, 1.0);
-	CreateConVar("nativevotes_basevotes_version", VERSION, "NativeVotes Basic Votes version", FCVAR_PLUGIN|FCVAR_NOTIFY|FCVAR_DONTRECORD|FCVAR_SPONLY);
-    
+
 	g_SelectedMaps = CreateArray(PLATFORM_MAX_PATH);
     
 	g_MapList = CreateMenu(MenuHandler_Map, MenuAction_DrawItem|MenuAction_Display);

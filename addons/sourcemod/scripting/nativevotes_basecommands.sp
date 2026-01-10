@@ -38,7 +38,6 @@
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
 
-#define VERSION "26w02c"
 #pragma newdecls required
 #pragma semicolon 1
 
@@ -49,7 +48,7 @@ public Plugin myinfo =
 	name = "[NativeVotes] Basic Commands",
 	author = "Powerlord and AlliedModders LLC",
 	description = "Revote and Cancel support for NativeVotes",
-	version = VERSION,
+	version = "26w02d",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 }
 

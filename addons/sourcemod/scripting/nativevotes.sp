@@ -46,8 +46,6 @@ EngineVersion g_EngineVersion = Engine_Unknown;
 
 #include "nativevotes/data-keyvalues.sp"
 
-#define VERSION 							"26w02c"
-
 #define LOGTAG "NV"
 
 #define MAX_VOTE_DETAILS_LENGTH				64	// From SourceSDK2013's shareddefs.h
@@ -154,7 +152,7 @@ public Plugin myinfo =
 	name = "NativeVotes",
 	author = "Powerlord",
 	description = "Voting API to use the game's native vote panels. Compatible with L4D, L4D2, TF2, and CS:GO.",
-	version = VERSION,
+	version = "26w02d",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 }
 
@@ -256,8 +254,6 @@ public void OnPluginStart()
 	LoadTranslations("core.phrases");
 	LoadTranslations("nativevotes.phrases.txt");
 	
-	CreateConVar("nativevotes_version", VERSION, "NativeVotes API version", FCVAR_DONTRECORD | FCVAR_NOTIFY);
-
 	g_ConVars[progress_hintbox]  	   = CreateConVar("nativevotes_progress_hintbox", "0", "Show current vote progress in a hint box", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_ConVars[progress_chat] 		   = CreateConVar("nativevotes_progress_chat", "0", "Show current vote progress as chat messages", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_ConVars[progress_console]  	   = CreateConVar("nativevotes_progress_console", "0", "Show current vote progress as console messages", FCVAR_NONE, true, 0.0, true, 1.0);
@@ -299,6 +295,7 @@ public void OnMapStart()
 		delete g_MapOverrides;
 		
 	g_OverridesSet = false;
+	g_NextVote = 0;
 }
 
 public Action Timer_RetryCallVote(Handle timer, any data)
@@ -721,6 +718,7 @@ void OnVoteSelect(NativeVote vote, int client, int item)
 			g_hVotes.Set(item, g_hVotes.Get(item) + 1);
 			g_NumVotes++;
 			
+
 			Game_UpdateVoteCounts(g_hVotes, g_TotalClients);
 			
 			if (g_ConVars[progress_chat].BoolValue || g_ConVars[progress_console].BoolValue || g_ConVars[progress_client_console].BoolValue)
@@ -739,7 +737,7 @@ void OnVoteSelect(NativeVote vote, int client, int item)
 				if (g_ConVars[progress_chat].BoolValue || g_ConVars[progress_client_console].BoolValue)
 				{
 					char phrase[30];
-					
+
 					if (g_bRevoting[client])
 					{
 						strcopy(phrase, sizeof(phrase), "Changed Vote");
@@ -751,7 +749,18 @@ void OnVoteSelect(NativeVote vote, int client, int item)
 					
 					if (g_ConVars[progress_chat].BoolValue)
 					{
-						CPrintToChatAll("[%s] %t", LOGTAG, phrase, name, choice);
+						int r, g, b, a, color;
+						GetEntityRenderColor(client, r, g, b, a);
+						color = (r << 16) | (g << 8) | b;
+						if (color != 0xFFFFFF)
+						{
+							Format(name, sizeof(name), "{#%06X}%N\x01", color, client);
+						}
+						else
+						{
+							Format(name, sizeof(name), "{teamcolor}%N\x01", client);
+						}
+						CPrintToChatAllEx(client, "[%s] %t", LOGTAG, phrase, name, choice);
 					}
 					
 					if (g_ConVars[progress_client_console].BoolValue)
@@ -2382,7 +2391,7 @@ public int Native_SetTarget(Handle plugin, int numParams)
 	}
 	
 	int userid;
-	char steamId[20];
+	char steamId[MAX_AUTHID_LENGTH];
 	
 	if (!client)
 	{
