@@ -42,7 +42,7 @@
 #include <adminmenu>
 #include <nativevotes>
 
-#define VERSION "26w02b"
+#define VERSION "26w02c"
 
 public Plugin myinfo =
 {

@@ -229,10 +229,10 @@ enum
 
 // User vote to change maps.
 #define CSGO_VOTE_CHANGELEVEL_START			"#SFUI_vote_changelevel"
-#define CSGO_VOTE_CHANGELEVEL_PASSED			"#SFUI_vote_passed_changelevel"
+#define CSGO_VOTE_CHANGELEVEL_PASSED		"#SFUI_vote_passed_changelevel"
 
 // User vote to change next level.
-#define CSGO_VOTE_NEXTLEVEL_SINGLE_START		"#SFUI_vote_nextlevel"
+#define CSGO_VOTE_NEXTLEVEL_SINGLE_START	"#SFUI_vote_nextlevel"
 #define CSGO_VOTE_NEXTLEVEL_MULTIPLE_START	"#SFUI_vote_nextlevel_choices" // Started by server
 #define CSGO_VOTE_NEXTLEVEL_EXTEND_PASSED	"#SFUI_vote_passed_nextlevel_extend"
 #define CSGO_VOTE_NEXTLEVEL_PASSED			"#SFUI_vote_passed_nextlevel"
@@ -388,14 +388,26 @@ bool Game_IsGameSupported(char[] engineName="", int maxlength=0)
 	GetGameFolderName(gameDir, sizeof(gameDir));
 	if (!StrEqual(gameDir, "tf"))
 	{
-		isTF2SDKModHack = true;
-	}
-
-	// Fix for TF2 sourcemods
-	// @note Regarding the 2025 SDK: https://github.com/alliedmodders/metamod-source/commit/dc41559c7905072feec38b6d45ea14c05da3b855
-	if (g_EngineVersion == Engine_HL2DM || (g_EngineVersion == Engine_SDK2013 && (StrEqual(gameDir, "open_fortress") || StrEqual(gameDir, "tf2classic") || StrEqual(gameDir, "pf2"))))
-	{
-		g_EngineVersion = Engine_TF2;
+		// Band-aid for old TF2 sourcemods
+		if (g_EngineVersion == Engine_SDK2013 && (StrEqual(gameDir, "open_fortress") || StrEqual(gameDir, "tf2classic") || StrEqual(gameDir, "pf2")))
+		{
+			isTF2SDKModHack = true;
+			g_EngineVersion = Engine_TF2;
+		}
+		// More robust way to detect TF2 SDK (2025) mods
+		else
+		{
+        	KeyValues kv = new KeyValues("GameInfo");
+        	if (!kv.ImportFromFile("gameinfo.txt"))
+        	{
+				delete kv;
+        	}
+			else if (kv.GetNum("DependsOnAppID") == 440)
+			{
+				g_EngineVersion = Engine_TF2;
+				delete kv;
+			}
+		}
 	}
 
 	switch (g_EngineVersion)
@@ -847,7 +859,7 @@ void Game_ClientSelectedItem(NativeVote vote, int client, int item)
 		{
 			TF2_ClientSelectedItem(vote, client, item);
 		}
-/*
+		/*
 		case Engine_Left4Dead:
 		{
 			L4D_ClientSelectedItem(vote, client, item);
@@ -856,7 +868,7 @@ void Game_ClientSelectedItem(NativeVote vote, int client, int item)
 		{
 			L4D2_ClientSelectedItem(client, item);
 		}
-*/
+		*/
 	}
 }
 

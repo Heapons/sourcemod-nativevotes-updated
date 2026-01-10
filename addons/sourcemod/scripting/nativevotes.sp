@@ -46,7 +46,7 @@ EngineVersion g_EngineVersion = Engine_Unknown;
 
 #include "nativevotes/data-keyvalues.sp"
 
-#define VERSION 							"26w02b"
+#define VERSION 							"26w02c"
 
 #define LOGTAG "NV"
 

@@ -45,7 +45,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define VERSION "26w02b"
+#define VERSION "26w02c"
 
 public Plugin myinfo =
 {
@@ -56,28 +56,36 @@ public Plugin myinfo =
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
-/* Valve ConVars */
-ConVar g_Cvar_Winlimit;
-ConVar g_Cvar_Maxrounds;
-ConVar g_Cvar_Fraglimit;
-ConVar g_Cvar_Bonusroundtime;
+/* ConVars */
+enum
+{
+	/* Valve ConVars */
+	mp_winlimit,
+	mp_maxrounds,
+	mp_fraglimit,
+	mp_bonusroundtime,
 
-/* Plugin ConVars */
-ConVar g_Cvar_StartTime;
-ConVar g_Cvar_StartRounds;
-ConVar g_Cvar_StartFrags;
-ConVar g_Cvar_ExtendTimeStep;
-ConVar g_Cvar_ExtendRoundStep;
-ConVar g_Cvar_ExtendFragStep;
-ConVar g_Cvar_ExcludeMaps;
-ConVar g_Cvar_IncludeMaps;
-ConVar g_Cvar_NoVoteMode;
-ConVar g_Cvar_Extend;
-ConVar g_Cvar_DontChange;
-ConVar g_Cvar_EndOfMapVote;
-ConVar g_Cvar_VoteDuration;
-ConVar g_Cvar_RunOff;
-ConVar g_Cvar_RunOffPercent;
+	/* Plugin ConVars */
+	mapvote_endvote,
+	mapvote_start,
+	mapvote_startround,
+	mapvote_startfrags,
+	extendmap_timestep,
+	extendmap_roundstep,
+	extendmap_fragstep,
+	mapvote_exclude,
+	mapvote_include,
+	mapvote_novote,
+	mapvote_extend,
+	mapvote_dontchange,
+	mapvote_voteduration,
+	mapvote_runoff,
+	mapvote_runoffpercent,
+
+	MAX_CONVARS
+}
+
+ConVar g_ConVars[MAX_CONVARS];
 
 Handle g_VoteTimer = null;
 Handle g_RetryTimer = null;
@@ -129,55 +137,79 @@ public void OnPluginStart()
 	g_NominateOwners = new ArrayList();
 	g_OldMapList = new ArrayList(arraySize);
 	g_NextMapList = new ArrayList(arraySize);
+
 	CreateConVar("nativevotes_mapchooser_version", VERSION, "NativeVotes MapChooser version", FCVAR_DONTRECORD|FCVAR_NOTIFY|FCVAR_SPONLY);
 	
-	g_Cvar_EndOfMapVote = CreateConVar("sm_mapvote_endvote", "1", "Specifies if MapChooser should run an end of map vote", _, true, 0.0, true, 1.0);
-
-	g_Cvar_StartTime = CreateConVar("sm_mapvote_start", "3.0", "Specifies when to start the vote based on time remaining.", _, true, 1.0);
-	g_Cvar_StartRounds = CreateConVar("sm_mapvote_startround", "2.0", "Specifies when to start the vote based on rounds remaining. Use 0 on TF2 to start vote during bonus round time", _, true, 0.0);
-	g_Cvar_StartFrags = CreateConVar("sm_mapvote_startfrags", "5.0", "Specifies when to start the vote base on frags remaining.", _, true, 1.0);
-	g_Cvar_ExtendTimeStep = CreateConVar("sm_extendmap_timestep", "15", "Specifies how much many more minutes each extension makes", _, true, 5.0);
-	g_Cvar_ExtendRoundStep = CreateConVar("sm_extendmap_roundstep", "5", "Specifies how many more rounds each extension makes", _, true, 1.0);
-	g_Cvar_ExtendFragStep = CreateConVar("sm_extendmap_fragstep", "10", "Specifies how many more frags are allowed when map is extended.", _, true, 5.0);	
-	g_Cvar_ExcludeMaps = CreateConVar("sm_mapvote_exclude", "5", "Specifies how many past maps to exclude from the vote.", _, true, 0.0);
-	g_Cvar_IncludeMaps = CreateConVar("sm_mapvote_include", "5", "Specifies how many maps to include in the vote.", _, true, 2.0, true, 6.0);
-	g_Cvar_NoVoteMode = CreateConVar("sm_mapvote_novote", "1", "Specifies whether or not MapChooser should pick a map if no votes are received.", _, true, 0.0, true, 1.0);
-	g_Cvar_Extend = CreateConVar("sm_mapvote_extend", "0", "Number of extensions allowed each map.", _, true, 0.0);
-	g_Cvar_DontChange = CreateConVar("sm_mapvote_dontchange", "1", "Specifies if a 'Don't Change' option should be added to early votes", _, true, 0.0);
-	g_Cvar_VoteDuration = CreateConVar("sm_mapvote_voteduration", "20", "Specifies how long the mapvote should be available for.", _, true, 5.0);
-	g_Cvar_RunOff = CreateConVar("sm_mapvote_runoff", "0", "Hold run of votes if winning choice is less than a certain margin", _, true, 0.0, true, 1.0);
-	g_Cvar_RunOffPercent = CreateConVar("sm_mapvote_runoffpercent", "50", "If winning choice has less than this percent of votes, hold a runoff", _, true, 0.0, true, 100.0);
+	g_ConVars[mapvote_endvote] 		 = CreateConVar("sm_mapvote_endvote", "1", "Specifies if MapChooser should run an end of map vote", _, true, 0.0, true, 1.0);
+	g_ConVars[mapvote_start] 		 = CreateConVar("sm_mapvote_start", "3.0", "Specifies when to start the vote based on time remaining.", _, true, 1.0);
+	g_ConVars[mapvote_startround]    = CreateConVar("sm_mapvote_startround", "2.0", "Specifies when to start the vote based on rounds remaining. Use 0 on TF2 to start vote during bonus round time", _, true, 0.0);
+	g_ConVars[mapvote_startfrags]    = CreateConVar("sm_mapvote_startfrags", "5.0", "Specifies when to start the vote base on frags remaining.", _, true, 1.0);
+	g_ConVars[extendmap_timestep]    = CreateConVar("sm_extendmap_timestep", "15", "Specifies how much many more minutes each extension makes", _, true, 5.0);
+	g_ConVars[extendmap_roundstep]   = CreateConVar("sm_extendmap_roundstep", "5", "Specifies how many more rounds each extension makes", _, true, 1.0);
+	g_ConVars[extendmap_fragstep]    = CreateConVar("sm_extendmap_fragstep", "10", "Specifies how many more frags are allowed when map is extended.", _, true, 5.0);	
+	g_ConVars[mapvote_exclude]       = CreateConVar("sm_mapvote_exclude", "5", "Specifies how many past maps to exclude from the vote.", _, true, 0.0);
+	g_ConVars[mapvote_include]       = CreateConVar("sm_mapvote_include", "5", "Specifies how many maps to include in the vote.", _, true, 2.0, true, 6.0);
+	g_ConVars[mapvote_novote]        = CreateConVar("sm_mapvote_novote", "1", "Specifies whether or not MapChooser should pick a map if no votes are received.", _, true, 0.0, true, 1.0);
+	g_ConVars[mapvote_extend]        = CreateConVar("sm_mapvote_extend", "0", "Number of extensions allowed each map.", _, true, 0.0);
+	g_ConVars[mapvote_dontchange]    = CreateConVar("sm_mapvote_dontchange", "1", "Specifies if a 'Don't Change' option should be added to early votes", _, true, 0.0);
+	g_ConVars[mapvote_voteduration]  = CreateConVar("sm_mapvote_voteduration", "20", "Specifies how long the mapvote should be available for.", _, true, 5.0);
+	g_ConVars[mapvote_runoff] 		 = CreateConVar("sm_mapvote_runoff", "0", "Hold run of votes if winning choice is less than a certain margin", _, true, 0.0, true, 1.0);
+	g_ConVars[mapvote_runoffpercent] = CreateConVar("sm_mapvote_runoffpercent", "50", "If winning choice has less than this percent of votes, hold a runoff", _, true, 0.0, true, 100.0);
 	
 	RegAdminCmd("sm_mapvote", Command_Mapvote, ADMFLAG_CHANGEMAP, "sm_mapvote - Forces MapChooser to attempt to run a map vote now.");
 	RegAdminCmd("sm_setnextmap", Command_SetNextmap, ADMFLAG_CHANGEMAP, "sm_setnextmap <map>");
 
-	g_Cvar_Winlimit = FindConVar("mp_winlimit");
-	g_Cvar_Maxrounds = FindConVar("mp_maxrounds");
-	g_Cvar_Fraglimit = FindConVar("mp_fraglimit");
-	g_Cvar_Bonusroundtime = FindConVar("mp_bonusroundtime");
+	g_ConVars[mp_winlimit]       = FindConVar("mp_winlimit");
+	g_ConVars[mp_maxrounds]      = FindConVar("mp_maxrounds");
+	g_ConVars[mp_fraglimit]      = FindConVar("mp_fraglimit");
+	g_ConVars[mp_bonusroundtime] = FindConVar("mp_bonusroundtime");
 	
-	if (g_Cvar_Winlimit || g_Cvar_Maxrounds)
+	if (g_ConVars[mp_winlimit] || g_ConVars[mp_maxrounds])
 	{
-		char folder[64];
-		GetGameFolderName(folder, sizeof(folder));
+		int engine = GetEngineVersion();
+		
+		KeyValues kv = new KeyValues("GameInfo");
+        if (!kv.ImportFromFile("gameinfo.txt"))
+        {
+			delete kv;
+        }
+		else if (kv.GetNum("DependsOnAppID") == 440)
+		{
+			engine = Engine_TF2;
+			delete kv;
+		}
 
-		if (strcmp(folder, "tf") == 0)
+		switch (engine)
 		{
-			HookEvent("teamplay_win_panel", Event_TeamPlayWinPanel);
-			HookEvent("teamplay_restart_round", Event_TFRestartRound);
-			HookEvent("arena_win_panel", Event_TeamPlayWinPanel);
-		}
-		else if (strcmp(folder, "nucleardawn") == 0)
-		{
-			HookEvent("round_win", Event_RoundEnd);
-		}
-		else
-		{
-			HookEvent("round_end", Event_RoundEnd);
+			case Engine_TF2:
+			{
+				HookEvent("teamplay_win_panel", Event_TeamplayWinPanel);
+				HookEvent("teamplay_restart_round", Event_TeamplayRestartRound);
+				HookEvent("arena_win_panel", Event_TeamplayWinPanel);
+			}
+			case Engine_SDK2013:
+			{
+				char folder[64];
+				GetGameFolderName(folder, sizeof(folder));
+				if (strcmp(folder, "tf2classic") == 0 || strcmp(folder, "open_fortress") == 0 || strcmp(folder, "pf2") == 0)
+				{
+					HookEvent("teamplay_win_panel", Event_TeamplayWinPanel);
+					HookEvent("teamplay_restart_round", Event_TeamplayRestartRound);
+					HookEvent("arena_win_panel", Event_TeamplayWinPanel);
+				}
+			}
+			case Engine_NuclearDawn:
+			{
+				HookEvent("round_win", Event_RoundEnd);
+			}
+			default:
+			{
+				HookEvent("round_end", Event_RoundEnd);
+			}
 		}
 	}
 	
-	if (g_Cvar_Fraglimit)
+	if (g_ConVars[mp_fraglimit])
 	{
 		HookEvent("player_death", Event_PlayerDeath);		
 	}
@@ -186,9 +218,9 @@ public void OnPluginStart()
 	
 	//Change the mp_bonusroundtime max so that we have time to display the vote
 	//If you display a vote during bonus time good defaults are 17 vote duration and 19 mp_bonustime
-	if (g_Cvar_Bonusroundtime)
+	if (g_ConVars[mp_bonusroundtime])
 	{
-		g_Cvar_Bonusroundtime.SetBounds(ConVarBound_Upper, true, 30.0);		
+		g_ConVars[mp_bonusroundtime].SetBounds(ConVarBound_Upper, true, 30.0);		
 	}
 	
 	g_NominationsResetForward = CreateGlobalForward("OnNominationRemoved", ET_Ignore, Param_String, Param_Cell);
@@ -283,9 +315,9 @@ public void OnConfigsExecuted()
 	
 
 	/* Check if mapchooser will attempt to start mapvote during bonus round time - TF2 Only */
-	if (g_Cvar_Bonusroundtime && !g_Cvar_StartRounds.IntValue)
+	if (g_ConVars[mp_bonusroundtime] && !g_ConVars[mapvote_startround].IntValue)
 	{
-		if (g_Cvar_Bonusroundtime.FloatValue <= g_Cvar_VoteDuration.FloatValue)
+		if (g_ConVars[mp_bonusroundtime].FloatValue <= g_ConVars[mapvote_voteduration].FloatValue)
 		{
 			LogMessage("Warning - Bonus Round Time shorter than Vote Time. Votes during bonus round may not have time to complete");
 		}
@@ -306,7 +338,7 @@ public void OnMapEnd()
 	GetCurrentMap(map, sizeof(map));
 	g_OldMapList.PushString(map);
 				
-	while (g_OldMapList.Length > g_Cvar_ExcludeMaps.IntValue)
+	while (g_OldMapList.Length > g_ConVars[mapvote_exclude].IntValue)
 	{
 		g_OldMapList.Erase(0);
 	}	
@@ -375,8 +407,8 @@ void SetupTimeleftTimer()
 	int time;
 	if (GetMapTimeLeft(time) && time > 0)
 	{
-		int startTime = g_Cvar_StartTime.IntValue * 60;
-		if (time - startTime < 0 && g_Cvar_EndOfMapVote.BoolValue && !g_MapVoteCompleted && !g_HasVoteStarted)
+		int startTime = g_ConVars[mapvote_start].IntValue * 60;
+		if (time - startTime < 0 && g_ConVars[mapvote_endvote].BoolValue && !g_MapVoteCompleted && !g_HasVoteStarted)
 		{
 			InitiateVote(MapChange_MapEnd, null);
 		}
@@ -410,7 +442,7 @@ public Action Timer_StartMapVote(Handle timer, DataPack data)
 		g_VoteTimer = null;
 	}
 	
-	if (!g_MapList.Length || !g_Cvar_EndOfMapVote.BoolValue || g_MapVoteCompleted || g_HasVoteStarted)
+	if (!g_MapList.Length || !g_ConVars[mapvote_endvote].BoolValue || g_MapVoteCompleted || g_HasVoteStarted)
 	{
 		return Plugin_Stop;
 	}
@@ -423,13 +455,13 @@ public Action Timer_StartMapVote(Handle timer, DataPack data)
 	return Plugin_Stop;
 }
 
-public void Event_TFRestartRound(Event event, const char[] name, bool dontBroadcast)
+public void Event_TeamplayRestartRound(Event event, const char[] name, bool dontBroadcast)
 {
 	/* Game got restarted - reset our round count tracking */
 	g_TotalRounds = 0;	
 }
 
-public void Event_TeamPlayWinPanel(Event event, const char[] name, bool dontBroadcast)
+public void Event_TeamplayWinPanel(Event event, const char[] name, bool dontBroadcast)
 {
 	if (g_ChangeMapAtRoundEnd)
 	{
@@ -445,7 +477,7 @@ public void Event_TeamPlayWinPanel(Event event, const char[] name, bool dontBroa
 	{
 		g_TotalRounds++;
 		
-		if (!g_MapList.Length || g_HasVoteStarted || g_MapVoteCompleted || !g_Cvar_EndOfMapVote.BoolValue)
+		if (!g_MapList.Length || g_HasVoteStarted || g_MapVoteCompleted || !g_ConVars[mapvote_endvote].BoolValue)
 		{
 			return;
 		}
@@ -491,7 +523,7 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 		winner = event.GetInt("winner");
 	}
 	
-	if (winner == 0 || winner == 1 || !g_Cvar_EndOfMapVote.BoolValue)
+	if (winner == 0 || winner == 1 || !g_ConVars[mapvote_endvote].BoolValue)
 	{
 		return;
 	}
@@ -516,12 +548,12 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 
 public void CheckWinLimit(int winner_score)
 {	
-	if (g_Cvar_Winlimit)
+	if (g_ConVars[mp_winlimit])
 	{
-		int winlimit = g_Cvar_Winlimit.IntValue;
+		int winlimit = g_ConVars[mp_winlimit].IntValue;
 		if (winlimit)
 		{			
-			if (winner_score >= (winlimit - g_Cvar_StartRounds.IntValue))
+			if (winner_score >= (winlimit - g_ConVars[mapvote_startround].IntValue))
 			{
 				InitiateVote(MapChange_MapEnd, null);
 			}
@@ -531,12 +563,12 @@ public void CheckWinLimit(int winner_score)
 
 public void CheckMaxRounds(int roundcount)
 {		
-	if (g_Cvar_Maxrounds)
+	if (g_ConVars[mp_maxrounds])
 	{
-		int maxrounds = g_Cvar_Maxrounds.IntValue;
+		int maxrounds = g_ConVars[mp_maxrounds].IntValue;
 		if (maxrounds)
 		{
-			if (roundcount >= (maxrounds - g_Cvar_StartRounds.IntValue))
+			if (roundcount >= (maxrounds - g_ConVars[mapvote_startround].IntValue))
 			{
 				InitiateVote(MapChange_MapEnd, null);
 			}			
@@ -546,12 +578,12 @@ public void CheckMaxRounds(int roundcount)
 
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	if (!g_MapList.Length || !g_Cvar_Fraglimit || g_HasVoteStarted)
+	if (!g_MapList.Length || !g_ConVars[mp_fraglimit] || g_HasVoteStarted)
 	{
 		return;
 	}
 	
-	if (!g_Cvar_Fraglimit.IntValue || !g_Cvar_EndOfMapVote.BoolValue)
+	if (!g_ConVars[mp_fraglimit].IntValue || !g_ConVars[mapvote_endvote].BoolValue)
 	{
 		return;
 	}
@@ -568,7 +600,7 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 		return;
 	}
 
-	if (GetClientFrags(fragger) >= (g_Cvar_Fraglimit.IntValue - g_Cvar_StartFrags.IntValue))
+	if (GetClientFrags(fragger) >= (g_ConVars[mp_fraglimit].IntValue - g_ConVars[mapvote_startfrags].IntValue))
 	{
 		InitiateVote(MapChange_MapEnd, null);
 	}
@@ -646,7 +678,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 	if (inputlist == null)
 	{
 		int nominateCount = g_NominateList.Length;
-		int voteSize = g_Cvar_IncludeMaps.IntValue;
+		int voteSize = g_ConVars[mapvote_include].IntValue;
 		
 		// New in 1.5.1 to fix missing extend vote
 		if (g_NativeVotes)
@@ -656,7 +688,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 				voteSize = NativeVotes_GetMaxItems();
 			}
 			
-			if (g_Cvar_Extend.IntValue && g_Extends < g_Cvar_Extend.IntValue)
+			if (g_ConVars[mapvote_extend].IntValue && g_Extends < g_ConVars[mapvote_extend].IntValue)
 			{
 				voteSize--;
 			}
@@ -765,7 +797,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 	}
 	
 	/* Do we add any special items? */
-	if ((when == MapChange_Instant || when == MapChange_RoundEnd) && g_Cvar_DontChange.BoolValue)
+	if ((when == MapChange_Instant || when == MapChange_RoundEnd) && g_ConVars[mapvote_dontchange].BoolValue)
 	{
 		if (g_NativeVotes)
 		{
@@ -776,7 +808,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 			g_VoteMenu.AddItem(VOTE_DONTCHANGE, "Don't Change");
 		}
 	}
-	else if (g_Cvar_Extend.BoolValue && g_Extends < g_Cvar_Extend.IntValue)
+	else if (g_ConVars[mapvote_extend].BoolValue && g_Extends < g_ConVars[mapvote_extend].IntValue)
 	{
 		if (g_NativeVotes)
 		{
@@ -804,7 +836,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 		return;
 	}
 	
-	int voteDuration = g_Cvar_VoteDuration.IntValue;
+	int voteDuration = g_ConVars[mapvote_voteduration].IntValue;
 
 	if (g_NativeVotes)
 	{
@@ -873,34 +905,34 @@ public void Handler_VoteFinishedGenericShared(const char[] map,
 		{
 			if (time > 0)
 			{
-				ExtendMapTimeLimit(g_Cvar_ExtendTimeStep.IntValue * 60);						
+				ExtendMapTimeLimit(g_ConVars[extendmap_timestep].IntValue * 60);						
 			}
 		}
 		
-		if (g_Cvar_Winlimit)
+		if (g_ConVars[mp_winlimit])
 		{
-			int winlimit = g_Cvar_Winlimit.IntValue;
+			int winlimit = g_ConVars[mp_winlimit].IntValue;
 			if (winlimit)
 			{
-				g_Cvar_Winlimit.IntValue = winlimit + g_Cvar_ExtendRoundStep.IntValue;
+				g_ConVars[mp_winlimit].IntValue = winlimit + g_ConVars[extendmap_roundstep].IntValue;
 			}					
 		}
 		
-		if (g_Cvar_Maxrounds)
+		if (g_ConVars[mp_maxrounds])
 		{
-			int maxrounds = g_Cvar_Maxrounds.IntValue;
+			int maxrounds = g_ConVars[mp_maxrounds].IntValue;
 			if (maxrounds)
 			{
-				g_Cvar_Maxrounds.IntValue = maxrounds + g_Cvar_ExtendRoundStep.IntValue;
+				g_ConVars[mp_maxrounds].IntValue = maxrounds + g_ConVars[extendmap_roundstep].IntValue;
 			}
 		}
 		
-		if (g_Cvar_Fraglimit)
+		if (g_ConVars[mp_fraglimit])
 		{
-			int fraglimit = g_Cvar_Fraglimit.IntValue;
+			int fraglimit = g_ConVars[mp_fraglimit].IntValue;
 			if (fraglimit)
 			{
-				g_Cvar_Fraglimit.IntValue = fraglimit + g_Cvar_ExtendFragStep.IntValue;
+				g_ConVars[mp_fraglimit].IntValue = fraglimit + g_ConVars[extendmap_fragstep].IntValue;
 			}
 		}
 
@@ -964,19 +996,12 @@ public void Handler_VoteFinishedGenericShared(const char[] map,
 	}	
 }
 
-public void Handler_NV_MapVoteFinished(NativeVote menu,
-						   int num_votes, 
-						   int num_clients,
-						   const int[] client_indexes,
-						   const int[] client_votes,
-						   int num_items,
-						   const int[] item_indexes,
-						   const int[] item_votes)
+public void Handler_NV_MapVoteFinished(NativeVote menu, int num_votes, int num_clients, const int[] client_indexes, const int[] client_votes, int num_items, const int[] item_indexes, const int[] item_votes)
 {
-	if (g_Cvar_RunOff.BoolValue && num_items > 1)
+	if (g_ConVars[mapvote_runoff].BoolValue && num_items > 1)
 	{
 		float winningvotes = float(item_votes[0]);
-		float required = num_votes * (g_Cvar_RunOffPercent.FloatValue / 100.0);
+		float required = num_votes * (g_ConVars[mapvote_runoffpercent].FloatValue / 100.0);
 		
 		if (winningvotes < required)
 		{
@@ -1009,7 +1034,7 @@ public void Handler_NV_MapVoteFinished(NativeVote menu,
 			float map2percent = float(item_votes[1])/ float(num_votes) * 100;
 			
 			
-			CPrintToChatAll("[{lightgreen}MapChooser\x01] %t", "Starting Runoff", g_Cvar_RunOffPercent.FloatValue, info1, map1percent, info2, map2percent);
+			CPrintToChatAll("[{lightgreen}MapChooser\x01] %t", "Starting Runoff", g_ConVars[mapvote_runoffpercent].FloatValue, info1, map1percent, info2, map2percent);
 			LogMessage("Voting for next map was indecisive, beginning runoff vote");
 					
 			return;
@@ -1036,23 +1061,18 @@ public Action Timer_NV_Runoff(Handle timer, DataPack data)
 	data.ReadString(info, sizeof(info));
 	g_VoteNative.AddItem(map, info);
 
-	int voteDuration = g_Cvar_VoteDuration.IntValue;
+	int voteDuration = g_ConVars[mapvote_voteduration].IntValue;
 	g_VoteNative.DisplayVoteToAll(voteDuration);
 	
 	return Plugin_Continue;
 }
 
-public void Handler_MapVoteFinished(Menu menu,
-						   int num_votes,
-						   int num_clients,
-						   const int[][] client_info,
-						   int num_items,
-						   const int[][] item_info)
+public void Handler_MapVoteFinished(Menu menu, int num_votes, int num_clients, const int[][] client_info, int num_items, const int[][] item_info)
 {
-	if (g_Cvar_RunOff.BoolValue && num_items > 1)
+	if (g_ConVars[mapvote_runoff].BoolValue && num_items > 1)
 	{
 		float winningvotes = float(item_info[0][VOTEINFO_ITEM_VOTES]);
-		float required = num_votes * (g_Cvar_RunOffPercent.FloatValue / 100.0);
+		float required = num_votes * (g_ConVars[mapvote_runoffpercent].FloatValue / 100.0);
 		
 		if (winningvotes < required)
 		{
@@ -1070,7 +1090,7 @@ public void Handler_MapVoteFinished(Menu menu,
 			menu.GetItem(item_info[1][VOTEINFO_ITEM_INDEX], map, sizeof(map), _, info2, sizeof(info2));
 			g_VoteMenu.AddItem(map, info2);
 			
-			int voteDuration = g_Cvar_VoteDuration.IntValue;
+			int voteDuration = g_ConVars[mapvote_voteduration].IntValue;
 			g_VoteMenu.ExitButton = false;
 			g_VoteMenu.DisplayVoteToAll(voteDuration);
 			
@@ -1078,8 +1098,7 @@ public void Handler_MapVoteFinished(Menu menu,
 			float map1percent = float(item_info[0][VOTEINFO_ITEM_VOTES])/ float(num_votes) * 100;
 			float map2percent = float(item_info[1][VOTEINFO_ITEM_VOTES])/ float(num_votes) * 100;
 			
-			
-			CPrintToChatAll("[{lightgreen}MapChooser\x01] %t", "Starting Runoff", g_Cvar_RunOffPercent.FloatValue, info1, map1percent, info2, map2percent);
+			CPrintToChatAll("[{lightgreen}MapChooser\x01] %t", "Starting Runoff", g_ConVars[mapvote_runoffpercent].FloatValue, info1, map1percent, info2, map2percent);
 			LogMessage("Voting for next map was indecisive, beginning runoff vote");
 					
 			return;
@@ -1102,7 +1121,7 @@ public int Handler_MapVoteMenu(Menu menu, MenuAction action, int param1, int par
 		case MenuAction_Display:
 		{
 	 		char buffer[255];
-			Format(buffer, sizeof(buffer), "[{lightgreen}MapChooser\x01] %t", "Vote Nextmap", param1);
+			Format(buffer, sizeof(buffer), "%t", "Vote Nextmap", param1);
 
 			Panel panel = view_as<Panel>(param2);
 			panel.SetTitle(buffer);
@@ -1130,7 +1149,7 @@ public int Handler_MapVoteMenu(Menu menu, MenuAction action, int param1, int par
 		case MenuAction_VoteCancel:
 		{
 			// If we receive 0 votes, pick at random.
-			if (param1 == VoteCancel_NoVotes && g_Cvar_NoVoteMode.BoolValue)
+			if (param1 == VoteCancel_NoVotes && g_ConVars[mapvote_novote].BoolValue)
 			{
 				int count = menu.ItemCount;
 				char map[96];
@@ -1199,7 +1218,7 @@ public int Handler_NV_MapVoteMenu(NativeVote menu, MenuAction action, int param1
 		case MenuAction_VoteCancel:
 		{
 			// If we receive 0 votes, pick at random.
-			if (param1 == VoteCancel_NoVotes && g_Cvar_NoVoteMode.BoolValue)
+			if (param1 == VoteCancel_NoVotes && g_ConVars[mapvote_novote].BoolValue)
 			{
 				int count = menu.ItemCount;
 				char map[96];
@@ -1302,7 +1321,7 @@ void CreateNextVote()
 	GetCurrentMap(map, sizeof(map));
 	RemoveStringFromArray(tempMaps, map);
 	
-	if (g_Cvar_ExcludeMaps.IntValue && tempMaps.Length > g_Cvar_ExcludeMaps.IntValue)
+	if (g_ConVars[mapvote_exclude].IntValue && tempMaps.Length > g_ConVars[mapvote_exclude].IntValue)
 	{
 		for (int i = 0; i < g_OldMapList.Length; i++)
 		{
@@ -1311,7 +1330,7 @@ void CreateNextVote()
 		}
 	}
 
-	int limit = (g_Cvar_IncludeMaps.IntValue < tempMaps.Length ? g_Cvar_IncludeMaps.IntValue : tempMaps.Length);
+	int limit = (g_ConVars[mapvote_include].IntValue < tempMaps.Length ? g_ConVars[mapvote_include].IntValue : tempMaps.Length);
 	for (int i = 0; i < limit; i++)
 	{
 		int b = GetRandomInt(0, tempMaps.Length - 1);
@@ -1368,19 +1387,19 @@ NominateResult InternalNominateMap(char[] map, bool force, int owner)
 	{
 		maxIncludes = NativeVotes_GetMaxItems();
 		
-		if (g_Cvar_IncludeMaps.IntValue < maxIncludes)
+		if (g_ConVars[mapvote_include].IntValue < maxIncludes)
 		{
-			maxIncludes = g_Cvar_IncludeMaps.IntValue;
+			maxIncludes = g_ConVars[mapvote_include].IntValue;
 		}
 		
-		if (g_Cvar_Extend.BoolValue && g_Extends < g_Cvar_Extend.IntValue)
+		if (g_ConVars[mapvote_extend].BoolValue && g_Extends < g_ConVars[mapvote_extend].IntValue)
 		{
 			maxIncludes--;
 		}
 	}
 	else
 	{
-		maxIncludes = g_Cvar_IncludeMaps.IntValue;
+		maxIncludes = g_ConVars[mapvote_include].IntValue;
 	}
 	
 	if (g_NominateList.Length >= maxIncludes && !force)
@@ -1391,7 +1410,7 @@ NominateResult InternalNominateMap(char[] map, bool force, int owner)
 	g_NominateList.PushString(map);
 	g_NominateOwners.Push(owner);
 	
-	while (g_NominateList.Length > g_Cvar_IncludeMaps.IntValue)
+	while (g_NominateList.Length > g_ConVars[mapvote_include].IntValue)
 	{
 		char oldmap[96];
 		g_NominateList.GetString(0, oldmap, sizeof(oldmap));
@@ -1521,7 +1540,7 @@ public int Native_CheckVoteDone(Handle plugin, int numParams)
 /* native bool EndOfMapVoteEnabled(); */
 public int Native_EndOfMapVoteEnabled(Handle plugin, int numParams)
 {
-	return g_Cvar_EndOfMapVote.BoolValue;
+	return g_ConVars[mapvote_endvote].BoolValue;
 }
 
 /* native void GetExcludeMapList(ArrayList array); */

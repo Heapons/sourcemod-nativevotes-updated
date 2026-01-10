@@ -38,7 +38,7 @@
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
 
-#define VERSION "26w02b"
+#define VERSION "26w02c"
 #pragma newdecls required
 #pragma semicolon 1
 

@@ -43,7 +43,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define VERSION "26w02b"
+#define VERSION "26w02c"
 
 public Plugin myinfo =
 {
@@ -60,6 +60,8 @@ enum
 	excludecurrent,
 	maxmatches,
 	//allow_workshop,
+
+	nextlevel_allowed,
 
 	MAX_CONVARS
 }
@@ -95,10 +97,12 @@ public void OnPluginStart()
 	
 	CreateConVar("nativevotes_nominations_version", VERSION, "NativeVotes Nominations version", FCVAR_DONTRECORD|FCVAR_NOTIFY|FCVAR_SPONLY);
 
-	g_ConVars[excludeold] 	  	= CreateConVar("sm_nominate_excludeold", "1", "Specifies if the current map should be excluded from the Nominations list", 0, true, 0.0, true, 1.0);
-	g_ConVars[excludecurrent] 	= CreateConVar("sm_nominate_excludecurrent", "1", "Specifies if the MapChooser excluded maps should also be excluded from Nominations", 0, true, 0.0, true, 1.0);
-	g_ConVars[maxmatches] 	  	= CreateConVar("sm_nominate_maxfound", "0", "Maximum number of nomination matches to add to the menu. 0 = infinite.", _, true, 0.0);
-	//g_ConVars[allow_workshop] = CreateConVar("sm_nominate_allow_workshop", "0", "Specifies if unlisted workshop maps should be allowed to be nominated", 0, true, 0.0, true, 1.0);
+	g_ConVars[excludeold] 	  	 = CreateConVar("sm_nominate_excludeold", "1", "Specifies if the current map should be excluded from the Nominations list", 0, true, 0.0, true, 1.0);
+	g_ConVars[excludecurrent] 	 = CreateConVar("sm_nominate_excludecurrent", "1", "Specifies if the MapChooser excluded maps should also be excluded from Nominations", 0, true, 0.0, true, 1.0);
+	g_ConVars[maxmatches] 	  	 = CreateConVar("sm_nominate_maxfound", "0", "Maximum number of nomination matches to add to the menu. 0 = infinite.", _, true, 0.0);
+	//g_ConVars[allow_workshop]  = CreateConVar("sm_nominate_allow_workshop", "0", "Specifies if unlisted workshop maps should be allowed to be nominated", 0, true, 0.0, true, 1.0);
+
+	g_ConVars[nextlevel_allowed] = FindConVar("sv_vote_issue_nextlevel_allowed");
 
 	RegConsoleCmd("sm_nominate", Command_Nominate);
 	
@@ -280,8 +284,7 @@ public Action Command_Nominate(int client, int args)
 	
 	if (args == 0)
 	{
-		// https://github.com/ValveSoftware/source-sdk-2013/blob/7191ecc418e28974de8be3a863eebb16b974a7ef/src/game/server/tf/tf_voteissues.h#L116
-	    if (g_NativeVotes && NativeVotes_AreVoteCommandsSupported())
+	    if (g_NativeVotes && NativeVotes_AreVoteCommandsSupported() && g_ConVars[nextlevel_allowed].BoolValue)
 	    {
 	       FakeClientCommand(client, "callvote");
 	    }
