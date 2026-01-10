@@ -50,14 +50,12 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define VERSION "26w02c"
-
 public Plugin myinfo =
 {
 	name = "[NativeVotes] Rock The Vote",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Provides RTV Map Voting",
-	version = VERSION,
+	version = "26w02d",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -103,6 +101,7 @@ public void OnPluginStart()
 	
 	RegConsoleCmd("sm_rtv", Command_RTV);
 	RegAdminCmd("sm_forcertv", Command_ForceRTV, ADMFLAG_CHANGEMAP);
+	RegAdminCmd("sm_resetrtv", Command_ResetRTV, ADMFLAG_CHANGEMAP);
 	
 	AutoExecConfig(true, "rtv");
 
@@ -271,30 +270,13 @@ public Action Command_ForceRTV(int client, int args)
 	return Plugin_Handled;
 }
 
-void MenuHandler_UndoRTV(Menu menu, MenuAction action, int client, int param2)
+public Action Command_ResetRTV(int client, int args)
 {
-	if (action == MenuAction_Select)
-	{
-		if (param2 == 0) // Yes
-		{
-			if (g_Voted[client])
-			{
-				char name[MAX_NAME_LENGTH]; int r, g, b, a, color;
-				GetEntityRenderColor(client, r, g, b, a);
-				color = (r << 16) | (g << 8) | b;
-				if (color != 0xFFFFFF) {
-					Format(name, sizeof(name), "{#%06X}%N\x01", color, client);
-				}
-				else {
-					Format(name, sizeof(name), "{teamcolor}%N\x01", client);
-				}
-				g_Voted[client] = false;
-				if (g_Votes > 0) g_Votes--;
-				CPrintToChatAllEx(client, "[{lightgreen}Rock The Vote\x01] %s: %t", name, "Cancelled Vote");
-			}
-		}
-	}
-	delete menu;
+	ResetRTV();
+	
+	CPrintToChatAll("[{lightgreen}Rock The Vote\x01] %t", "Cancelled Vote");
+	
+	return Plugin_Handled;
 }
 
 void UndoRTV(int client)
@@ -312,6 +294,35 @@ void UndoRTV(int client)
 	menu.AddItem("no", no);
 	menu.ExitButton = false;
 	menu.Display(client, MENU_TIME_FOREVER);
+}
+
+void MenuHandler_UndoRTV(Menu menu, MenuAction action, int client, int param2)
+{
+	if (action == MenuAction_Select)
+	{
+		if (param2 == 0) // Yes
+		{
+			if (g_Voted[client])
+			{
+				char name[MAX_NAME_LENGTH]; int r, g, b, a, color;
+				GetEntityRenderColor(client, r, g, b, a);
+				color = (r << 16) | (g << 8) | b;
+				if (color != 0xFFFFFF)
+				{
+					Format(name, sizeof(name), "{#%06X}%N\x01", color, client);
+				}
+				else
+				{
+					Format(name, sizeof(name), "{teamcolor}%N\x01", client);
+				}
+				
+				g_Voted[client] = false;
+				if (g_Votes > 0) g_Votes--;
+				CPrintToChatAllEx(client, "[{lightgreen}Rock The Vote\x01] %s: %t", name, "Cancelled Vote");
+			}
+		}
+	}
+	delete menu;
 }
 
 void AttemptRTV(int client, bool isVoteMenu=false)
@@ -366,10 +377,12 @@ void AttemptRTV(int client, bool isVoteMenu=false)
 	char name[MAX_NAME_LENGTH]; int r, g, b, a, color;
 	GetEntityRenderColor(client, r, g, b, a);
 	color = (r << 16) | (g << 8) | b;
-	if (color != 0xFFFFFF) {
+	if (color != 0xFFFFFF)
+	{
 		Format(name, sizeof(name), "{#%06X}%N\x01", color, client);
 	}
-	else {
+	else
+	{
 		Format(name, sizeof(name), "{teamcolor}%N\x01", client);
 	}
 	
