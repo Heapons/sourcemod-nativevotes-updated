@@ -152,7 +152,7 @@ public Plugin myinfo =
 	name = "NativeVotes",
 	author = "Powerlord",
 	description = "Voting API to use the game's native vote panels. Compatible with L4D, L4D2, TF2, and CS:GO.",
-	version = "26w02e",
+	version = "26w02f",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 }
 
@@ -262,7 +262,7 @@ public void OnPluginStart()
 	g_ConVars[vote_delay].AddChangeHook(OnVoteDelayChange);
 
 	Game_InitializeCvars();
-	
+
 	AddCommandListener(Command_Vote, "vote"); // All games, command listeners aren't case sensitive
 	
 	sv_vote_holder_may_vote_no = FindConVar("sv_vote_holder_may_vote_no");

@@ -2101,6 +2101,17 @@ static void TF2CSGO_UpdateVoteCounts(ArrayList votes)
 		{
 			SetEntProp(g_VoteController, Prop_Send, "m_nVoteOptionCount", votes.Get(i), 4, i);
 		}
+
+		Event changeEvent = CreateEvent("vote_changed");
+		for (int i = 0; i < size; i++)
+		{
+			char szOption[16];
+			Format(szOption, sizeof(szOption), "vote_option%d", i+1);
+			changeEvent.SetInt(szOption, votes.Get(i));
+		}
+		changeEvent.SetInt("voteidx", s_nNativeVoteIdx);
+		changeEvent.SetInt("potentialVotes", GetEntProp(g_VoteController, Prop_Send, "m_nPotentialVotes"));
+		changeEvent.Fire();
 	}
 }
 
@@ -2288,6 +2299,7 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 			protoStart.SetBool("is_yes_no_vote", bYesNo);
 			protoStart.SetString("other_team_str", otherTeamString);
 			protoStart.SetInt("vote_type", voteIndex);
+			//protoStart.SetInt("target", Data_GetTarget(vote));
 		}
 		else
 		{
@@ -2309,6 +2321,7 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 				bfStart.WriteString(details);
 			}
 			bfStart.WriteBool(bYesNo);
+			//bfStart.WriteByte(target);
 		}
 		
 		EndMessage();

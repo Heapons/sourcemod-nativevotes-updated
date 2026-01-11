@@ -57,13 +57,13 @@ void DisplayVoteBurnMenu(int client, int target, char name[MAX_NAME_LENGTH])
 	LogAction(client, target, "\"%L\" initiated a burn vote against %s", client, playerName);
 	CShowActivity2(client, "[{lightgreen}NativeVotes\x01] ", "%t", "Initiated Vote Burn", playerName);
 	
-	g_voteType = voteType:burn;
+	g_voteType = burn;
 	
 	if (g_NativeVotes)
 	{
 		Handle hVoteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Custom_YesNo, view_as<MenuAction>(MENU_ACTIONS_ALL));
 		NativeVotes_SetTitle(hVoteMenu, "Voteburn player");
-		NativeVotes_SetTarget(hVoteMenu, target);
+		NativeVotes_SetTarget(hVoteMenu, target); // Doesn't work for some reason(?)
 		NativeVotes_DisplayToAll(hVoteMenu, 20);
 	}
 	else

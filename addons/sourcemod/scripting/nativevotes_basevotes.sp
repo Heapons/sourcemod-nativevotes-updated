@@ -46,7 +46,7 @@ public Plugin:myinfo =
 	name = "[NativeVotes] Basic Votes",
 	author = "Powerlord and AlliedModders LLC",
 	description = "NativeVotes Basic Vote Commands",
-	version = "26w02e",
+	version = "26w02f",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -393,6 +393,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 			{
 				CPrintToChatAll("%t", "Vote Successful", RoundToNearest(100.0*percent), totalVotes);
 
+				int client = GetClientOfUserId(g_voteClient[VOTE_USERID]);
 				int r, g, b, a, color;
 				GetEntityRenderColor(client, r, g, b, a);
 				color = (r << 16) | (g << 8) | b;
@@ -404,8 +405,6 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 				{
 					Format(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[VOTE_NAME]), "{teamcolor}%N\x01", client);
 				}
-
-				int client = GetClientOfUserId(g_voteClient[VOTE_USERID]);
 
 				switch (g_voteType)
 				{

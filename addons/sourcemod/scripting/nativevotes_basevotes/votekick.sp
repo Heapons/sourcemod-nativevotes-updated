@@ -41,24 +41,24 @@ void DisplayVoteKickMenu(int client, int target)
 	GetEntityRenderColor(target, r, g, b, a);
 	color = (r << 16) | (g << 8) | b;
 	if (color != 0xFFFFFF) {
-		Format(playerName, sizeof(playerName), "{#%06X}%N\x01", color, target);
+		Format(playerName, sizeof(playerName), "{#%06X}%N\x01", color, g_voteClient[VOTE_CLIENTID]);
 	}
 	else {
-		Format(playerName, sizeof(playerName), "{teamcolor}%N\x01", target);
+		Format(playerName, sizeof(playerName), "{teamcolor}%N\x01", g_voteClient[VOTE_CLIENTID]);
 	}
 
 	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
 
-	LogAction(client, target, "\"%L\" initiated a kick vote against %N", client, target);
+	LogAction(client, target, "\"%L\" initiated a kick vote against %N", client, g_voteClient[VOTE_CLIENTID]);
 	CShowActivity(client, "%t", "Initiated Vote Kick", playerName);
 
-	g_voteType = voteType:kick;
+	g_voteType = kick;
 
 	if (g_NativeVotes)
 	{
 		Handle voteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Kick, view_as<MenuAction>(MENU_ACTIONS_ALL));
 		// No title, builtin type
-		NativeVotes_SetTarget(voteMenu, target);
+		NativeVotes_SetTarget(voteMenu, target); // Doesn't work for some reason(?)
 		NativeVotes_DisplayToAll(voteMenu, 20);
 	}
 	else

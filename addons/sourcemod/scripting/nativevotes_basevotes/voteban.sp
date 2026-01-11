@@ -53,14 +53,14 @@ void DisplayVoteBanMenu(int client, int target)
 	LogAction(client, target, "\"%L\" initiated a ban vote against %s", client, playerName);
 	CShowActivity2(client, "[{lightgreen}NativeVotes\x01] ", "%t", "Initiated Vote Ban", playerName);
 
-	g_voteType = voteType:ban;
+	g_voteType = ban;
 	
 	if (g_NativeVotes)
 	{
 		Handle voteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Custom_YesNo, view_as<MenuAction>(MENU_ACTIONS_ALL));
 		NativeVotes_SetTitle(voteMenu, "Voteban Player");
+		NativeVotes_SetTarget(voteMenu, target); // Doesn't work for some reason(?)
 		NativeVotes_DisplayToAll(voteMenu, 20);
-		NativeVotes_SetTarget(voteMenu, target);
 	}
 	else
 	{

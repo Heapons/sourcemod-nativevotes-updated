@@ -57,12 +57,13 @@ void DisplayVoteSlayMenu(int client, int target, char name[MAX_NAME_LENGTH])
 	LogAction(client, target, "\"%L\" initiated a slay vote against %s", client, playerName);
 	CShowActivity2(client, "[{lightgreen}NativeVotes\x01] ", "%t", "Initiated Vote Slay", playerName);
 	
-	g_voteType = voteType:slay;
+	g_voteType = slay;
 	
 	if (g_NativeVotes)
 	{
 		Handle hVoteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Custom_YesNo, view_as<MenuAction>(MENU_ACTIONS_ALL));
 		NativeVotes_SetTitle(hVoteMenu, "Voteslay Player");
+		NativeVotes_SetTarget(hVoteMenu, target); // Doesn't work for some reason(?)
 		NativeVotes_DisplayToAll(hVoteMenu, 20);
 	}
 	else
