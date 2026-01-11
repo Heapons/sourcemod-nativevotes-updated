@@ -50,7 +50,7 @@ public Plugin myinfo =
 	name = "[NativeVotes] MapChooser",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Automated Map Voting",
-	version = "26w02g",
+	version = "26w02h",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -136,7 +136,7 @@ public void OnPluginStart()
 	g_OldMapList = new ArrayList(arraySize);
 	g_NextMapList = new ArrayList(arraySize);
 
-		g_ConVars[mapvote_endvote] 		 = CreateConVar("sm_mapvote_endvote", "1", "Specifies if MapChooser should run an end of map vote", _, true, 0.0, true, 1.0);
+	g_ConVars[mapvote_endvote] 		 = CreateConVar("sm_mapvote_endvote", "1", "Specifies if MapChooser should run an end of map vote", _, true, 0.0, true, 1.0);
 	g_ConVars[mapvote_start] 		 = CreateConVar("sm_mapvote_start", "3.0", "Specifies when to start the vote based on time remaining.", _, true, 1.0);
 	g_ConVars[mapvote_startround]    = CreateConVar("sm_mapvote_startround", "2.0", "Specifies when to start the vote based on rounds remaining. Use 0 on TF2 to start vote during bonus round time", _, true, 0.0);
 	g_ConVars[mapvote_startfrags]    = CreateConVar("sm_mapvote_startfrags", "5.0", "Specifies when to start the vote base on frags remaining.", _, true, 1.0);
@@ -364,12 +364,12 @@ public Action Command_SetNextmap(int client, int args)
 {
 	if (args < 1)
 	{
-		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] Usage: sm_setnextmap <map>");
+		CReplyToCommand(client, "[{lightgreen}MapChooser\x01] Usage: sm_setnextmap <map>");
 		return Plugin_Handled;
 	}
 
 	char map[96];
-	char displayName[PLATFORM_MAX_PATH];
+	char displayName[64];
 	GetCmdArg(1, map, sizeof(map));
 
 	if (FindMap(map, displayName, sizeof(displayName)) == FindMap_NotFound)
@@ -381,7 +381,7 @@ public Action Command_SetNextmap(int client, int args)
 	GetMapDisplayName(displayName, displayName, sizeof(displayName));
 	Format(displayName, sizeof(displayName), "\x05%s\x01", displayName);
 	
-	CShowActivity(client, "[{lightgreen}MapChooser\x01] %t", "Changed Next Map", displayName);
+	CShowActivity(client, "%t", "Changed Next Map", displayName);
 	LogAction(client, -1, "\"%L\" changed nextmap to \"%s\"", client, map);
 
 	SetNextMap(map);
@@ -695,10 +695,9 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 		
 		for (int i=0; i<nominationsToAdd; i++)
 		{
-			char displayName[PLATFORM_MAX_PATH];
+			char displayName[64];
 			g_NominateList.GetString(i, map, sizeof(map));
 			GetMapDisplayName(map, displayName, sizeof(displayName));
-			Format(displayName, sizeof(displayName), "\x05%s\x01", displayName);
 			
 			if (g_NativeVotes)
 			{
@@ -751,7 +750,6 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 			/* Insert the map and increment our count */
 			char displayName[PLATFORM_MAX_PATH];
 			GetMapDisplayName(map, displayName, sizeof(displayName));
-			Format(displayName, sizeof(displayName), "\x05%s\x01", displayName);
 			if (g_NativeVotes)
 			{
 				g_VoteNative.AddItem(map, displayName);
@@ -777,9 +775,9 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 			
 			if (IsMapValid(map))
 			{
-				char displayName[PLATFORM_MAX_PATH];
+				char displayName[64];
 				GetMapDisplayName(map, displayName, sizeof(displayName));
-				Format(displayName, sizeof(displayName), "\x05%s\x01", displayName);
+				
 				if (g_NativeVotes)
 				{
 					g_VoteNative.AddItem(map, displayName);
