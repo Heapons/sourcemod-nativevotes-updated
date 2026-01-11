@@ -2254,7 +2254,7 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 		int holder = vote.Initiator;
 		// required to allow the initiator to vote on their own issue
 		// ValveSoftware/Source-1-Games#3934
-		if (sv_vote_holder_may_vote_no && holder <= MaxClients && IsClientConnected(holder)) && !IsFakeClient(holder)
+		if (sv_vote_holder_may_vote_no && holder <= MaxClients && IsClientConnected(holder) && !IsFakeClient(holder))
 		{
 			sv_vote_holder_may_vote_no.ReplicateToClient(holder, "1");
 		}
