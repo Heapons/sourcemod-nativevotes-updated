@@ -2299,7 +2299,6 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 			protoStart.SetBool("is_yes_no_vote", bYesNo);
 			protoStart.SetString("other_team_str", otherTeamString);
 			protoStart.SetInt("vote_type", voteIndex);
-			//protoStart.SetInt("target", Data_GetTarget(vote));
 		}
 		else
 		{
@@ -2309,7 +2308,6 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 			{
 				bfStart.WriteNum(s_nNativeVoteIdx);
 			}
-
 			bfStart.WriteByte(Data_GetInitiator(vote));
 			bfStart.WriteString(translation);
 			if (bCustom && changeTitle == Plugin_Changed)
@@ -2320,8 +2318,11 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 			{
 				bfStart.WriteString(details);
 			}
-			bfStart.WriteBool(bYesNo);
-			//bfStart.WriteByte(target);
+			bfStart.WriteByte(bYesNo);
+			if (!isTF2SDKModHack)
+			{
+				bfStart.WriteByte(Data_GetTarget(vote) - 1);
+			}
 		}
 		
 		EndMessage();
