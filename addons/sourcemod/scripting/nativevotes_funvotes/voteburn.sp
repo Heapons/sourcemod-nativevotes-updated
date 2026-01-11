@@ -45,10 +45,12 @@ void DisplayVoteBurnMenu(int client, int target, char name[MAX_NAME_LENGTH])
 	char playerName[MAX_NAME_LENGTH]; int r, g, b, a, color;
 	GetEntityRenderColor(target, r, g, b, a);
 	color = (r << 16) | (g << 8) | b;
-	if (color != 0xFFFFFF) {
+	if (color != 0xFFFFFF)
+	{
 		Format(playerName, sizeof(playerName), "{#%06X}%N\x01", color, target);
 	}
-	else {
+	else
+	{
 		Format(playerName, sizeof(playerName), "{teamcolor}%N\x01", target);
 	}
 
@@ -63,7 +65,7 @@ void DisplayVoteBurnMenu(int client, int target, char name[MAX_NAME_LENGTH])
 	{
 		Handle hVoteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Custom_YesNo, view_as<MenuAction>(MENU_ACTIONS_ALL));
 		NativeVotes_SetTitle(hVoteMenu, "Voteburn player");
-		NativeVotes_SetTarget(hVoteMenu, target); // Doesn't work for some reason(?)
+		NativeVotes_SetTarget(hVoteMenu, target);
 		NativeVotes_DisplayToAll(hVoteMenu, 20);
 	}
 	else

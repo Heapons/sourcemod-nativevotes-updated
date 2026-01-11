@@ -19,7 +19,7 @@ public Plugin myinfo =
 	name = "[NativeVotes] Medieval Auto-RP",
 	author = "Heapons",
 	description = "Provides Medieval Auto-RP voting.",
-	version = "26w02f",
+	version = "26w02g",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 

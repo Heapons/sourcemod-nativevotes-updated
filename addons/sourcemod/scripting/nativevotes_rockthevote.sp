@@ -55,7 +55,7 @@ public Plugin myinfo =
 	name = "[NativeVotes] Rock The Vote",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Provides RTV Map Voting",
-	version = "26w02f",
+	version = "26w02g",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
