@@ -1605,19 +1605,19 @@ static void L4DL4D2_ClientSelectedItem(int client, int item)
 
 static void L4DL4D2_UpdateVoteCounts(ArrayList votes, int totalClients)
 {
-	int yesVotes = votes.Get(NATIVEVOTES_VOTE_YES);
-	int noVotes = votes.Get(NATIVEVOTES_VOTE_NO);
-	Event changeEvent = CreateEvent("vote_changed");
-	changeEvent.SetInt("yesVotes", yesVotes);
-	changeEvent.SetInt("noVotes", noVotes);
-	changeEvent.SetInt("potentialVotes", totalClients);
-	changeEvent.Fire();
-	
-	if (CheckVoteController())
-	{
-		SetEntProp(g_VoteController, Prop_Send, "m_votesYes", yesVotes);
-		SetEntProp(g_VoteController, Prop_Send, "m_votesNo", noVotes);
-	}
+    int yesVotes = votes.Get(NATIVEVOTES_VOTE_YES);
+    int noVotes = votes.Get(NATIVEVOTES_VOTE_NO);
+    Event changeEvent = CreateEvent("vote_changed");
+    changeEvent.SetInt("yesVotes", yesVotes);
+    changeEvent.SetInt("noVotes", noVotes);
+    changeEvent.SetInt("potentialVotes", totalClients);
+    changeEvent.Fire();
+
+    if (CheckVoteController())
+    {
+        SetEntProp(g_VoteController, Prop_Send, "m_votesYes", yesVotes);
+        SetEntProp(g_VoteController, Prop_Send, "m_votesNo", noVotes);
+    }
 }
 
 static stock void L4DL4D2_UpdateClientCount(int num_clients)
@@ -1985,9 +1985,15 @@ static bool L4D2_CheckVoteType(NativeVotesType voteType)
 {
 	switch(voteType)
 	{
-		case NativeVotesType_Custom_YesNo, NativeVotesType_ChgCampaign, NativeVotesType_ChgDifficulty,
-		NativeVotesType_ReturnToLobby, NativeVotesType_AlltalkOn, NativeVotesType_AlltalkOff,
-		NativeVotesType_Restart, NativeVotesType_Kick, NativeVotesType_ChgLevel:
+		case NativeVotesType_Custom_YesNo,
+			 NativeVotesType_ChgCampaign,
+			 NativeVotesType_ChgDifficulty,
+			 NativeVotesType_ReturnToLobby,
+			 NativeVotesType_AlltalkOn,
+			 NativeVotesType_AlltalkOff,
+			 NativeVotesType_Restart,
+			 NativeVotesType_Kick,
+			 NativeVotesType_ChgLevel:
 		{
 			return true;
 		}
@@ -2000,9 +2006,13 @@ static bool L4D2_CheckVotePassType(NativeVotesPassType passType)
 {
 	switch(passType)
 	{
-		case NativeVotesPass_Custom, NativeVotesPass_ChgCampaign, NativeVotesPass_ChgDifficulty,
-		NativeVotesPass_ReturnToLobby, NativeVotesPass_AlltalkOn, NativeVotesPass_AlltalkOff,
-		NativeVotesPass_Restart, NativeVotesPass_Kick, NativeVotesPass_ChgLevel:
+		case NativeVotesPass_Custom,
+			 NativeVotesPass_ChgCampaign,
+			 NativeVotesPass_ChgDifficulty,
+			 NativeVotesPass_ReturnToLobby,
+			 NativeVotesPass_Restart,
+			 NativeVotesPass_Kick,
+			 NativeVotesPass_ChgLevel:
 		{
 			return true;
 		}
@@ -2097,17 +2107,14 @@ static void TF2CSGO_UpdateVoteCounts(ArrayList votes)
 	if (CheckVoteController())
 	{
 		int size = votes.Length;
-		for (int i = 0; i < size; i++)
-		{
-			SetEntProp(g_VoteController, Prop_Send, "m_nVoteOptionCount", votes.Get(i), 4, i);
-		}
-
 		Event changeEvent = CreateEvent("vote_changed");
 		for (int i = 0; i < size; i++)
 		{
-			char szOption[16];
-			Format(szOption, sizeof(szOption), "vote_option%d", i+1);
-			changeEvent.SetInt(szOption, votes.Get(i));
+			SetEntProp(g_VoteController, Prop_Send, "m_nVoteOptionCount", votes.Get(i), 4, i);
+
+			char szVoteOption[13];
+			Format(szVoteOption, sizeof(szVoteOption), "vote_option%d", i+1);
+			changeEvent.SetInt(szVoteOption, votes.Get(i));
 		}
 		changeEvent.SetInt("voteidx", s_nNativeVoteIdx);
 		changeEvent.SetInt("potentialVotes", GetEntProp(g_VoteController, Prop_Send, "m_nPotentialVotes"));
@@ -2166,42 +2173,42 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 		}
 		default:
 		{
-			Data_GetDetails(vote, details, MAX_VOTE_DETAILS_LENGTH);
-		}
-	}
+					Data_GetDetails(vote, details, MAX_VOTE_DETAILS_LENGTH);
+				}
+			}
 	
-	switch(g_EngineVersion)
-	{
-		case Engine_CSGO:
-		{
-			bYesNo = CSGO_VoteTypeToTranslation(voteType, translation, sizeof(translation));
-			CSGO_VoteTypeToVoteOtherTeamString(voteType, otherTeamString, sizeof(otherTeamString));
-		}
-		case Engine_TF2:
-		{
-			bYesNo = TF2_VoteTypeToTranslation(voteType, translation, sizeof(translation));
-		}
-	}
+			switch(g_EngineVersion)
+			{
+				case Engine_CSGO:
+				{
+					bYesNo = CSGO_VoteTypeToTranslation(voteType, translation, sizeof(translation));
+					CSGO_VoteTypeToVoteOtherTeamString(voteType, otherTeamString, sizeof(otherTeamString));
+				}
+				case Engine_TF2:
+				{
+					bYesNo = TF2_VoteTypeToTranslation(voteType, translation, sizeof(translation));
+				}
+			}
 	
-	int team = Data_GetTeam(vote);
+			int team = Data_GetTeam(vote);
 	
-	// Moved to mimic SourceSDK2013's server/vote_controller.cpp
-	if (CheckVoteController())
-	{
-		SetEntProp(g_VoteController, Prop_Send, "m_bIsYesNoVote", bYesNo);
+			// Moved to mimic SourceSDK2013's server/vote_controller.cpp
+			if (CheckVoteController())
+			{
+				SetEntProp(g_VoteController, Prop_Send, "m_bIsYesNoVote", bYesNo);
 		
-		// CSGO gets very cranky if you try setting this
-		if (g_EngineVersion == Engine_TF2)
-			SetEntProp(g_VoteController, Prop_Send, "m_iActiveIssueIndex", voteIndex);
+				// CSGO gets very cranky if you try setting this
+				if (g_EngineVersion == Engine_TF2)
+					SetEntProp(g_VoteController, Prop_Send, "m_iActiveIssueIndex", voteIndex);
 			
-		SetEntProp(g_VoteController, Prop_Send, "m_iOnlyTeamToVote", team);
-		for (int i = 0; i < 5; i++)
-		{
-			SetEntProp(g_VoteController, Prop_Send, "m_nVoteOptionCount", 0, _, i);
-		}
-		
-		if (!isTF2SDKModHack)
-		{
+				SetEntProp(g_VoteController, Prop_Send, "m_iOnlyTeamToVote", team);
+				for (int i = 0; i < 5; i++)
+				{
+					SetEntProp(g_VoteController, Prop_Send, "m_nVoteOptionCount", 0, _, i);
+				}
+
+				if (!isTF2SDKModHack)
+				{
 			// TODO(UPDATE): M-M-M-MULTIVOTE
 			// we need unique vote indices; HUD elements for previous votes aren't cleaned up (?)
 			// the game implements this as `this->m_nVoteIdx = s_nVoteIdx++`
@@ -2211,124 +2218,124 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 			PrintToServer("Starting vote index: %d (controller: %d)", s_nNativeVoteIdx, GetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx"));
 #endif
 			SetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx", s_nNativeVoteIdx + 1); // TODO(UPDATE)
-		}
-	}
+				}
+			}
 	
 	// According to Source SDK 2013, vote_options is only sent for a multiple choice vote.
 	// As of 2015-09-28, vote_options is sent for all votes in TF2 despite Yes/No being
 	// translated in the UI itself.
 	// As of 2016-07-10, we send this only when we're doing Yes/No votes as we handle
 	// multiple choice votes separately later.
-	if (bYesNo)
-	{
-		int itemCount = Data_GetItemCount(vote);
+			if (bYesNo)
+			{
+				int itemCount = Data_GetItemCount(vote);
 		
-		Event optionsEvent = CreateEvent("vote_options");
+				Event optionsEvent = CreateEvent("vote_options");
 		
-		for (int i = 0; i < itemCount; i++)
-		{
-			char option[8];
-			Format(option, sizeof(option), "%s%d", TF2CSGO_VOTE_PREFIX, i+1);
-			char display[TRANSLATION_LENGTH];
-			Data_GetItemDisplay(vote, i, display, sizeof(display));
+				for (int i = 0; i < itemCount; i++)
+				{
+					char option[8];
+					Format(option, sizeof(option), "%s%d", TF2CSGO_VOTE_PREFIX, i+1);
+					char display[TRANSLATION_LENGTH];
+					Data_GetItemDisplay(vote, i, display, sizeof(display));
 			
-			optionsEvent.SetString(option, display);
-		}
-		optionsEvent.SetInt("count", itemCount);
-		if (!isTF2SDKModHack)
-		{
-			optionsEvent.SetInt("voteidx", s_nNativeVoteIdx); // TODO(UPDATE)
-		}
-		optionsEvent.Fire();
-	}
-
-	// Moved to mimic SourceSDK2013's server/vote_controller.cpp
-	// For whatever reason, while the other props are set first, this one's set after the vote_options event
-	if (CheckVoteController())
-	{
-		SetEntProp(g_VoteController, Prop_Send, "m_nPotentialVotes", num_clients);
-	}
-
-	if (!isTF2SDKModHack)
-	{
-		int holder = vote.Initiator;
-		// required to allow the initiator to vote on their own issue
-		// ValveSoftware/Source-1-Games#3934
-		if (sv_vote_holder_may_vote_no && holder <= MaxClients && IsClientConnected(holder) && !IsFakeClient(holder))
-		{
-			sv_vote_holder_may_vote_no.ReplicateToClient(holder, "1");
-		}
-	}
-
-	MenuAction actions = Data_GetActions(vote);
-
-	for (int i = 0; i < num_clients; ++i)
-	{
-		g_newMenuTitle[0] = '\0';
-		
-		Action changeTitle = Plugin_Continue;
-		if (bCustom && actions & MenuAction_Display)
-		{
-			g_curDisplayClient = clients[i];
-			changeTitle = DoAction(vote, MenuAction_Display, clients[i], 0);
-		}
-		
-		g_curDisplayClient = 0;
-
-		if (!bYesNo)
-		{
-			TF2CSGO_SendOptionsToClient(vote, clients[i]);
-		}
-
-		Handle voteStart = StartMessageOne("VoteStart", clients[i], USERMSG_RELIABLE);
-		
-		if(g_bUserBuf)
-		{
-			Protobuf protoStart = UserMessageToProtobuf(voteStart);
-			protoStart.SetInt("team", team);
-			protoStart.SetInt("ent_idx", Data_GetInitiator(vote));
-			protoStart.SetString("disp_str", translation);
-			if (bCustom && changeTitle == Plugin_Changed)
-			{
-				protoStart.SetString("details_str", g_newMenuTitle);
+					optionsEvent.SetString(option, display);
+				}
+				optionsEvent.SetInt("count", itemCount);
+				if (!isTF2SDKModHack)
+				{
+					optionsEvent.SetInt("voteidx", s_nNativeVoteIdx); // TODO(UPDATE)
+				}
+				optionsEvent.Fire();
 			}
-			else
+
+			// Moved to mimic SourceSDK2013's server/vote_controller.cpp
+			// For whatever reason, while the other props are set first, this one's set after the vote_options event
+			if (CheckVoteController())
 			{
-				protoStart.SetString("details_str", details);
+				SetEntProp(g_VoteController, Prop_Send, "m_nPotentialVotes", num_clients);
 			}
-			protoStart.SetBool("is_yes_no_vote", bYesNo);
-			protoStart.SetString("other_team_str", otherTeamString);
-			protoStart.SetInt("vote_type", voteIndex);
-		}
-		else
-		{
-			BfWrite bfStart = UserMessageToBfWrite(voteStart);
-			bfStart.WriteByte(team);
+
 			if (!isTF2SDKModHack)
 			{
-				bfStart.WriteNum(s_nNativeVoteIdx);
+				int holder = vote.Initiator;
+				// required to allow the initiator to vote on their own issue
+				// ValveSoftware/Source-1-Games#3934
+				if (sv_vote_holder_may_vote_no && holder <= MaxClients && IsClientConnected(holder) && !IsFakeClient(holder))
+				{
+					sv_vote_holder_may_vote_no.ReplicateToClient(holder, "1");
+				}
 			}
-			bfStart.WriteByte(Data_GetInitiator(vote));
-			bfStart.WriteString(translation);
-			if (bCustom && changeTitle == Plugin_Changed)
+
+			MenuAction actions = Data_GetActions(vote);
+
+			for (int i = 0; i < num_clients; ++i)
 			{
-				bfStart.WriteString(g_newMenuTitle);
-			}
-			else
-			{
-				bfStart.WriteString(details);
-			}
-			bfStart.WriteByte(bYesNo);
-			if (!isTF2SDKModHack && !IsFakeClient(clients[i]))
-			{
-				bfStart.WriteByte(Data_GetTarget(vote) - 1);
-			}
-		}
+				g_newMenuTitle[0] = '\0';
 		
-		EndMessage();
-	}
+				Action changeTitle = Plugin_Continue;
+				if (bCustom && actions & MenuAction_Display)
+				{
+					g_curDisplayClient = clients[i];
+					changeTitle = DoAction(vote, MenuAction_Display, clients[i], 0);
+				}
+		
+				g_curDisplayClient = 0;
+
+				if (!bYesNo)
+				{
+					TF2CSGO_SendOptionsToClient(vote, clients[i]);
+				}
+
+				Handle voteStart = StartMessageOne("VoteStart", clients[i], USERMSG_RELIABLE);
+		
+				if(g_bUserBuf)
+				{
+					Protobuf protoStart = UserMessageToProtobuf(voteStart);
+					protoStart.SetInt("team", team);
+					protoStart.SetInt("ent_idx", Data_GetInitiator(vote));
+					protoStart.SetString("disp_str", translation);
+					if (bCustom && changeTitle == Plugin_Changed)
+					{
+						protoStart.SetString("details_str", g_newMenuTitle);
+					}
+					else
+					{
+						protoStart.SetString("details_str", details);
+					}
+					protoStart.SetBool("is_yes_no_vote", bYesNo);
+					protoStart.SetString("other_team_str", otherTeamString);
+					protoStart.SetInt("vote_type", voteIndex);
+				}
+				else
+				{
+					BfWrite bfStart = UserMessageToBfWrite(voteStart);
+					bfStart.WriteByte(team);
+					if (!isTF2SDKModHack)
+					{
+						bfStart.WriteNum(s_nNativeVoteIdx);
+					}
+					bfStart.WriteByte(Data_GetInitiator(vote));
+					bfStart.WriteString(translation);
+					if (bCustom && changeTitle == Plugin_Changed)
+					{
+						bfStart.WriteString(g_newMenuTitle);
+					}
+					else
+					{
+						bfStart.WriteString(details);
+					}
+					bfStart.WriteByte(bYesNo);
+					if (!isTF2SDKModHack && !IsFakeClient(clients[i]))
+					{
+						bfStart.WriteByte(Data_GetTarget(vote) - 1);
+					}
+				}
+		
+				EndMessage();
+			}
 	
-	g_curDisplayClient = 0;
+			g_curDisplayClient = 0;
 }
 
 static void TF2CSGO_SendOptionsToClient(NativeVote vote, int client)
@@ -2532,7 +2539,7 @@ static void TF2_DisplayVoteSetup(int client, ArrayList hVoteTypes)
 static void TF2CSGO_ResetVote()
 {
 	if (CheckVoteController())
-	{	
+	{
 		if (g_EngineVersion == Engine_TF2)
 		{
 			SetEntProp(g_VoteController, Prop_Send, "m_iActiveIssueIndex", INVALID_ISSUE);
@@ -2545,7 +2552,7 @@ static void TF2CSGO_ResetVote()
 		for (int i = 0; i < 5; i++)
 		{
 			SetEntProp(g_VoteController, Prop_Send, "m_nVoteOptionCount", 0, _, i);
-		}
+			}
 		SetEntProp(g_VoteController, Prop_Send, "m_nPotentialVotes", 0);
 		if (g_EngineVersion == Engine_TF2)
 		{
@@ -2777,7 +2784,7 @@ static void TF2_AddDefaultVotes(ArrayList hVoteTypes, bool bHideDisabledVotes)
 		return;
 	}
 
-	if (GameRules_GetProp("m_bPlayingMannVsMachine"))
+	if (g_EngineVersion == Engine_TF2 && GameRules_GetProp("m_bPlayingMannVsMachine"))
 	{
 		// Default MvM vote types
 		
