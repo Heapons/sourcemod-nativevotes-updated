@@ -52,10 +52,10 @@
 
 public Plugin myinfo =
 {
-	name = "[NativeVotes] Rock The Vote",
+	name = "NativeVotes | Rock The Vote",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Provides RTV Map Voting",
-	version = "26w02h",
+	version = "26w03a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -92,14 +92,15 @@ public void OnPluginStart()
 	LoadTranslations("common.phrases");
 	LoadTranslations("rockthevote.phrases");
 	
-	g_ConVars[needed] = CreateConVar("sm_rtv_needed", "0.60", "Percentage of players needed to rockthevote (Def 60%)", 0, true, 0.05, true, 1.0);
-	g_ConVars[minplayers] = CreateConVar("sm_rtv_minplayers", "0", "Number of players required before RTV will be enabled.", 0, true, 0.0, true, float(MAXPLAYERS));
-	g_ConVars[initialdelay] = CreateConVar("sm_rtv_initialdelay", "30.0", "Time (in seconds) before first RTV can be held", 0, true, 0.00);
-	g_ConVars[interval] = CreateConVar("sm_rtv_interval", "240.0", "Time (in seconds) after a failed RTV before another can be held", 0, true, 0.00);
-	g_ConVars[changetime] = CreateConVar("sm_rtv_changetime", "0", "When to change the map after a succesful RTV: 0 - Instant, 1 - RoundEnd, 2 - MapEnd", _, true, 0.0, true, 2.0);
+	g_ConVars[needed] 		  = CreateConVar("sm_rtv_needed", "0.60", "Percentage of players needed to rockthevote (Def 60%)", 0, true, 0.05, true, 1.0);
+	g_ConVars[minplayers]     = CreateConVar("sm_rtv_minplayers", "0", "Number of players required before RTV will be enabled.", 0, true, 0.0, true, float(MAXPLAYERS));
+	g_ConVars[initialdelay]   = CreateConVar("sm_rtv_initialdelay", "30.0", "Time (in seconds) before first RTV can be held", 0, true, 0.00);
+	g_ConVars[interval] 	  = CreateConVar("sm_rtv_interval", "240.0", "Time (in seconds) after a failed RTV before another can be held", 0, true, 0.00);
+	g_ConVars[changetime] 	  = CreateConVar("sm_rtv_changetime", "0", "When to change the map after a succesful RTV: 0 - Instant, 1 - RoundEnd, 2 - MapEnd", _, true, 0.0, true, 2.0);
 	g_ConVars[postvoteaction] = CreateConVar("sm_rtv_postvoteaction", "0", "What to do with RTV's after a mapvote has completed. 0 - Allow, success = instant change, 1 - Deny", _, true, 0.0, true, 1.0);
 	
 	RegConsoleCmd("sm_rtv", Command_RTV);
+	RegConsoleCmd("sm_rockthevote", Command_RTV);
 	RegAdminCmd("sm_forcertv", Command_ForceRTV, ADMFLAG_CHANGEMAP);
 	RegAdminCmd("sm_resetrtv", Command_ResetRTV, ADMFLAG_CHANGEMAP);
 	
@@ -108,7 +109,7 @@ public void OnPluginStart()
 	OnMapEnd();
 
 	/* Handle late load */
-	for (int i=1; i<=MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientConnected(i))
 		{
@@ -304,18 +305,9 @@ void MenuHandler_UndoRTV(Menu menu, MenuAction action, int client, int param2)
 		{
 			if (g_Voted[client])
 			{
-				char name[MAX_NAME_LENGTH]; int r, g, b, a, color;
-				GetEntityRenderColor(client, r, g, b, a);
-				color = (r << 16) | (g << 8) | b;
-				if (color != 0xFFFFFF)
-				{
-					Format(name, sizeof(name), "{#%06X}%N\x01", color, client);
-				}
-				else
-				{
-					Format(name, sizeof(name), "{teamcolor}%N\x01", client);
-				}
-				
+				char name[MAX_NAME_LENGTH];
+				GetPlayerName(client, name, sizeof(name));
+
 				g_Voted[client] = false;
 				if (g_Votes > 0) g_Votes--;
 				CPrintToChatAllEx(client, "[{lightgreen}Rock The Vote\x01] %s: %t", name, "Cancelled Vote");
@@ -327,7 +319,13 @@ void MenuHandler_UndoRTV(Menu menu, MenuAction action, int client, int param2)
 
 void AttemptRTV(int client, bool isVoteMenu=false)
 {
-	if (!g_RTVAllowed  || (g_ConVars[postvoteaction].IntValue == 1 && HasEndOfMapVoteFinished()))
+	if (g_Voted[client])
+	{
+		UndoRTV(client);
+		return;
+	}
+
+	if (!g_RTVAllowed || (g_ConVars[postvoteaction].IntValue == 1 && HasEndOfMapVoteFinished()))
 	{
 		CReplyToCommand(client, "[{lightgreen}Rock The Vote\x01] %t", "RTV Not Allowed");
 		if (isVoteMenu && g_NativeVotes)
@@ -354,7 +352,7 @@ void AttemptRTV(int client, bool isVoteMenu=false)
 		
 	if (!CanMapChooserStartVote() && NativeVotes_IsVoteInProgress())
 	{
-		CReplyToCommandEx(client, client, "[{lightgreen}Rock The Vote\x01] %t", "RTV Started");
+		CReplyToCommand(client, "[{lightgreen}Rock The Vote\x01] %t", "RTV Started");
 		return;
 	}
 	
@@ -368,24 +366,9 @@ void AttemptRTV(int client, bool isVoteMenu=false)
 		return;			
 	}
 	
-	if (g_Voted[client])
-	{
-		UndoRTV(client);
-		return;
-	}	
-	
-	char name[MAX_NAME_LENGTH]; int r, g, b, a, color;
-	GetEntityRenderColor(client, r, g, b, a);
-	color = (r << 16) | (g << 8) | b;
-	if (color != 0xFFFFFF)
-	{
-		Format(name, sizeof(name), "{#%06X}%N\x01", color, client);
-	}
-	else
-	{
-		Format(name, sizeof(name), "{teamcolor}%N\x01", client);
-	}
-	
+	char name[MAX_NAME_LENGTH];
+	GetPlayerName(client, name, sizeof(name));
+
 	g_Votes++;
 	g_Voted[client] = true;
 	
@@ -449,7 +432,7 @@ void ResetRTV()
 {
 	g_Votes = 0;
 			
-	for (int i=1; i<=MAXPLAYERS; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		g_Voted[i] = false;
 	}
@@ -508,10 +491,7 @@ public Action Menu_RTV(int client, NativeVotesOverride overrideType, const char[
 	}
 	
 	ReplySource old = SetCmdReplySource(SM_REPLY_TO_CHAT);
-	
-	// awful hack, but whatever
-	char mapname[96];
-	strcopy(mapname, sizeof(mapname), voteArgument);
+
 	FakeClientCommand(client, "sm_nominate %s", voteArgument);
 
 	AttemptRTV(client, true);
@@ -519,4 +499,19 @@ public Action Menu_RTV(int client, NativeVotesOverride overrideType, const char[
 	SetCmdReplySource(old);
 	
 	return Plugin_Handled;
+}
+
+void GetPlayerName(int client, char[] name, int maxlen)
+{
+	int r, g, b, a, color;
+	GetEntityRenderColor(client, r, g, b, a);
+	color = (r << 16) | (g << 8) | b;
+	if (color != 0xFFFFFF)
+	{
+		Format(name, maxlen, "{#%06X}%N\x01", color, client);
+	}
+	else
+	{
+		Format(name, maxlen, "{teamcolor}%N\x01", client);
+	}
 }

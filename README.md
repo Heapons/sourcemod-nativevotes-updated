@@ -5,20 +5,31 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 > [!WARNING]
 > This plugin has only been tested in [<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> **Team Fortress 2**](https://store.steampowered.com/app/440)‼ If it doesn't work in any other game, open an [issue](https://github.com/Heapons/sourcemod-nativevotes-updated/issues/new).
 
-# To-Do (Wishlist...?)
+# [Differences](https://github.com/sapphonie/sourcemod-nativevotes-updated/compare/master...Heapons:sourcemod-nativevotes-updated:master)
 ## General
-- [x] Include [NativeVotes BaseVotes and FunVotes](https://github.com/powerlord/sourcemod-nativevotes-basevotes) in this repository.
-- [ ] Chat tweaks.
-  - [x] Team-colored player names.
-  - [x] Highlight map names.
-    - [ ] Parse workshop map titles.
-- [x] Update [Nominations](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_nominations.sp) and [Rock The Vote](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_rockthevote.sp) to match with the latest [Sourcemod](https://github.com/alliedmodders/sourcemod/tree/master/plugins) version.
-- [x] Add [`sm_voterp`](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_voterp.sp).
+- Include [NativeVotes BaseVotes and FunVotes](https://github.com/powerlord/sourcemod-nativevotes-basevotes) in this repository.
+  - Show player avatar on vote panel (if the game supports it).
+    - Applies to: [voteban](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_basevotes/voteban.sp), [votekick](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_basevotes/votekick.sp), [voteburn](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_funvotes/voteburn.sp), [voteslay](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_funvotes/voteslay.sp).
+- Chat tweaks.
+  - Team-colored player names.
+  - Highlight map names.
+- Update [Nominations](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_nominations.sp) and [Rock The Vote](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_rockthevote.sp) to be on par with the latest [Sourcemod](https://github.com/alliedmodders/sourcemod/tree/master/plugins) version.
+
+### Team Fortress 2
+- Fixed ✔️/❌ vote counts.
+- Add [`sm_voterp`](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_voterp.sp).
   - Controls `tf_medieval_autorp` cvar.
+
 ## [Rock The Vote](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_rockthevote.sp)
-- [x] Add `sm_forcertv` for admins.
-- [x] Allow players to retract their rock-the-vote.
+- Admin commands.
+  - `sm_forcertv`.
+    - Force a RTV.
+  - `sm_resetrtv`.
+    - Reset RTV counts.
+- Allow players to retract their rock-the-vote.
   - Execute `sm_rtv` again to undo.
+
 ## [Nominations](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_nominations.sp)
-- [ ] Download and nominate workshop maps.
-  - Inspired by [[TF2] Workshop Vote](https://forums.alliedmods.net/showthread.php?p=2717878).
+### Team Fortress 2
+- Attempting to nominate with no argument will open **Vote Setup** (`callvote`).
+- Support partial map name matches.

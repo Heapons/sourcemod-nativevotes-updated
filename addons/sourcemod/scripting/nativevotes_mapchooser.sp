@@ -47,10 +47,10 @@
 
 public Plugin myinfo =
 {
-	name = "[NativeVotes] MapChooser",
+	name = "NativeVotes | MapChooser",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Automated Map Voting",
-	version = "26w02h",
+	version = "26w03a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -1216,7 +1216,7 @@ public int Handler_NV_MapVoteMenu(NativeVote menu, MenuAction action, int param1
 			{
 				int count = menu.ItemCount;
 				char map[96];
-				char displayName[PLATFORM_MAX_PATH];
+				char displayName[64];
 				menu.GetItem(0, map, sizeof(map));
 				
 				// Make sure the first map in the menu isn't one of the special items.

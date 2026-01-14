@@ -1,11 +1,3 @@
-/**
- * vim: set ts=4 :
- * =============================================================================
- * NativeVotes: sm_voterp - Vote to enable/disable tf_medieval_autorp
- * Only works in TF2.
- * =============================================================================
- */
-
 #include <sourcemod>
 #include <sdktools>
 #include <tf2>
@@ -16,10 +8,10 @@
 
 public Plugin myinfo =
 {
-	name = "[NativeVotes] Medieval Auto-RP",
+	name = "NativeVotes | Medieval Auto-RP",
 	author = "Heapons",
 	description = "Provides Medieval Auto-RP voting.",
-	version = "26w02h",
+	version = "26w03a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 

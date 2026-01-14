@@ -152,7 +152,7 @@ public Plugin myinfo =
 	name = "NativeVotes",
 	author = "Powerlord",
 	description = "Voting API to use the game's native vote panels. Compatible with L4D, L4D2, TF2, and CS:GO.",
-	version = "26w02h",
+	version = "26w03a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 }
 
@@ -1014,7 +1014,7 @@ bool:SendResultCallback(Handle:vote, num_votes, num_items, const votes[][])
 
 void DrawHintProgress()
 {
-	if (!g_ConVars[progress_hintbox].BoolValue)
+	if (!g_ConVars[progress_hintbox].BoolValue || NativeVotes_GetType(g_hCurVote) == NativeVotesType_Custom_YesNo)
 	{
 		return;
 	}

@@ -50,11 +50,11 @@ bool g_bRegistered = false;
 bool g_bMapActive = false;
 
 public Plugin myinfo = {
-	name			= "[NativeVotes] Kick Vote Immunity",
+	name			= "NativeVotes | Kick Vote Immunity",
 	author			= "Powerlord",
 	description		= "Causes TF2 kick votes to fail against people who the current user can't target.",
-	version			= "25w02e",
-	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
+	version			= "26w03a",
+	url 			= "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
 public void OnPluginStart()

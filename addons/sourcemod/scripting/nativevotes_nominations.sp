@@ -45,10 +45,10 @@
 
 public Plugin myinfo =
 {
-	name = "[NativeVotes] Map Nominations",
+	name = "NativeVotes | Map Nominations",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Provides Map Nominations",
-	version = "26w02h",
+	version = "26w03a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -57,7 +57,7 @@ enum
 	excludeold,
 	excludecurrent,
 	maxmatches,
-	//allow_workshop,
+	allow_workshop,
 
 	nextlevel_allowed,
 
@@ -92,12 +92,11 @@ public void OnPluginStart()
 	
 	int arraySize = ByteCountToCells(PLATFORM_MAX_PATH);
 	g_MapList = new ArrayList(arraySize);
-	
-	
+
 	g_ConVars[excludeold] 	  	 = CreateConVar("sm_nominate_excludeold", "1", "Specifies if the current map should be excluded from the Nominations list", 0, true, 0.0, true, 1.0);
 	g_ConVars[excludecurrent] 	 = CreateConVar("sm_nominate_excludecurrent", "1", "Specifies if the MapChooser excluded maps should also be excluded from Nominations", 0, true, 0.0, true, 1.0);
 	g_ConVars[maxmatches] 	  	 = CreateConVar("sm_nominate_maxfound", "0", "Maximum number of nomination matches to add to the menu. 0 = infinite.", _, true, 0.0);
-	//g_ConVars[allow_workshop]  = CreateConVar("sm_nominate_allow_workshop", "0", "Specifies if unlisted workshop maps should be allowed to be nominated", 0, true, 0.0, true, 1.0);
+	g_ConVars[allow_workshop]    = CreateConVar("sm_nominate_allow_workshop", "0", "Specifies if unlisted workshop maps can be nominated", 0, true, 0.0, true, 1.0);
 
 	g_ConVars[nextlevel_allowed] = FindConVar("sv_vote_issue_nextlevel_allowed");
 
@@ -133,8 +132,8 @@ public void OnAllPluginsLoaded()
 	}
 	
 	g_NativeVotes = LibraryExists(LIBRARY) && 
-		GetFeatureStatus(FeatureType_Native, "NativeVotes_AreVoteCommandsSupported") == FeatureStatus_Available && 
-		NativeVotes_AreVoteCommandsSupported();
+					GetFeatureStatus(FeatureType_Native, "NativeVotes_AreVoteCommandsSupported") == FeatureStatus_Available &&
+					NativeVotes_AreVoteCommandsSupported();
 		
 	if (g_NativeVotes)
 		RegisterVoteHandler();
@@ -142,7 +141,7 @@ public void OnAllPluginsLoaded()
 
 public void OnLibraryAdded(const char[] name)
 {
-	if (StrEqual(name, LIBRARY, false) && 
+	if (StrEqual(name, "nativevotes", false) && 
 		GetFeatureStatus(FeatureType_Native, "NativeVotes_AreVoteCommandsSupported") == FeatureStatus_Available && 
 		NativeVotes_AreVoteCommandsSupported())
 	{
@@ -153,7 +152,7 @@ public void OnLibraryAdded(const char[] name)
 
 public void OnLibraryRemoved(const char[] name)
 {
-	if (StrEqual(name, LIBRARY, false))
+	if (StrEqual(name, "nativevotes", false))
 	{
 		g_NativeVotes = false;
 		RemoveVoteHandler();
@@ -162,11 +161,7 @@ public void OnLibraryRemoved(const char[] name)
 
 public void OnConfigsExecuted()
 {
-	if (ReadMapList(g_MapList,
-					g_mapFileSerial,
-					"nominations",
-					MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER)
-		== null)
+	if (ReadMapList(g_MapList, g_mapFileSerial, "nominations", MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER) == null)
 	{
 		if (g_mapFileSerial == -1)
 		{
@@ -294,7 +289,7 @@ public Action Command_Nominate(int client, int args)
 
 	char mapname[96];
 	GetCmdArg(1, mapname, sizeof(mapname));
-	
+
 	ArrayList results = new ArrayList();
 	int matches = FindMatchingMaps(g_MapList, results, mapname);
 
@@ -392,20 +387,20 @@ void AttemptNominate(int client, const char[] map, int size, bool isVoteMenu)
 	}
 	
 	char displayName[PLATFORM_MAX_PATH];
-	GetMapDisplayName(mapname, displayName, sizeof(displayName));
+		GetMapDisplayName(mapname, displayName, sizeof(displayName));
 	Format(displayName, sizeof(displayName), "\x05%s\x01", displayName);
 	
 	int status;
 	if (!g_MapTrie.GetValue(mapname, status))
-	{
-		CReplyToCommand(client, "[{lightgreen}Nominations\x01] %t", "Map Not In Pool", displayName);
-		if (isVoteMenu && g_NativeVotes)
 		{
-			NativeVotes_DisplayCallVoteFail(client, NativeVotesCallFail_MapNotValid);
-		}
-		return;		
+			CReplyToCommand(client, "[{lightgreen}Nominations\x01] %t", "Map Not In Pool", displayName);
+			if (isVoteMenu && g_NativeVotes)
+			{
+				NativeVotes_DisplayCallVoteFail(client, NativeVotesCallFail_MapNotValid);
+			}
+			return;        
 	}
-	
+
 	if ((status & MAPSTATUS_DISABLED) == MAPSTATUS_DISABLED)
 	{
 		if ((status & MAPSTATUS_EXCLUDE_CURRENT) == MAPSTATUS_EXCLUDE_CURRENT)
@@ -439,7 +434,7 @@ void AttemptNominate(int client, const char[] map, int size, bool isVoteMenu)
 	}
 	
 	NominateResult result = NominateMap(mapname, false, client);
-	
+
 	if (result > Nominate_Replaced)
 	{
 		if (result == Nominate_AlreadyInVote)
@@ -461,22 +456,13 @@ void AttemptNominate(int client, const char[] map, int size, bool isVoteMenu)
 		
 		return;	
 	}
-	
+
 	/* Map was nominated! - Disable the menu item and update the trie */
 	
-	g_MapTrie.SetValue(mapname, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
-	
-	char name[MAX_NAME_LENGTH]; int r, g, b, a, color;
-	GetEntityRenderColor(client, r, g, b, a);
-	color = (r << 16) | (g << 8) | b;
-	if (color != 0xFFFFFF)
-	{
-		Format(name, sizeof(name), "{#%06X}%N\x01", color, client);
-	}
-	else
-	{
-		Format(name, sizeof(name), "{teamcolor}%N\x01", client);
-	}
+		g_MapTrie.SetValue(mapname, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
+		
+		char name[MAX_NAME_LENGTH];	
+		GetPlayerName(client, name, sizeof(name));
 
 	if (result == Nominate_Added) {
 		CPrintToChatAllEx(client, "[{lightgreen}Nominations\x01] %t", "Map Nominated", name, displayName);
@@ -746,4 +732,19 @@ public Action NativeVotes_OverrideMaps(StringMap mapList)
 	}
 	
 	return Plugin_Continue;
+}
+
+void GetPlayerName(int client, char[] name, int maxlen)
+{
+	int r, g, b, a, color;
+	GetEntityRenderColor(client, r, g, b, a);
+	color = (r << 16) | (g << 8) | b;
+	if (color != 0xFFFFFF)
+	{
+		Format(name, maxlen, "{#%06X}%N\x01", color, client);
+	}
+	else
+	{
+		Format(name, maxlen, "{teamcolor}%N\x01", client);
+	}
 }

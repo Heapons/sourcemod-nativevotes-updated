@@ -44,10 +44,10 @@
 
 public Plugin myinfo =
 {
-	name = "[NativeVotes] Fun Votes",
+	name = "NativeVotes | Fun Votes",
 	author = "Powerlord and AlliedModders LLC",
 	description = "NativeVotes Fun Vote Commands",
-	version = "26w02h",
+	version = "26w03a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -321,18 +321,8 @@ public int Handler_VoteCallback(Handle menu, MenuAction action, int param1, int 
 			{
 				CPrintToChatAll("%t", "Vote Successful", RoundToNearest(100.0*percent), totalVotes);
 				
-				int client = GetClientOfUserId(g_voteClient[VOTE_USERID]);
-				int r, g, b, a, color;
-				GetEntityRenderColor(client, r, g, b, a);
-				color = (r << 16) | (g << 8) | b;
-				if (color != 0xFFFFFF)
-				{
-					Format(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[VOTE_NAME]), "{#%06X}%N\x01", color, client);
-				}
-				else
-				{
-					Format(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[VOTE_NAME]), "{teamcolor}%N\x01", client);
-				}
+				char name[MAX_NAME_LENGTH];
+				GetPlayerName(g_voteClient[VOTE_CLIENTID], name, sizeof(name));
 
 				switch (g_voteType)
 				{
@@ -344,14 +334,14 @@ public int Handler_VoteCallback(Handle menu, MenuAction action, int param1, int 
 					}
 					case burn:
 					{
-						CPrintToChatAllEx(client, "%t", "Set target on fire", "_s", g_voteInfo[VOTE_NAME]);					
+						CPrintToChatAllEx(g_voteClient[VOTE_CLIENTID], "%t", "Set target on fire", "_s", name);                    
 						LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote burn successful, igniting \"%L\"", g_voteClient[VOTE_CLIENTID]);
 						
 						IgniteEntity(g_voteClient[VOTE_CLIENTID], 19.8);	
 					}
 					case slay:
 					{
-						CPrintToChatAllEx(client, "%t", "Slayed player", "_s", g_voteInfo[VOTE_NAME]);					
+						CPrintToChatAllEx(g_voteClient[VOTE_CLIENTID], "%t", "Slayed player", "_s", name);						
 						LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote slay successful, slaying \"%L\"", g_voteClient[VOTE_CLIENTID]);
 						
 						ExtinguishEntity(g_voteClient[VOTE_CLIENTID]);
@@ -559,4 +549,19 @@ bool Internal_IsNewVoteAllowed()
 	}
 	
 	return IsNewVoteAllowed();
+}
+
+void GetPlayerName(int client, char[] name, int maxlen)
+{
+	int r, g, b, a, color;
+	GetEntityRenderColor(client, r, g, b, a);
+	color = (r << 16) | (g << 8) | b;
+	if (color != 0xFFFFFF)
+	{
+		Format(name, maxlen, "{#%06X}%N\x01", color, client);
+	}
+	else
+	{
+		Format(name, maxlen, "{teamcolor}%N\x01", client);
+	}
 }

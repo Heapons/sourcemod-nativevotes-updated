@@ -37,17 +37,8 @@ void DisplayVoteKickMenu(int client, int target)
 	g_voteClient[VOTE_CLIENTID] = target;
 	g_voteClient[VOTE_USERID] = GetClientUserId(target);
 
-	char playerName[MAX_NAME_LENGTH]; int r, g, b, a, color;
-	GetEntityRenderColor(target, r, g, b, a);
-	color = (r << 16) | (g << 8) | b;
-	if (color != 0xFFFFFF)
-	{
-		Format(playerName, sizeof(playerName), "{#%06X}%N\x01", color, target);
-	}
-	else
-	{
-		Format(playerName, sizeof(playerName), "{teamcolor}%N\x01", target);
-	}
+	char playerName[MAX_NAME_LENGTH];
+	GetPlayerName(target, playerName, sizeof(playerName));
 
 	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
 

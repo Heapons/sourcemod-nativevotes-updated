@@ -43,10 +43,10 @@
 
 public Plugin:myinfo =
 {
-	name = "[NativeVotes] Basic Votes",
+	name = "NativeVotes | Basic Votes",
 	author = "Powerlord and AlliedModders LLC",
 	description = "NativeVotes Basic Vote Commands",
-	version = "26w02h",
+	version = "26w03a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -728,4 +728,19 @@ bool Internal_IsNewVoteAllowed()
 		return NativeVotes_IsNewVoteAllowed();
 	}
 	return IsNewVoteAllowed();
+}
+
+void GetPlayerName(int client, char[] name, int maxlen)
+{
+	int r, g, b, a, color;
+	GetEntityRenderColor(client, r, g, b, a);
+	color = (r << 16) | (g << 8) | b;
+	if (color != 0xFFFFFF)
+	{
+		Format(name, maxlen, "{#%06X}%N\x01", color, client);
+	}
+	else
+	{
+		Format(name, maxlen, "{teamcolor}%N\x01", client);
+	}
 }

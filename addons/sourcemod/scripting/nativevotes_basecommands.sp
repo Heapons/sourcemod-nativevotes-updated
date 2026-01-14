@@ -45,10 +45,10 @@ TopMenu hTopMenu;
 
 public Plugin myinfo = 
 {
-	name = "[NativeVotes] Basic Commands",
+	name = "NativeVotes | Basic Commands",
 	author = "Powerlord and AlliedModders LLC",
 	description = "Revote and Cancel support for NativeVotes",
-	version = "26w02h",
+	version = "26w03a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 }
 
