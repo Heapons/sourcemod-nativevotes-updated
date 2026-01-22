@@ -39,8 +39,8 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#include "include/nativevotes.inc"
-#include "include/implodeexplode.inc"
+#include <nativevotes>
+#include <implodeexplode>
 
 EngineVersion g_EngineVersion = Engine_Unknown;
 
@@ -121,8 +121,6 @@ ConVar sv_vote_holder_may_vote_no;
 
 // Map list stuffs
 
-#define STRINGTABLE_NAME					"ServerMapCycle"
-#define STRINGTABLE_ITEM					"ServerMapCycle"
 //#define MAP_STRING_CACHE_SIZE				PLATFORM_MAX_PATH * 256
 
 // Forward
@@ -152,7 +150,7 @@ public Plugin myinfo =
 	name = "NativeVotes",
 	author = "Powerlord",
 	description = "Voting API to use the game's native vote panels. Compatible with L4D, L4D2, TF2, and CS:GO.",
-	version = "26w03a",
+	version = "26w04a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 }
 
@@ -313,8 +311,15 @@ public Action Timer_RetryCallVote(Handle timer, any data)
 
 public void ProcessMapList()
 {
-	int stringTableIndex = FindStringTable(STRINGTABLE_NAME);
-	int stringIndex = FindStringIndex(stringTableIndex, STRINGTABLE_ITEM);
+	char stringTableName[64] = "ServerMapCycle", stringTableItem[64] = "ServerMapCycle";
+	if (FindSendPropInfo("CTFGameRulesProxy", "m_bPlayingMannVsMachine") > 0 && GameRules_GetProp("m_bPlayingMannVsMachine"))
+	{
+		Format(stringTableName, sizeof(stringTableName), "%sMvM", stringTableName);
+		Format(stringTableItem, sizeof(stringTableItem), "%sMvM", stringTableItem);
+	}
+
+	int stringTableIndex = FindStringTable(stringTableName);
+	int stringIndex = FindStringIndex(stringTableIndex, stringTableItem);
 
 	StringMap overrideList = new StringMap();
 	
@@ -550,7 +555,6 @@ public Action Command_CallVote(int client, const char[] command, int argc)
 	
 					GetClientName(targetClient, argument, sizeof(argument));
 				}
-				
 				case NativeVotesType_ChgLevel, NativeVotesType_NextLevel:
 				{
 					if (g_MapOverrides == null)
@@ -564,8 +568,7 @@ public Action Command_CallVote(int client, const char[] command, int argc)
 						GetCmdArg(2, map, sizeof(map));
 						g_MapOverrides.GetString(map, argument, sizeof(argument));
 					}
-				}
-				
+				}	
 				default:
 				{
 					GetCmdArg(2, argument, sizeof(argument));
@@ -1420,9 +1423,7 @@ bool Internal_IsVoteInProgress()
 
 bool Internal_IsClientInVotePool(int client)
 {
-	if (client < 1
-		|| client > MaxClients
-		|| g_hCurVote == null)
+	if (client < 1 || client > MaxClients || g_hCurVote == null)
 	{
 		return false;
 	}
@@ -1456,8 +1457,7 @@ bool Internal_RedrawToClient(int client, bool revotes)
 	//Game_DisplayVoteFail(g_hCurVote, NativeVotesFail_Generic, client);
 	
 	// No, display a vote pass screen because that's nicer and we can customize it.
-	// Note: This isn't inside the earlier if because some players have had issues where the display
-	//   doesn't always appear the first time.
+	// @note This isn't inside the earlier if because some players have had issues where the display doesn't always appear the first time.
 	char revotePhrase[128];
 	Format(revotePhrase, sizeof(revotePhrase), "%T", "NativeVotes Revote", client);
 	Game_DisplayVotePassCustom(g_hCurVote, revotePhrase, client);
@@ -1605,13 +1605,13 @@ public int Native_Close(Handle plugin, int numParams)
 		CancelVoting();
 		g_hCurVote = null;
 
-/*		
+		/*		
 		if (g_hVoteTimer != INVALID_HANDLE)
 		{
 			KillTimer(g_hVoteTimer);
 			g_hVoteTimer = INVALID_HANDLE;
 		}
-*/
+		*/
 	}
 	
 	// This bit is necessary because the Forward system appears to not remove these when the forward Handle is closed
@@ -1756,12 +1756,7 @@ public int Native_RemoveAllItems(Handle plugin, int numParams)
 	Data_RemoveAllItems(vote);
 }
 
-// native bool:NativeVotes_GetItem(Handle:vote, 
-//						position, 
-//						String:infoBuf[], 
-//						infoBufLen,
-//						String:dispBuf[]="",
-//						dispBufLen=0);
+// native bool NativeVotes_GetItem(Handle vote, int position, const char[] infoBuf, int infoBufLen, const char[] dispBuf = "", int dispBufLen = 0);
 public int Native_GetItem(Handle plugin, int numParams)
 {
 	NativeVote vote = GetNativeCell(1);
