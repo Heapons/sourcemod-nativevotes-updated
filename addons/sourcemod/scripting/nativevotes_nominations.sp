@@ -98,7 +98,7 @@ public void OnPluginStart()
 	g_ConVars[excludecurrent] 	 = CreateConVar("sm_nominate_excludecurrent", "1", "Specifies if the MapChooser excluded maps should also be excluded from Nominations", _, true, 0.0, true, 1.0);
 	g_ConVars[maxmatches] 	  	 = CreateConVar("sm_nominate_maxfound", "0", "Maximum number of nomination matches to add to the menu. 0 = infinite.", _, true, 0.0);
 	//g_ConVars[allow_workshop]    = CreateConVar("sm_nominate_allow_workshop", "0", "Specifies if unlisted workshop maps can be nominated", _, true, 0.0, true, 1.0);
-	g_ConVars[use_callvote]      = CreateConVar("sm_nominate_use_callvote", "1", "Specifies the command to use to open the nomination vote menu", _, true, 0.0, true, 1.0);
+	g_ConVars[use_callvote]      = CreateConVar("sm_nominate_use_callvote", "1", "Specifies whether to execute callvote when nominating without specifying the map.", _, true, 0.0, true, 1.0);
 
 	g_ConVars[nextlevel_allowed] = FindConVar("sv_vote_issue_nextlevel_allowed");
 
