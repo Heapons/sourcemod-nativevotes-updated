@@ -55,7 +55,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Rock The Vote",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Provides RTV Map Voting",
-	version = "26w03a",
+	version = "26w04a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -232,7 +232,7 @@ public void OnClientDisconnect(int client)
 
 public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
-	if (client <= 0 || IsChatTrigger())
+	if (!client || IsChatTrigger())
 	{
 		return;
 	}
@@ -249,7 +249,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 
 public Action Command_RTV(int client, int args)
 {
-	if (client <= 0)
+	if (!client)
 	{
 		return Plugin_Handled;
 	}
@@ -319,12 +319,6 @@ void MenuHandler_UndoRTV(Menu menu, MenuAction action, int client, int param2)
 
 void AttemptRTV(int client, bool isVoteMenu=false)
 {
-	if (g_Voted[client])
-	{
-		UndoRTV(client);
-		return;
-	}
-
 	if (!g_RTVAllowed || (g_ConVars[postvoteaction].IntValue == 1 && HasEndOfMapVoteFinished()))
 	{
 		CReplyToCommand(client, "[{lightgreen}Rock The Vote\x01] %t", "RTV Not Allowed");
@@ -366,6 +360,12 @@ void AttemptRTV(int client, bool isVoteMenu=false)
 		return;			
 	}
 	
+	if (g_Voted[client])
+	{
+		UndoRTV(client);
+		return;			
+	}
+	
 	char name[MAX_NAME_LENGTH];
 	GetPlayerName(client, name, sizeof(name));
 
@@ -397,7 +397,7 @@ void StartRTV()
 	if (EndOfMapVoteEnabled() && HasEndOfMapVoteFinished())
 	{
 		/* Change right now then */
-		char map[96];
+		char map[PLATFORM_MAX_PATH];
 		if (GetNextMap(map, sizeof(map)))
 		{
 			GetMapDisplayName(map, map, sizeof(map));
@@ -432,7 +432,7 @@ void ResetRTV()
 {
 	g_Votes = 0;
 			
-	for (int i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MAXPLAYERS; i++)
 	{
 		g_Voted[i] = false;
 	}
@@ -444,7 +444,7 @@ public Action Timer_ChangeMap(Handle hTimer)
 	
 	LogMessage("RTV changing map manually");
 	
-	char map[96];
+	char map[PLATFORM_MAX_PATH];
 	if (GetNextMap(map, sizeof(map)))
 	{	
 		ForceChangeLevel(map, "RTV after mapvote");
