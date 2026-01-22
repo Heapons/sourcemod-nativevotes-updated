@@ -82,6 +82,7 @@ enum
 	mapvote_runoffpercent,
 	mapcycle_auto,
 	mapcycle_exclude,
+	workshop_maplist,
 	workshop_cleanup,
 
 	MAX_CONVARS
@@ -169,10 +170,11 @@ public void OnPluginStart()
 	g_ConVars[mapvote_runoff] 		 = CreateConVar("sm_mapvote_runoff", "0", "Hold run of votes if winning choice is less than a certain margin", _, true, 0.0, true, 1.0);
 	g_ConVars[mapvote_runoffpercent] = CreateConVar("sm_mapvote_runoffpercent", "50", "If winning choice has less than this percent of votes, hold a runoff", _, true, 0.0, true, 100.0);
 	g_ConVars[mapcycle_auto]         = CreateConVar("sm_mapcycle_auto", "0", "Specifies whether or not to automatically populate the maps list.", _, true, 0.0, true, 1.0);
-	g_ConVars[mapcycle_exclude]      = CreateConVar("sm_mapcycle_exclude", ".*itemtest.*|background01|^tr.*$", "Specifies which maps shouldn't be automatically added. Defined with a regex pattern.");
+	g_ConVars[mapcycle_exclude]      = CreateConVar("sm_mapcycle_exclude", ".*itemtest.*|background01|^tr.*$", "Specifies which maps shouldn't be automatically added with a regex pattern.");
 	if (engine != Engine_SDK2013 && engine == Engine_TF2)
 	{
-		g_ConVars[workshop_cleanup]  = CreateConVar("sm_mapvote_workshop_cleanup", "0", "Specifies whether or not to automatically workshop maps on map change", _, true, 0.0, true, 1.0);
+		g_ConVars[workshop_maplist]  = CreateConVar("sm_workshop_map_collection", "", "Specifies the file containing the workshop maps to include in the map list", _, true, 0.0, true, 1.0);
+		g_ConVars[workshop_cleanup]  = CreateConVar("sm_workshop_map_cleanup", "0", "Specifies whether or not to automatically workshop maps on map change", _, true, 0.0, true, 1.0);
 	}
 
 	RegAdminCmd("sm_mapvote", Command_MapVote, ADMFLAG_CHANGEMAP, "Forces MapChooser to attempt to run a map vote now.");
@@ -1592,7 +1594,8 @@ void PopulateMapList()
 
 	char mapcycle_generated[PLATFORM_MAX_PATH];
 	Format(mapcycle_generated, sizeof(mapcycle_generated), "%s/mapcycle_generated.txt", configsPath);
-	Handle mapcycleFile = OpenFile(mapcycle_generated, "wt");
+	
+	File mapcycleFile = OpenFile(mapcycle_generated, "wt");
 	if (mapcycleFile != null)
 	{
 		mapcycleFile = OpenFile(mapcycle_generated, "a");
@@ -1632,7 +1635,7 @@ void PopulateMapList()
 		if (regex.Match(mapName) >= 1)
 			continue;
 
-		WriteFileLine(mapcycleFile, "%s", mapName);
+		mapcycleFile.WriteLine("%s", mapName);
 	}
 	delete dir;
 	delete regex;

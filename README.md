@@ -76,4 +76,4 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 |`sm_mapvote_runoffpercent`|`50`|If winning choice has less than this percent of votes, hold a runoff|
 |`sm_mapcycle_auto`|`0`|Specifies whether to automatically populate the maps list|
 |`sm_mapcycle_exclude`|`.*itemtest.*\|background01\|^tr.*$`|Specifies which maps shouldn't be automatically added (regex pattern)|
-|`sm_mapvote_workshop_cleanup`|`0`|Specifies whether to automatically cleanup workshop maps on map change<br>[<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> **Team Fortress 2**](https://store.steampowered.com/app/440) (or its mods) only|
+|`sm_workshop_map_cleanup`|`0`|Specifies whether to automatically cleanup workshop maps on map change<br>[<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> **Team Fortress 2**](https://store.steampowered.com/app/440) (or its mods) only|
