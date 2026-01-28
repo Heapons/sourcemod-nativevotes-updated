@@ -43,6 +43,10 @@
 #include <nativevotes>
 #define REQUIRE_PLUGIN
 
+#undef REQUIRE_EXTENSIONS
+#include <ripext>
+#define REQUIRE_EXTENSIONS
+
 #pragma semicolon 1
 #pragma newdecls required
 
@@ -51,7 +55,7 @@ public Plugin myinfo =
 	name = "NativeVotes | MapChooser",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Automated Map Voting",
-	version = "26w04a",
+	version = "26w05a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -63,6 +67,7 @@ enum
 	mp_maxrounds,
 	mp_fraglimit,
 	mp_bonusroundtime,
+	mapcyclefile,
 
 	/* Plugin ConVars */
 	mapvote_endvote,
@@ -82,7 +87,7 @@ enum
 	mapvote_runoffpercent,
 	mapcycle_auto,
 	mapcycle_exclude,
-	workshop_maplist,
+	workshop_map_collection,
 	workshop_cleanup,
 
 	MAX_CONVARS
@@ -119,14 +124,15 @@ Handle g_NominationsResetForward = null;
 Handle g_MapVoteStartedForward = null;
 
 /* Upper bound of how many team there could be */
-#define MAXTEAMS 10
-int g_winCount[MAXTEAMS];
+#define MAX_TEAMS 10
+int g_winCount[MAX_TEAMS];
 
 #define VOTE_EXTEND 	"##extend##"
 #define VOTE_DONTCHANGE "##dontchange##"
 
-// NativeVotes
+// Libraries
 bool g_NativeVotes;
+bool g_RestInPawn;
 
 public void OnPluginStart()
 {
@@ -154,37 +160,37 @@ public void OnPluginStart()
 	g_OldMapList = new ArrayList(arraySize);
 	g_NextMapList = new ArrayList(arraySize);
 
-	g_ConVars[mapvote_endvote] 		 = CreateConVar("sm_mapvote_endvote", "1", "Specifies if MapChooser should run an end of map vote", _, true, 0.0, true, 1.0);
-	g_ConVars[mapvote_start] 		 = CreateConVar("sm_mapvote_start", "3.0", "Specifies when to start the vote based on time remaining.", _, true, 1.0);
-	g_ConVars[mapvote_startround]    = CreateConVar("sm_mapvote_startround", "2.0", "Specifies when to start the vote based on rounds remaining. Use '0' on TF2 to start vote during bonus round time", _, true, 0.0);
-	g_ConVars[mapvote_startfrags]    = CreateConVar("sm_mapvote_startfrags", "5.0", "Specifies when to start the vote base on frags remaining.", _, true, 1.0);
-	g_ConVars[extendmap_timestep]    = CreateConVar("sm_extendmap_timestep", "15", "Specifies how much many more minutes each extension makes", _, true, 5.0);
-	g_ConVars[extendmap_roundstep]   = CreateConVar("sm_extendmap_roundstep", "5", "Specifies how many more rounds each extension makes", _, true, 1.0);
-	g_ConVars[extendmap_fragstep]    = CreateConVar("sm_extendmap_fragstep", "10", "Specifies how many more frags are allowed when map is extended.", _, true, 5.0);	
-	g_ConVars[mapvote_exclude]       = CreateConVar("sm_mapvote_exclude", "5", "Specifies how many past maps to exclude from the vote.", _, true, 0.0);
-	g_ConVars[mapvote_include]       = CreateConVar("sm_mapvote_include", "5", "Specifies how many maps to include in the vote.", _, true, 2.0, true, 6.0);
-	g_ConVars[mapvote_novote]        = CreateConVar("sm_mapvote_novote", "1", "Specifies whether or not MapChooser should pick a map if no votes are received.", _, true, 0.0, true, 1.0);
-	g_ConVars[mapvote_extend]        = CreateConVar("sm_mapvote_extend", "0", "Number of extensions allowed each map.", _, true, 0.0);
-	g_ConVars[mapvote_dontchange]    = CreateConVar("sm_mapvote_dontchange", "1", "Specifies if a 'Don't Change' option should be added to early votes", _, true, 0.0, true, 1.0);
-	g_ConVars[mapvote_voteduration]  = CreateConVar("sm_mapvote_voteduration", "20", "Specifies how long the mapvote should be available for.", _, true, 5.0);
-	g_ConVars[mapvote_runoff] 		 = CreateConVar("sm_mapvote_runoff", "0", "Hold run of votes if winning choice is less than a certain margin", _, true, 0.0, true, 1.0);
-	g_ConVars[mapvote_runoffpercent] = CreateConVar("sm_mapvote_runoffpercent", "50", "If winning choice has less than this percent of votes, hold a runoff", _, true, 0.0, true, 100.0);
-	g_ConVars[mapcycle_auto]         = CreateConVar("sm_mapcycle_auto", "0", "Specifies whether or not to automatically populate the maps list.", _, true, 0.0, true, 1.0);
-	g_ConVars[mapcycle_exclude]      = CreateConVar("sm_mapcycle_exclude", ".*itemtest.*|background01|^tr.*$", "Specifies which maps shouldn't be automatically added with a regex pattern.");
+	g_ConVars[mapvote_endvote] 		 		= CreateConVar("sm_mapvote_endvote", "1", "Specifies if MapChooser should run an end of map vote.", _, true, 0.0, true, 1.0);
+	g_ConVars[mapvote_start] 		 		= CreateConVar("sm_mapvote_start", "3.0", "Specifies when to start the vote based on time remaining.", _, true, 1.0);
+	g_ConVars[mapvote_startround]    		= CreateConVar("sm_mapvote_startround", "2.0", "Specifies when to start the vote based on rounds remaining. Use '0' on TF2 to start vote during bonus round time", _, true, 0.0);
+	g_ConVars[mapvote_startfrags]    		= CreateConVar("sm_mapvote_startfrags", "5.0", "Specifies when to start the vote base on frags remaining.", _, true, 1.0);
+	g_ConVars[extendmap_timestep]    		= CreateConVar("sm_extendmap_timestep", "15", "Specifies how much many more minutes each extension makes.", _, true, 5.0);
+	g_ConVars[extendmap_roundstep]   		= CreateConVar("sm_extendmap_roundstep", "5", "Specifies how many more rounds each extension makes.", _, true, 1.0);
+	g_ConVars[extendmap_fragstep]    		= CreateConVar("sm_extendmap_fragstep", "10", "Specifies how many more frags are allowed when map is extended.", _, true, 5.0);	
+	g_ConVars[mapvote_exclude]       		= CreateConVar("sm_mapvote_exclude", "5", "Specifies how many past maps to exclude from the vote.", _, true, 0.0);
+	g_ConVars[mapvote_include]       		= CreateConVar("sm_mapvote_include", "5", "Specifies how many maps to include in the vote.", _, true, 2.0, true, 6.0);
+	g_ConVars[mapvote_novote]        		= CreateConVar("sm_mapvote_novote", "1", "Specifies whether or not MapChooser should pick a map if no votes are received.", _, true, 0.0, true, 1.0);
+	g_ConVars[mapvote_extend]        		= CreateConVar("sm_mapvote_extend", "0", "Number of extensions allowed each map.", _, true, 0.0);
+	g_ConVars[mapvote_dontchange]    		= CreateConVar("sm_mapvote_dontchange", "1", "Specifies if a 'Don't Change' option should be added to early votes.", _, true, 0.0, true, 1.0);
+	g_ConVars[mapvote_voteduration]  		= CreateConVar("sm_mapvote_voteduration", "20", "Specifies how long the mapvote should be available for.", _, true, 5.0);
+	g_ConVars[mapvote_runoff] 		 		= CreateConVar("sm_mapvote_runoff", "0", "Hold run of votes if winning choice is less than a certain margin.", _, true, 0.0, true, 1.0);
+	g_ConVars[mapvote_runoffpercent] 		= CreateConVar("sm_mapvote_runoffpercent", "50", "If winning choice has less than this percent of votes, hold a runoff.", _, true, 0.0, true, 100.0);
+	g_ConVars[mapcycle_auto]         		= CreateConVar("sm_mapcycle_auto", "0", "Specifies whether or not to automatically populate the maps list.", _, true, 0.0, true, 1.0);
+	g_ConVars[mapcycle_exclude]      		= CreateConVar("sm_mapcycle_exclude", ".*itemtest.*|background01|^tr.*$", "Specifies which maps shouldn't be automatically added with a regex pattern.");
 	if (engine != Engine_SDK2013 && engine == Engine_TF2)
 	{
-		g_ConVars[workshop_maplist]  = CreateConVar("sm_workshop_map_collection", "", "Specifies the file containing the workshop maps to include in the map list", _, true, 0.0, true, 1.0);
-		g_ConVars[workshop_cleanup]  = CreateConVar("sm_workshop_map_cleanup", "0", "Specifies whether or not to automatically workshop maps on map change", _, true, 0.0, true, 1.0);
+		g_ConVars[workshop_map_collection]  = CreateConVar("sm_workshop_map_collection", "", "Specifies the workshop collection to fetch the maps from.");
+		g_ConVars[workshop_cleanup] 		= CreateConVar("sm_workshop_map_cleanup", "0", "Specifies whether or not to automatically workshop maps on map change.", _, true, 0.0, true, 1.0);
 	}
 
 	RegAdminCmd("sm_mapvote", Command_MapVote, ADMFLAG_CHANGEMAP, "Forces MapChooser to attempt to run a map vote now.");
 	RegAdminCmd("sm_setnextmap", Command_SetNextMap, ADMFLAG_CHANGEMAP, "sm_setnextmap <map>");
-	RegAdminCmd("sm_reloadmaplist", Command_ReloadMapList, ADMFLAG_CHANGEMAP, "Re-populates the mapcycle file.");
 
 	g_ConVars[mp_winlimit]       = FindConVar("mp_winlimit");
 	g_ConVars[mp_maxrounds]      = FindConVar("mp_maxrounds");
 	g_ConVars[mp_fraglimit]      = FindConVar("mp_fraglimit");
 	g_ConVars[mp_bonusroundtime] = FindConVar("mp_bonusroundtime");
+	g_ConVars[mapcyclefile]      = FindConVar("mapcyclefile");
 	
 	if (g_ConVars[mp_winlimit] || g_ConVars[mp_maxrounds])
 	{
@@ -222,7 +228,7 @@ public void OnPluginStart()
 	}
 	
 	g_NominationsResetForward = CreateGlobalForward("OnNominationRemoved", ET_Ignore, Param_String, Param_Cell);
-	g_MapVoteStartedForward = CreateGlobalForward("OnMapVoteStarted", ET_Ignore);
+	g_MapVoteStartedForward   = CreateGlobalForward("OnMapVoteStarted", ET_Ignore);
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -238,6 +244,18 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("GetExcludeMapList", Native_GetExcludeMapList);
 	CreateNative("GetNominatedMapList", Native_GetNominatedMapList);
 	CreateNative("EndOfMapVoteEnabled", Native_EndOfMapVoteEnabled);
+
+	// Why doesn't RIP ext already set these as optional??
+	MarkNativeAsOptional("HTTPRequest.HTTPRequest");
+	MarkNativeAsOptional("HTTPRequest.AppendFormParam");
+	MarkNativeAsOptional("HTTPRequest.PostForm");
+	MarkNativeAsOptional("HTTPResponse.Status.get");
+	MarkNativeAsOptional("HTTPResponse.Data.get");
+	MarkNativeAsOptional("JSONObject.Get");
+	MarkNativeAsOptional("JSONObject.GetInt");
+	MarkNativeAsOptional("JSONObject.GetString");
+	MarkNativeAsOptional("JSONArray.Get");
+	MarkNativeAsOptional("JSONArray.Length.get");
 
 	return APLRes_Success;
 }
@@ -261,6 +279,7 @@ public void OnAllPluginsLoaded()
 	}
 	
 	g_NativeVotes = LibraryExists("nativevotes") && NativeVotes_IsVoteTypeSupported(NativeVotesType_NextLevelMult);
+	g_RestInPawn  = GetExtensionFileStatus("rip.ext") == 1;
 }
 
 public void OnLibraryAdded(const char[] name)
@@ -277,23 +296,24 @@ public void OnLibraryRemoved(const char[] name)
 	{
 		g_NativeVotes = false;
 	}
-}
-
-public void OnMapInit()
-{
-	if (g_ConVars[mapcycle_auto].BoolValue)
+	else if (StrEqual(name, "rip.ext", false))
 	{
-		PopulateMapList();
-	}
-
-	if (g_ConVars[workshop_cleanup].BoolValue)
-	{
-		CleanupWorkshopMaps();
+		g_RestInPawn = false;
 	}
 }
 
 public void OnConfigsExecuted()
 {
+	if (g_ConVars[workshop_cleanup].BoolValue)
+	{
+		CleanupWorkshopMaps();
+	}
+
+	if (g_ConVars[mapcycle_auto].BoolValue)
+	{
+		PopulateMapList();
+	}
+
 	if (ReadMapList(g_MapList, g_mapFileSerial, "mapchooser", MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER) != null)
 	{
 		if (g_mapFileSerial == -1)
@@ -301,7 +321,7 @@ public void OnConfigsExecuted()
 			LogError("Unable to create a valid map list.");
 		}
 	}
-	
+
 	CreateNextVote();
 	SetupTimeleftTimer();
 	
@@ -314,11 +334,10 @@ public void OnConfigsExecuted()
 	g_NominateList.Clear();
 	g_NominateOwners.Clear();
 	
-	for (int i = 0; i < MAXTEAMS; i++)
+	for (int i = 0; i < MAX_TEAMS; i++)
 	{
 		g_winCount[i] = 0;	
 	}
-	
 
 	/* Check if mapchooser will attempt to start mapvote during bonus round time - TF2 Only */
 	if (g_ConVars[mp_bonusroundtime] && !g_ConVars[mapvote_startround].IntValue)
@@ -533,7 +552,7 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 		return;
 	}
 	
-	if (winner >= MAXTEAMS)
+	if (winner >= MAX_TEAMS)
 	{
 		SetFailState("Mod exceed maximum team count - Please file a bug report.");	
 	}
@@ -616,11 +635,6 @@ public Action Command_MapVote(int client, int args)
 	InitiateVote(MapChange_MapEnd, null);
 
 	return Plugin_Handled;	
-}
-
-public Action Command_ReloadMapList(int client, int args)
-{
-	PopulateMapList();
 }
 
 /**
@@ -832,14 +846,12 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 	{
 		g_HasVoteStarted = false;
 		g_VoteNative.Close();
-		g_VoteNative = null;
 		return;
 	}
 	else if (!g_NativeVotes && g_VoteMenu.ItemCount == 0)
 	{
 		g_HasVoteStarted = false;
 		delete g_VoteMenu;
-		g_VoteMenu = null;
 		return;
 	}
 	
@@ -882,14 +894,7 @@ public void Handler_VoteFinishedGeneric(Menu menu, int num_votes, int num_client
 	Handler_VoteFinishedGenericShared(map, displayName, num_votes, num_clients, client_info, num_items, item_info, false);
 }
 
-public void Handler_VoteFinishedGenericShared(const char[] map,
-						   const char[] displayName,
-						   int num_votes,
-						   int num_clients,
-						   const int[][] client_info,
-						   int num_items,
-						   const int[][] item_info,
-						   bool isNativeVotes)
+public void Handler_VoteFinishedGenericShared(const char[] map, const char[] displayName, int num_votes, int num_clients, const int[][] client_info, int num_items, const int[][] item_info, bool isNativeVotes)
 {
 	if (strcmp(map, VOTE_EXTEND, false) == 0)
 	{
@@ -986,6 +991,7 @@ public void Handler_VoteFinishedGenericShared(const char[] map,
 			g_VoteNative.DisplayPass(displayName);
 		}
 		
+		Format(displayName, sizeof(displayName), "\x05%s\x01", displayName);
 		CPrintToChatAll("[{lightgreen}MapChooser\x01] %t", "Nextmap Voting Finished", displayName, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
 		LogAction(-1, -1, "Voting for next map has finished. Nextmap: %s.", map);
 	}	
@@ -1042,8 +1048,7 @@ public void Handler_NV_MapVoteFinished(NativeVote menu, int num_votes, int num_c
 // New in 1.5.1, used to fix runoff not working properly
 public Action Timer_NV_Runoff(Handle timer, DataPack data)
 {
-	char map[96];
-	char info[PLATFORM_MAX_PATH];
+	char map[PLATFORM_MAX_PATH], info[PLATFORM_MAX_PATH];
 	
 	g_VoteNative = new NativeVote(Handler_NV_MapVoteMenu, NativeVotesType_NextLevelMult, NATIVEVOTES_ACTIONS_DEFAULT | MenuAction_DisplayItem);
 	g_VoteNative.VoteResultCallback = Handler_NV_VoteFinishedGeneric;
@@ -1166,10 +1171,6 @@ public int Handler_MapVoteMenu(Menu menu, MenuAction action, int param1, int par
 					SetNextMap(map);
 					g_MapVoteCompleted = true;
 				}
-			}
-			else
-			{
-				// We were actually cancelled. I guess we do nothing.
 			}
 			
 			g_HasVoteStarted = false;
@@ -1336,12 +1337,7 @@ void CreateNextVote()
 
 bool CanVoteStart()
 {
-	if (g_WaitingForVote || g_HasVoteStarted)
-	{
-		return false;	
-	}
-	
-	return true;
+	return !(g_WaitingForVote || g_HasVoteStarted);
 }
 
 NominateResult InternalNominateMap(char[] map, bool force, int owner)
@@ -1515,6 +1511,8 @@ public int Native_InitiateVote(Handle plugin, int numParams)
 	
 	LogAction(-1, -1, "Starting map vote because outside request");
 	InitiateVote(when, inputarray);
+
+	return 0;
 }
 
 /* native bool CanMapChooserStartVote(); */
@@ -1542,7 +1540,7 @@ public int Native_GetExcludeMapList(Handle plugin, int numParams)
 	
 	if (array == null)
 	{
-		return;	
+		return 0;	
 	}
 	int size = g_OldMapList.Length;
 	char map[PLATFORM_MAX_PATH];
@@ -1553,7 +1551,7 @@ public int Native_GetExcludeMapList(Handle plugin, int numParams)
 		array.PushString(map);	
 	}
 	
-	return;
+	return 0;
 }
 
 /* native void GetNominatedMapList(ArrayList maparray, ArrayList ownerarray = null); */
@@ -1563,7 +1561,7 @@ public int Native_GetNominatedMapList(Handle plugin, int numParams)
 	ArrayList ownerarray = view_as<ArrayList>(GetNativeCell(2));
 	
 	if (maparray == null)
-		return;
+		return 0;
 
 	char map[PLATFORM_MAX_PATH];
 
@@ -1580,32 +1578,22 @@ public int Native_GetNominatedMapList(Handle plugin, int numParams)
 		}
 	}
 
-	return;
+	return 0;
 }
 
 void PopulateMapList()
 {
-	char configsPath[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, configsPath, sizeof(configsPath), "configs/nativevotes");
-	if (!DirExists(configsPath))
-	{
-		CreateDirectory(configsPath);
-	}
+	char mapcycleFile[PLATFORM_MAX_PATH];
+	g_ConVars[mapcyclefile].GetString(mapcycleFile, sizeof(mapcycleFile));
+	Format(mapcycleFile, sizeof(mapcycleFile), "cfg/%s", mapcycleFile);
 
-	char mapcycle_generated[PLATFORM_MAX_PATH];
-	Format(mapcycle_generated, sizeof(mapcycle_generated), "%s/mapcycle_generated.txt", configsPath);
-	
-	File mapcycleFile = OpenFile(mapcycle_generated, "wt");
-	if (mapcycleFile != null)
-	{
-		mapcycleFile = OpenFile(mapcycle_generated, "a");
-	}
-	else
+	File file = OpenFile(mapcycleFile, "w");
+	if (file == null)
 	{
 		return;
 	}
 
-	char excludePattern[256];
+	char excludePattern[512];
 	g_ConVars[mapcycle_exclude].GetString(excludePattern, sizeof(excludePattern));
 	Regex regex = new Regex(excludePattern);
 
@@ -1613,7 +1601,7 @@ void PopulateMapList()
 	if (dir == null)
 	{
 		delete regex;
-		CloseHandle(mapcycleFile);
+		CloseHandle(file);
 		return;
 	}
 
@@ -1621,6 +1609,10 @@ void PopulateMapList()
 	FileType type;
 	int len;
 
+	file.WriteLine("// Generated with NativeVotes MapChooser.");
+	file.WriteLine("// https://github.com/Heapons/sourcemod-nativevotes-updated");
+
+	// FastDL
 	while (dir.GetNext(mapName, sizeof(mapName), type))
 	{
 		if (type != FileType_File)
@@ -1635,13 +1627,107 @@ void PopulateMapList()
 		if (regex.Match(mapName) >= 1)
 			continue;
 
-		mapcycleFile.WriteLine("%s", mapName);
+		file.WriteLine("%s", mapName);
 	}
 	delete dir;
 	delete regex;
-	CloseHandle(mapcycleFile);
+
+	// Workshop
+	char workshopCollection[64];
+	g_ConVars[workshop_map_collection].GetString(workshopCollection, sizeof(workshopCollection));
+	if (g_RestInPawn && workshopCollection[0] != '\0')
+	{
+        HTTPRequest req = new HTTPRequest("https://api.steampowered.com/ISteamRemoteStorage/GetCollectionDetails/v1/");
+        req.AppendFormParam("collectioncount", "1");
+		req.AppendFormParam("publishedfileids[0]", workshopCollection);
+        req.PostForm(HTTPResponse_GetCollectionDetails, file);
+	}
+	else
+	{
+		CloseHandle(file);
+	}
 }
 
+void HTTPResponse_GetCollectionDetails(HTTPResponse response, File file)
+{
+	if (response.Status != HTTPStatus_OK || response.Data == null)
+	{
+		CloseHandle(file);
+		return;
+	}
+
+	JSONObject root = view_as<JSONObject>(response.Data);
+	if (root == null)
+	{
+		CloseHandle(file);
+		return;
+	}
+
+	JSONObject responseObj = view_as<JSONObject>(root.Get("response"));
+	if (responseObj == null)
+	{
+		delete root;
+		CloseHandle(file);
+		return;
+	}
+
+	JSONArray collectionDetailsArray = view_as<JSONArray>(responseObj.Get("collectiondetails"));
+	if (collectionDetailsArray == null || collectionDetailsArray.Length <= 0)
+	{
+		delete responseObj;
+		delete root;
+		CloseHandle(file);
+		return;
+	}
+
+	JSONObject collectionDetails = view_as<JSONObject>(collectionDetailsArray.Get(0));
+	if (collectionDetails == null)
+	{
+		delete collectionDetailsArray;
+		delete responseObj;
+		delete root;
+		CloseHandle(file);
+		return;
+	}
+
+	JSONArray children = view_as<JSONArray>(collectionDetails.Get("children"));
+	if (children != null)
+	{
+		ConVar sig_etc_workshop_map_fix = FindConVar("sig_etc_workshop_map_fix");
+		bool workshopMapFix = sig_etc_workshop_map_fix != null ? sig_etc_workshop_map_fix.BoolValue : false;
+		for (int i = 0; i < children.Length; i++)
+		{
+			JSONObject child = view_as<JSONObject>(children.Get(i));
+			if (child == null)
+			{
+				continue;
+			}
+
+			if (child.GetInt("filetype") == 0) // Map
+			{
+				char publishedfileid[64];
+				if (child.GetString("publishedfileid", publishedfileid, sizeof(publishedfileid)))
+				{
+					if (workshopMapFix)
+					{
+						ServerCommand("tf_workshop_map_sync %s", publishedfileid);
+					}
+					else
+					{
+						file.WriteLine("workshop/%s", publishedfileid);
+					}
+				}
+			}
+			delete child;
+		}
+		delete children;
+	}
+	delete collectionDetails;
+	delete collectionDetailsArray;
+	delete responseObj;
+	delete root;
+	CloseHandle(file);
+}
 
 void CleanupWorkshopMaps()
 {
