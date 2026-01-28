@@ -2,6 +2,9 @@
 # <img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="32" height="32" style="vertical-align: text-bottom;">/<img src="https://store.steampowered.com/favicon.ico" width="32" height="32" style="vertical-align: text-bottom;"> NativeVotes — Continued!
 This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u/15315481" width="16" height="16" style="vertical-align: text-bottom;"/> sapphonie](https://github.com/sapphonie)['s work](https://github.com/sapphonie/sourcemod-nativevotes-updated).
 
+> [!NOTE]
+> If you want to benefit from this repository's features without NativeVotes, you may safely unload `nativevotes.smx`. Modules will simply fall back to Radio Menus.
+
 > [!WARNING]
 > This plugin has only been tested in [<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> **Team Fortress 2**](https://store.steampowered.com/app/440)‼ If it doesn't work in any other game, open an [issue](https://github.com/Heapons/sourcemod-nativevotes-updated/issues/new).
 
@@ -15,11 +18,13 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
   - Highlight map names.
 - Update [Nominations](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_nominations.sp) and [Rock The Vote](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_rockthevote.sp) to be on par with the latest [Sourcemod](https://github.com/alliedmodders/sourcemod/tree/master/plugins) version.
 
-### Team Fortress 2
-- Fixed ✔️/❌ vote counts.
+## <img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="24" height="24" style="vertical-align: text-bottom;"> Team Fortress 2
+- Fixes.
+  - ✔️/❌ vote counts.
+  - Proper sounds get played upon selecting an item in a **multi-choice** (≤5 options max.) vote.
 - Add [`sm_voterp`](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_voterp.sp).
   - Controls `tf_medieval_autorp` cvar.
-- MVM Support.
+- Map lists in **Vote Setup** now work in **Mann Vs. Machine** as well.
 
 ## [Rock The Vote](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_rockthevote.sp)
 - Admin commands.
@@ -43,7 +48,7 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 ### Team Fortress 2
 - Attempting to nominate with no argument will open **Vote Setup** (`callvote`).
   - Can be toggled with `sm_nominate_use_callvote`.
-- Support partial map name matches.
+- Support partial map name matches
 ---
 |Name|Default Value|Description|
 |-|-|-|
@@ -55,7 +60,12 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 ## [MapChooser](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_mapchooser.sp)
 - Automatically generate mapcycle files.
   - Can be refreshed with `sm_reloadmaplist`.
-- **[TF2]** Clean up workshop maps to reduce disk size.
+- <img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> Clean up workshop maps to reduce disk size.
+- **[OPTIONAL]** Automatically generate the mapcycle file (requires [Rest In Pawn](https://github.com/srcdslab/sm-ext-ripext)).
+  - <img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> Import Workshop map collections.
+> [!WARNING]
+> There's currently a bug where leaving `sm_mapcycle_auto` enabled at all times will make all plugins unable to find [`mapcyclefile`](https://developer.valvesoftware.com/wiki/Mapcycle.txt). But if you're still going to leave it on for whatever reason, `sm_reload_nominations` works as a temporary fix (or alternatively, toggle it on then off).
+
 ---
 |Name|Default Value|Description|
 |-|-|-|
@@ -78,6 +88,3 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 |`sm_mapcycle_exclude`|`.*itemtest.*\|background01\|^tr.*$`|Specifies which maps shouldn't be automatically added (regex pattern).|
 |`sm_workshop_map_collection`|""|Specifies the workshop collection to fetch the maps from.<br>[<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> **Team Fortress 2**](https://store.steampowered.com/app/440) (or its mods) only|
 |`sm_workshop_map_cleanup`|`0`|Specifies whether to automatically cleanup workshop maps on map change<br>[<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> **Team Fortress 2**](https://store.steampowered.com/app/440) (or its mods) only|
-
-> [!WARNING]
-> There's currently a bug where leaving `sm_mapcycle_auto` enabled at all times will make all plugins unable to find [`mapcyclefile`](https://developer.valvesoftware.com/wiki/Mapcycle.txt). But if you're still going to leave it on for whatever reason, [`sm_reload_nominations`](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_nominations.sp#L247-L251) works as a temporary fix.
