@@ -48,7 +48,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Map Nominations",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Provides Map Nominations",
-	version = "26w04a",
+	version = "26w05a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -91,13 +91,12 @@ public void OnPluginStart()
 	LoadTranslations("common.phrases");
 	LoadTranslations("nominations.phrases");
 	
-	int arraySize = ByteCountToCells(PLATFORM_MAX_PATH);
-	g_MapList = new ArrayList(arraySize);
+	g_MapList = new ArrayList(ByteCountToCells(PLATFORM_MAX_PATH));
 
 	g_ConVars[excludeold] 	  	 = CreateConVar("sm_nominate_excludeold", "1", "Specifies if the current map should be excluded from the Nominations list", _, true, 0.0, true, 1.0);
 	g_ConVars[excludecurrent] 	 = CreateConVar("sm_nominate_excludecurrent", "1", "Specifies if the MapChooser excluded maps should also be excluded from Nominations", _, true, 0.0, true, 1.0);
 	g_ConVars[maxmatches] 	  	 = CreateConVar("sm_nominate_maxfound", "0", "Maximum number of nomination matches to add to the menu. 0 = infinite.", _, true, 0.0);
-	//g_ConVars[allow_workshop]    = CreateConVar("sm_nominate_allow_workshop", "0", "Specifies if unlisted workshop maps can be nominated", _, true, 0.0, true, 1.0);
+	//g_ConVars[allow_workshop]  = CreateConVar("sm_nominate_allow_workshop", "0", "Specifies if unlisted workshop maps can be nominated", _, true, 0.0, true, 1.0);
 	g_ConVars[use_callvote]      = CreateConVar("sm_nominate_use_callvote", "1", "Specifies whether to execute callvote when nominating without specifying the map.", _, true, 0.0, true, 1.0);
 
 	g_ConVars[nextlevel_allowed] = FindConVar("sv_vote_issue_nextlevel_allowed");
@@ -178,7 +177,7 @@ public void OnNominationRemoved(const char[] map, int owner)
 {
 	int status;
 	
-	char resolvedMap[96];
+	char resolvedMap[PLATFORM_MAX_PATH];
 	FindMap(map, resolvedMap, sizeof(resolvedMap));
 	
 	/* Is the map in our list? */
@@ -204,8 +203,7 @@ public Action Command_Addmap(int client, int args)
 		return Plugin_Handled;
 	}
 	
-	char mapname[96];
-	char resolvedMap[96];
+	char mapname[PLATFORM_MAX_PATH], resolvedMap[PLATFORM_MAX_PATH];
 	GetCmdArg(1, mapname, sizeof(mapname));
 
 	if (FindMap(mapname, resolvedMap, sizeof(resolvedMap)) == FindMap_NotFound)
@@ -252,7 +250,7 @@ Action Command_ReloadNominations(int client, int args)
 
 public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
-	if (!client)
+	if (!client || IsChatTrigger())
 	{
 		return;
 	}
@@ -289,7 +287,7 @@ public Action Command_Nominate(int client, int args)
 	    return Plugin_Handled;
 	}
 
-	char mapname[96];
+	char mapname[PLATFORM_MAX_PATH];
 	GetCmdArg(1, mapname, sizeof(mapname));
 
 	ArrayList results = new ArrayList();
@@ -350,7 +348,7 @@ int FindMatchingMaps(ArrayList mapList, ArrayList results, const char[] input)
 	}
 
 	int matches = 0;
-	char map[96];
+	char map[PLATFORM_MAX_PATH];
 
 	int maxmatches = g_ConVars[maxmatches].IntValue;
 
@@ -374,8 +372,7 @@ int FindMatchingMaps(ArrayList mapList, ArrayList results, const char[] input)
 
 void AttemptNominate(int client, const char[] map, int size, bool isVoteMenu)
 {
-	char mapname[96];
-	
+	char mapname[PLATFORM_MAX_PATH];
 	if (FindMap(map, mapname, size) == FindMap_NotFound)
 	{
 		// We couldn't resolve the map entry to a filename, so...
@@ -389,7 +386,7 @@ void AttemptNominate(int client, const char[] map, int size, bool isVoteMenu)
 	}
 	
 	char displayName[PLATFORM_MAX_PATH];
-		GetMapDisplayName(mapname, displayName, sizeof(displayName));
+	GetMapDisplayName(mapname, displayName, sizeof(displayName));
 	Format(displayName, sizeof(displayName), "\x05%s\x01", displayName);
 	
 	int status;
@@ -460,15 +457,17 @@ void AttemptNominate(int client, const char[] map, int size, bool isVoteMenu)
 	}
 
 	/* Map was nominated! - Disable the menu item and update the trie */
-	
-		g_MapTrie.SetValue(mapname, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
+	g_MapTrie.SetValue(mapname, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
 		
-		char name[MAX_NAME_LENGTH];	
-		GetPlayerName(client, name, sizeof(name));
+	char name[MAX_NAME_LENGTH];	
+	GetPlayerName(client, name, sizeof(name));
 
-	if (result == Nominate_Added) {
+	if (result == Nominate_Added)
+	{
 		CPrintToChatAllEx(client, "[{lightgreen}Nominations\x01] %t", "Map Nominated", name, displayName);
-	} else {
+	}
+	else
+	{
 		CReplyToCommandEx(client, client, "[{lightgreen}Nominations\x01] %t", "Map Nominated", name, displayName);
 	}
 	
@@ -489,10 +488,10 @@ void BuildMapMenu()
 	
 	g_MapMenu = new Menu(MenuHandler_MapSelect, MENU_ACTIONS_DEFAULT|MenuAction_DrawItem|MenuAction_DisplayItem);
 
-	char map[96];
+	char map[PLATFORM_MAX_PATH];
 	
 	ArrayList excludeMaps;
-	char currentMap[96];
+	char currentMap[PLATFORM_MAX_PATH];
 	
 	if (g_ConVars[excludeold].BoolValue)
 	{	
@@ -548,14 +547,14 @@ public int MenuHandler_MapSelect(Menu menu, MenuAction action, int param1, int p
 	{
 		case MenuAction_Select:
 		{
-			char mapname[96];
+			char mapname[PLATFORM_MAX_PATH];
 			// Get the map name and attempt to nominate it
 			menu.GetItem(param2, mapname, sizeof(mapname));
 			AttemptNominate(param1, mapname, sizeof(mapname), false);
 		}
 		case MenuAction_DrawItem:
 		{
-			char map[96];
+			char map[PLATFORM_MAX_PATH];
 			menu.GetItem(param2, map, sizeof(map));
 			
 			int status;
@@ -574,7 +573,7 @@ public int MenuHandler_MapSelect(Menu menu, MenuAction action, int param1, int p
 		}
 		case MenuAction_DisplayItem:
 		{
-			char mapname[96];
+			char mapname[PLATFORM_MAX_PATH];
 			menu.GetItem(param2, mapname, sizeof(mapname));
 			
 			int status;
@@ -616,8 +615,7 @@ public int MenuHandler_MapSelect(Menu menu, MenuAction action, int param1, int p
 			if (menu != g_MapMenu)
 			{
 				delete menu;
-		}
-			
+			}
 		}
 	}
 	return 0;
@@ -676,11 +674,7 @@ public Action Menu_Nominate(int client, NativeVotesOverride overrideType, const 
 	
 	ReplySource old = SetCmdReplySource(SM_REPLY_TO_CHAT);
 	
-	// awful hack, but whatever
-	char mapname[96];
-	strcopy(mapname, sizeof(mapname), voteArgument);
-
-	AttemptNominate(client, mapname, sizeof(mapname), true);
+	AttemptNominate(client, voteArgument, PLATFORM_MAX_PATH, true);
 	
 	SetCmdReplySource(old);
 	
@@ -721,19 +715,14 @@ public Action NativeVotes_OverrideMaps(StringMap mapList)
 		
 		char displayName[PLATFORM_MAX_PATH];
 		GetMapDisplayName(map, displayName, sizeof(displayName));
-		
+
 		// Display name first
 		mapList.SetString(displayName, map);
 	}
 	
 	delete snapshot;
-	
-	if (mapList.Size > 0)
-	{
-		return Plugin_Changed;
-	}
-	
-	return Plugin_Continue;
+
+	return mapList.Size > 0 ? Plugin_Changed : Plugin_Continue;
 }
 
 void GetPlayerName(int client, char[] name, int maxlen)
