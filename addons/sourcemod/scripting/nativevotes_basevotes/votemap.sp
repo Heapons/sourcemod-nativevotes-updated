@@ -316,7 +316,7 @@ int LoadMapList(Handle menu)
 	
 	RemoveAllMenuItems(menu);
 	
-	char map_name[96];
+	char map_name[PLATFORM_MAX_PATH];
 	int map_count = GetArraySize(g_map_array);
 	
 	for (int i = 0; i < map_count; i++)

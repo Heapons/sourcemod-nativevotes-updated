@@ -48,7 +48,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Basic Commands",
 	author = "Powerlord and AlliedModders LLC",
 	description = "Revote and Cancel support for NativeVotes",
-	version = "26w04a",
+	version = "26w05a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 }
 
@@ -120,6 +120,13 @@ public void AdminMenu_CancelVote(Handle topmenu, TopMenuAction action, TopMenuOb
 
 public Action Command_ReVote(int client, const char[] command, int argc)
 {
+/*
+    if (FindSendPropInfo("CVoteController", "m_nVoteIdx") > 0)
+	{
+		LogError("[NativeVotes] Re-voting is buggy in Team Fortress 2 and SDK 2025 mods.");
+		return Plugin_Continue;
+	}
+*/
 	if (client <= 0)
 	{
 		return Plugin_Continue;

@@ -46,7 +46,7 @@ public Plugin:myinfo =
 	name = "NativeVotes | Basic Votes",
 	author = "Powerlord and AlliedModders LLC",
 	description = "NativeVotes Basic Vote Commands",
-	version = "26w04a",
+	version = "26w05a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -693,7 +693,7 @@ bool TestVoteDelay(int client)
 
 public Action Timer_ChangeMap(Handle timer, DataPack dp)
 {
-	char mapname[96];
+	char mapname[PLATFORM_MAX_PATH];
 	
 	ResetPack(dp);
 	ReadPackString(dp, mapname, sizeof(mapname));
