@@ -41,9 +41,16 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-ConVar g_Cvar_Votes;
-ConVar g_Cvar_KickVote;
-ConVar g_Cvar_KickVoteMvM;
+enum
+{
+	sv_allow_votes,
+	sv_vote_issue_kick_allowed,
+	sv_vote_issue_kick_allowed_mvm,
+
+	MAX_CONVARS
+}
+
+ConVar g_ConVars[MAX_CONVARS];
 
 bool g_bRegistered = false;
 
@@ -53,22 +60,26 @@ public Plugin myinfo = {
 	name			= "NativeVotes | Kick Vote Immunity",
 	author			= "Powerlord",
 	description		= "Causes TF2 kick votes to fail against people who the current user can't target.",
-	version			= "26w04a",
+	version			= "26w05a",
 	url 			= "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
 public void OnPluginStart()
 {
-	g_Cvar_Votes = FindConVar("sv_allow_votes");
-	g_Cvar_KickVote = FindConVar("sv_vote_issue_kick_allowed");
-	g_Cvar_KickVoteMvM = FindConVar("sv_vote_issue_kick_allowed_mvm");
+	g_ConVars[sv_allow_votes]                 = FindConVar("sv_allow_votes");
+	g_ConVars[sv_vote_issue_kick_allowed]     = FindConVar("sv_vote_issue_kick_allowed");
+	g_ConVars[sv_vote_issue_kick_allowed_mvm] = FindConVar("sv_vote_issue_kick_allowed_mvm");
 
-	HookConVarChange(g_Cvar_Votes, Cvar_CheckEnable);
-	HookConVarChange(g_Cvar_KickVote, Cvar_CheckEnable);
-	HookConVarChange(g_Cvar_KickVoteMvM, Cvar_CheckEnable);
+	for (int i = 0; i < MAX_CONVARS; i++)
+	{
+		if (g_ConVars[i] != null)
+		{
+			g_ConVars[i].AddChangeHook(ConVar_CheckEnable);
+		}
+	}
 	
 	LoadTranslations("common.phrases");
-	}
+}
 
 public void OnAllPluginsLoaded()
 {
@@ -96,8 +107,7 @@ public void OnPluginEnd()
 
 void RegisterVoteCommand()
 {
-	if (!g_bRegistered &&
-		NativeVotes_AreVoteCommandsSupported())
+	if (!g_bRegistered && NativeVotes_AreVoteCommandsSupported())
 	{
 		NativeVotes_RegisterVoteCommand(NativeVotesOverride_Kick, KickVoteHandler);
 		g_bRegistered = true;
@@ -113,7 +123,7 @@ void UnregisterVoteCommand()
 	}
 }
 
-public void Cvar_CheckEnable(ConVar convar, const char[] oldValue, const char[] newValue)
+public void ConVar_CheckEnable(ConVar convar, const char[] oldValue, const char[] newValue)
 {
 	if (!g_bMapActive)
 		return;
@@ -126,9 +136,9 @@ void CheckStatus()
 	bool bIsMvM = IsMvM();
 	if (g_bRegistered)
 	{
-		if (!g_Cvar_Votes.BoolValue || 
-			(bIsMvM && !g_Cvar_KickVoteMvM.BoolValue) ||
-			(!bIsMvM && !g_Cvar_KickVote.BoolValue)
+		if (!g_ConVars[sv_allow_votes].BoolValue || 
+			(bIsMvM && !g_ConVars[sv_vote_issue_kick_allowed_mvm].BoolValue) ||
+			(!bIsMvM && !g_ConVars[sv_vote_issue_kick_allowed].BoolValue)
 		)
 		{
 			LogMessage("Disabling.");
@@ -137,9 +147,9 @@ void CheckStatus()
 	}
 	else
 	{
-		if (g_Cvar_Votes.BoolValue &&
-			((bIsMvM && g_Cvar_KickVoteMvM.BoolValue) ||
-			(!bIsMvM && g_Cvar_KickVote.BoolValue))
+		if (g_ConVars[sv_allow_votes].BoolValue &&
+			((bIsMvM && g_ConVars[sv_vote_issue_kick_allowed_mvm].BoolValue) ||
+			(!bIsMvM && g_ConVars[sv_vote_issue_kick_allowed].BoolValue))
 		)
 		{
 			LogMessage("Enabling.");
