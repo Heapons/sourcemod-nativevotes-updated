@@ -1,6 +1,5 @@
 #include <sourcemod>
 #include <sdktools>
-#include <tf2>
 #include <nativevotes>
 
 #pragma semicolon 1
@@ -11,7 +10,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Medieval Auto-RP",
 	author = "Heapons",
 	description = "Provides Medieval Auto-RP voting.",
-	version = "26w04a",
+	version = "26w05a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -30,9 +29,9 @@ public void OnPluginStart()
 {
     g_ConVars[tf_medieval] = FindConVar("tf_medieval");
     g_ConVars[tf_medieval_autorp] = FindConVar("tf_medieval_autorp");
-    if (GetEngineVersion() != Engine_TF2 || !g_ConVars[tf_medieval] || !g_ConVars[tf_medieval_autorp])
+    if (FindSendPropInfo("CTFGameRulesProxy", "m_bPlayingMedieval") <= 0)
     {
-        SetFailState("This plugin is for Team Fortress 2 only.");
+        SetFailState("This game doesn't support Medieval Mode.");
     }
 
     g_ConVars[vote_duration] = CreateConVar("sm_voterp_voteduration", "20", "Specifies how long the rp vote should be available for.", _, true, 5.0);
