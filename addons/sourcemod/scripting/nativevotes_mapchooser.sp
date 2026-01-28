@@ -991,8 +991,9 @@ public void Handler_VoteFinishedGenericShared(const char[] map, const char[] dis
 			g_VoteNative.DisplayPass(displayName);
 		}
 		
-		Format(displayName, sizeof(displayName), "\x05%s\x01", displayName);
-		CPrintToChatAll("[{lightgreen}MapChooser\x01] %t", "Nextmap Voting Finished", displayName, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
+		char formattedName[PLATFORM_MAX_PATH];
+		Format(formattedName, sizeof(formattedName), "\x05%s\x01", displayName);
+		CPrintToChatAll("[{lightgreen}MapChooser\x01] %t", "Nextmap Voting Finished", formattedName, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
 		LogAction(-1, -1, "Voting for next map has finished. Nextmap: %s.", map);
 	}	
 }
