@@ -61,7 +61,7 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 |-|-|-|
 |`sm_mapvote_endvote`|`1`|Specifies if MapChooser should run an end of map vote|
 |`sm_mapvote_start`|`3.0`|Specifies when to start the vote based on time remaining (in minutes)|
-|`sm_mapvote_startround`|`2.0`|Specifies when to start the vote based on rounds remaining|
+|`sm_mapvote_startround`|`2.0`|Specifies when to start the vote based on rounds remaining. Use '0' on TF2 to start vote during bonus round time|
 |`sm_mapvote_startfrags`|`5.0`|Specifies when to start the vote based on frags remaining|
 |`sm_extendmap_timestep`|`15`|Specifies how many more minutes each extension makes|
 |`sm_extendmap_roundstep`|`5`|Specifies how many more rounds each extension makes|
@@ -74,6 +74,10 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 |`sm_mapvote_voteduration`|`20`|Specifies how long the mapvote should be available for (in seconds)|
 |`sm_mapvote_runoff`|`0`|Hold runoff votes if winning choice is less than a certain margin|
 |`sm_mapvote_runoffpercent`|`50`|If winning choice has less than this percent of votes, hold a runoff|
-|`sm_mapcycle_auto`|`0`|Specifies whether to automatically populate the maps list|
-|`sm_mapcycle_exclude`|`.*itemtest.*\|background01\|^tr.*$`|Specifies which maps shouldn't be automatically added (regex pattern)|
+|`sm_mapcycle_auto`|`0`|Specifies whether to automatically populate the maps list.|
+|`sm_mapcycle_exclude`|`.*itemtest.*\|background01\|^tr.*$`|Specifies which maps shouldn't be automatically added (regex pattern).|
+|`sm_workshop_map_collection`|""|Specifies the workshop collection to fetch the maps from.<br>[<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> **Team Fortress 2**](https://store.steampowered.com/app/440) (or its mods) only|
 |`sm_workshop_map_cleanup`|`0`|Specifies whether to automatically cleanup workshop maps on map change<br>[<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> **Team Fortress 2**](https://store.steampowered.com/app/440) (or its mods) only|
+
+> [!WARNING]
+> There's currently a bug where leaving `sm_mapcycle_auto` enabled at all times will make all plugins unable to find [`mapcyclefile`](https://developer.valvesoftware.com/wiki/Mapcycle.txt). But if you're still going to leave it on for whatever reason, [`sm_reload_nominations`](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_nominations.sp#L247-L251) works as a temporary fix.
