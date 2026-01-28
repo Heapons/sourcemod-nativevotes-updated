@@ -365,12 +365,12 @@ static ConVar g_Cvar_HideDisabledIssues;
 /**
  * TODO(UPDATE): For now we only support one vote from NativeVotes at a time.
  * 
- * Ideally we peek and poke at the game's `s_nVoteIdx` and increment it accordingly, but we also
+ * Ideally we peek and poke at the game's `s_nVoteIdx` and decrement it accordingly, but we also
  * have to store an internal list of active votes.
+ * 
+ * Thank you @Kenzzer‼
  */
-static int s_nNativeVoteIdx = 0;
-
-bool isTF2SDKModHack = false;
+static int s_nNativeVoteIdx = 0x7FFFFFFF;
 
 bool Game_IsGameSupported(char[] engineName="", int maxlength=0)
 {
@@ -391,7 +391,6 @@ bool Game_IsGameSupported(char[] engineName="", int maxlength=0)
 		if (g_EngineVersion == Engine_SDK2013 && FileExists("resource/tf.ttf"))
 		{
 			g_EngineVersion = Engine_TF2;
-			isTF2SDKModHack = true;
 		}
 		else
 		{
@@ -421,26 +420,26 @@ void Game_InitializeCvars()
 	{
 		case Engine_Left4Dead, Engine_Left4Dead2, Engine_CSGO:
 		{
-			g_Cvar_Votes_Enabled = FindConVar("sv_allow_votes");
+			g_Cvar_Votes_Enabled 			   = FindConVar("sv_allow_votes");
 		}
 		case Engine_TF2:
 		{
-			g_Cvar_Votes_Enabled = FindConVar("sv_allow_votes");
-			g_Cvar_VoteKick_Enabled = FindConVar("sv_vote_issue_kick_allowed");
-			g_Cvar_MvM_VoteKick_Enabled = FindConVar("sv_vote_issue_kick_allowed_mvm");
-			g_Cvar_VoteNextLevel_Enabled = FindConVar("sv_vote_issue_nextlevel_allowed");
-			g_Cvar_VoteChangeLevel_Enabled = FindConVar("sv_vote_issue_changelevel_allowed");
+			g_Cvar_Votes_Enabled 		   	   = FindConVar("sv_allow_votes");
+			g_Cvar_VoteKick_Enabled 	   	   = FindConVar("sv_vote_issue_kick_allowed");
+			g_Cvar_MvM_VoteKick_Enabled    	   = FindConVar("sv_vote_issue_kick_allowed_mvm");
+			g_Cvar_VoteNextLevel_Enabled   	   = FindConVar("sv_vote_issue_nextlevel_allowed");
+			g_Cvar_VoteChangeLevel_Enabled 	   = FindConVar("sv_vote_issue_changelevel_allowed");
 			g_Cvar_MvM_VoteChangeLevel_Enabled = FindConVar("sv_vote_issue_changelevel_allowed_mvm");
-			g_Cvar_VoteRestart_Enabled = FindConVar("sv_vote_issue_restart_game_allowed");
-			g_Cvar_MvM_VoteRestart_Enabled = FindConVar("sv_vote_issue_restart_game_allowed_mvm");
-			g_Cvar_VoteScramble_Enabled = FindConVar("sv_vote_issue_scramble_teams_allowed");
-			g_Cvar_MvM_VoteChallenge_Enabled = FindConVar("sv_vote_issue_mvm_challenge_allowed");
-			g_Cvar_VoteAutoBalance_Enabled = FindConVar("sv_vote_issue_autobalance_allowed");
-			g_Cvar_VoteClassLimits_Enabled = FindConVar("sv_vote_issue_classlimits_allowed");
+			g_Cvar_VoteRestart_Enabled 	   	   = FindConVar("sv_vote_issue_restart_game_allowed");
+			g_Cvar_MvM_VoteRestart_Enabled 	   = FindConVar("sv_vote_issue_restart_game_allowed_mvm");
+			g_Cvar_VoteScramble_Enabled 	   = FindConVar("sv_vote_issue_scramble_teams_allowed");
+			g_Cvar_MvM_VoteChallenge_Enabled   = FindConVar("sv_vote_issue_mvm_challenge_allowed");
+			g_Cvar_VoteAutoBalance_Enabled     = FindConVar("sv_vote_issue_autobalance_allowed");
+			g_Cvar_VoteClassLimits_Enabled     = FindConVar("sv_vote_issue_classlimits_allowed");
 			g_Cvar_MvM_VoteClassLimits_Enabled = FindConVar("sv_vote_issue_classlimits_allowed_mvm");
-			g_Cvar_VoteExtend_Enabled = FindConVar("sv_vote_issue_extendlevel_allowed");
+			g_Cvar_VoteExtend_Enabled 		   = FindConVar("sv_vote_issue_extendlevel_allowed");
 			
-			g_Cvar_ClassLimit = FindConVar("tf_classlimit");
+			g_Cvar_ClassLimit  = FindConVar("tf_classlimit");
 			g_Cvar_AutoBalance = FindConVar("mp_autoteambalance");
 			
 			g_Cvar_HideDisabledIssues = FindConVar("sv_vote_ui_hide_disabled_issues");
@@ -852,16 +851,6 @@ void Game_ClientSelectedItem(NativeVote vote, int client, int item)
 		{
 			TF2_ClientSelectedItem(vote, client, item);
 		}
-		/*
-		case Engine_Left4Dead:
-		{
-			L4D_ClientSelectedItem(vote, client, item);
-		}
-		case Engine_Left4Dead2:
-		{
-			L4D2_ClientSelectedItem(client, item);
-		}
-		*/
 	}
 }
 
@@ -884,26 +873,10 @@ void Game_DisplayVoteSetup(int client, ArrayList hVoteTypes)
 {
 	switch (g_EngineVersion)
 	{
-		/*
-		case Engine_Left4Dead:
-		{
-			L4D_DisplayVoteSetup(client, voteTypes);
-		}
-		case Engine_Left4Dead2:
-		{
-			L4D2_DisplayVoteSetup(client, voteTypes);
-		}
-		*/
 		case Engine_TF2:
 		{
 			TF2_DisplayVoteSetup(client, hVoteTypes);
 		}
-		/*
-		case Engine_CSGO:
-		{
-			CSGO_DisplayVoteSetup(client, hVoteTypes);
-		}
-		*/
 	}
 }
 
@@ -1236,7 +1209,6 @@ static NativeVotesPassType VoteTypeToVotePass(NativeVotesType voteType)
 		{
 			passType = NativeVotesPass_Extend;
 		}
-		
 		default:
 		{
 			passType = NativeVotesPass_Custom;
@@ -1537,7 +1509,17 @@ static void GetEngineVersionName(EngineVersion version, char[] printName, int ma
 		}
 		case Engine_HL2DM:
 		{
-			strcopy(printName, maxlength, "Half-Life 2: Deathmatch");
+			char gameDir[32];
+			GetGameFolderName(gameDir, sizeof(gameDir));
+			if (StrEqual(gameDir, "hl2mp"))
+			{
+				strcopy(printName, maxlength, "Half-Life 2: Deathmatch");
+			}
+			else
+			{
+				// https://github.com/alliedmodders/metamod-source/pull/210
+				strcopy(printName, maxlength, "Source SDK 2025");
+			}
 		}
 		case Engine_DODS:
 		{
@@ -1551,7 +1533,38 @@ static void GetEngineVersionName(EngineVersion version, char[] printName, int ma
 		{
 			strcopy(printName, maxlength, "Nuclear Dawn");
 		}
-		
+		case Engine_SDK2013:
+		{
+			strcopy(printName, maxlength , "Source SDK 2013");
+		}
+		case Engine_Blade:
+		{
+			strcopy(printName, maxlength , "Blade Symphony");
+		}
+		case Engine_Insurgency:
+		{
+			strcopy(printName, maxlength , "Insurgency (2013 Retail version)");
+		}
+		case Engine_Contagion:
+		{
+			strcopy(printName, maxlength , "Contagion");
+		}
+		case Engine_BlackMesa:
+		{
+			strcopy(printName, maxlength , "Black Mesa Multiplayer");
+		}
+		case Engine_DOI:
+		{
+			strcopy(printName, maxlength , "Day of Infamy");
+		}
+		case Engine_PVKII:
+		{
+			strcopy(printName, maxlength , "Pirates, Vikings, and Knights II");
+		}
+		case Engine_MCV:
+		{
+			strcopy(printName, maxlength , "Military Conflict: Vietnam");
+		}
 		default:
 		{
 			strcopy(printName, maxlength, "Not listed");
@@ -1663,7 +1676,6 @@ static void L4DL4D2_VoteTypeToTranslation(NativeVotesType voteType, char[] trans
 		{
 			strcopy(translation, maxlength, L4D_VOTE_CHANGELEVEL_START);
 		}
-		
 		default:
 		{
 			strcopy(translation, maxlength, L4D_VOTE_CUSTOM);
@@ -1836,9 +1848,13 @@ static bool L4D_CheckVoteType(NativeVotesType voteType)
 {
 	switch(voteType)
 	{
-		case NativeVotesType_Custom_YesNo, NativeVotesType_ChgCampaign, NativeVotesType_ChgDifficulty,
-		NativeVotesType_ReturnToLobby, NativeVotesType_Restart, NativeVotesType_Kick,
-		NativeVotesType_ChgLevel:
+		case NativeVotesType_Custom_YesNo,
+			 NativeVotesType_ChgCampaign,
+			 NativeVotesType_ChgDifficulty,
+			 NativeVotesType_ReturnToLobby,
+			 NativeVotesType_Restart,
+			 NativeVotesType_Kick,
+			 NativeVotesType_ChgLevel:
 		{
 			return true;
 		}
@@ -1851,9 +1867,13 @@ static bool L4D_CheckVotePassType(NativeVotesPassType passType)
 {
 	switch(passType)
 	{
-		case NativeVotesPass_Custom, NativeVotesPass_ChgCampaign, NativeVotesPass_ChgDifficulty,
-		NativeVotesPass_ReturnToLobby, NativeVotesPass_Restart, NativeVotesPass_Kick,
-		NativeVotesPass_ChgLevel:
+		case NativeVotesPass_Custom,
+			 NativeVotesPass_ChgCampaign,
+			 NativeVotesPass_ChgDifficulty,
+			 NativeVotesPass_ReturnToLobby,
+			 NativeVotesPass_Restart,
+			 NativeVotesPass_Kick,
+			 NativeVotesPass_ChgLevel:
 		{
 			return true;
 		}
@@ -1952,7 +1972,7 @@ static void L4D2_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 static void L4D2_VotePass(const char[] translation, const char[] details, int team, int client=0)
 {
 	BfWrite votePass;
-	if (client <= 0)
+	if (!client)
 	{
 		votePass = UserMessageToBfWrite(StartMessageAll("VotePass", USERMSG_RELIABLE));
 	}
@@ -2033,21 +2053,8 @@ static int CSGO_ParseVote(const char[] option)
 }
 
 // NATIVEVOTES_VOTE_INVALID means parse failed
-static int TF2_SDKHACK_ParseVote(const char[] option)
-{
-	// currently sdk2013 tf mods match csgo voting but if that ever changes
-	// this func will have to be properly written
-	return CSGO_ParseVote(option);
-}
-
-// NATIVEVOTES_VOTE_INVALID means parse failed
 static int TF2_ParseVote(const char[] option)
 {
-	if (isTF2SDKModHack)
-	{
-		return TF2_SDKHACK_ParseVote(option);
-	}
-
 	// the update on 2022-06-22 changed the params passed to the `vote` command
 	// previously it was a single string "optionN", where N was the option to be selected
 	// now it's two arguments "X optionN", where X is the vote index being acted on
@@ -2087,10 +2094,7 @@ static void TF2_ClientSelectedItem(NativeVote vote, int client, int item)
 	Event castEvent = CreateEvent("vote_cast");
 
 	castEvent.SetInt("team", Data_GetTeam(vote));
-	if (!isTF2SDKModHack)
-	{
-		castEvent.SetInt("voteidx", s_nNativeVoteIdx); // TODO(UPDATE): this was added in 2022-06-22 - figure out what the client voted for
-	}
+	castEvent.SetInt("voteidx", s_nNativeVoteIdx);
 	castEvent.SetInt("entityid", client);
 	castEvent.SetInt("vote_option", item);
 	castEvent.Fire();
@@ -2106,14 +2110,11 @@ static void TF2CSGO_UpdateVoteCounts(ArrayList votes)
 		{
 			SetEntProp(g_VoteController, Prop_Send, "m_nVoteOptionCount", votes.Get(i), 4, i);
 
-			char szVoteOption[13];
-			Format(szVoteOption, sizeof(szVoteOption), "vote_option%d", i+1);
+				char szVoteOption[13];
+				Format(szVoteOption, sizeof(szVoteOption), "vote_option%d", i+1);
 			changeEvent.SetInt(szVoteOption, votes.Get(i));
 		}
-		if (!isTF2SDKModHack)
-		{
-			changeEvent.SetInt("voteidx", s_nNativeVoteIdx);
-		}
+		changeEvent.SetInt("voteidx", s_nNativeVoteIdx);
 		changeEvent.SetInt("potentialVotes", GetEntProp(g_VoteController, Prop_Send, "m_nPotentialVotes"));
 		changeEvent.Fire();
 	}
@@ -2170,7 +2171,7 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 		}
 		default:
 		{
-					Data_GetDetails(vote, details, MAX_VOTE_DETAILS_LENGTH);
+			Data_GetDetails(vote, details, MAX_VOTE_DETAILS_LENGTH);
 		}
 	}
 	
@@ -2207,18 +2208,7 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 			SetEntProp(g_VoteController, Prop_Send, "m_nVoteOptionCount", 0, _, i);
 		}
 
-		if (!isTF2SDKModHack)
-		{
-			// TODO(UPDATE): M-M-M-MULTIVOTE
-			// we need unique vote indices; HUD elements for previous votes aren't cleaned up (?)
-			// the game implements this as `this->m_nVoteIdx = s_nVoteIdx++`
-			s_nNativeVoteIdx = GetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx");
-		
-#if defined LOG
-			PrintToServer("Starting vote index: %d (controller: %d)", s_nNativeVoteIdx, GetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx"));
-#endif		
-			SetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx", s_nNativeVoteIdx + 1); // TODO(UPDATE)
-		}
+		SetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx", --s_nNativeVoteIdx);
 	}
 	
 	// According to Source SDK 2013, vote_options is only sent for a multiple choice vote.
@@ -2242,10 +2232,7 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 			optionsEvent.SetString(option, display);
 		}
 		optionsEvent.SetInt("count", itemCount);
-		if (!isTF2SDKModHack)
-		{
-			optionsEvent.SetInt("voteidx", s_nNativeVoteIdx); // TODO(UPDATE)
-		}
+		optionsEvent.SetInt("voteidx", s_nNativeVoteIdx);
 		optionsEvent.Fire();
 	}
 
@@ -2256,15 +2243,12 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 		SetEntProp(g_VoteController, Prop_Send, "m_nPotentialVotes", num_clients);
 	}
 
-	if (!isTF2SDKModHack)
+	int holder = vote.Initiator;
+	// required to allow the initiator to vote on their own issue
+	// https://github.com/ValveSoftware/Source-1-Games/issues/3934
+	if (sv_vote_holder_may_vote_no && holder <= MaxClients && IsClientConnected(holder) && !IsFakeClient(holder))
 	{
-		int holder = vote.Initiator;
-		// required to allow the initiator to vote on their own issue
-		// ValveSoftware/Source-1-Games#3934
-		if (sv_vote_holder_may_vote_no && holder <= MaxClients && IsClientConnected(holder) && !IsFakeClient(holder))
-		{
-			sv_vote_holder_may_vote_no.ReplicateToClient(holder, "1");
-		}
+		sv_vote_holder_may_vote_no.ReplicateToClient(holder, "1");
 	}
 
 	MenuAction actions = Data_GetActions(vote);
@@ -2289,7 +2273,7 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 
 		Handle voteStart = StartMessageOne("VoteStart", clients[i], USERMSG_RELIABLE);
 		
-		if(g_bUserBuf)
+		if (g_bUserBuf)
 		{
 			Protobuf protoStart = UserMessageToProtobuf(voteStart);
 			protoStart.SetInt("team", team);
@@ -2311,10 +2295,7 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 		{
 			BfWrite bfStart = UserMessageToBfWrite(voteStart);
 			bfStart.WriteByte(team);
-			if (!isTF2SDKModHack)
-			{
-				bfStart.WriteNum(s_nNativeVoteIdx);
-			}
+			bfStart.WriteNum(s_nNativeVoteIdx);
 			bfStart.WriteByte(Data_GetInitiator(vote));
 			bfStart.WriteString(translation);
 			if (bCustom && changeTitle == Plugin_Changed)
@@ -2326,7 +2307,7 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 				bfStart.WriteString(details);
 			}
 			bfStart.WriteByte(bYesNo);
-			if (!isTF2SDKModHack && !IsFakeClient(clients[i]))
+			if (!IsFakeClient(clients[i]))
 			{
 				bfStart.WriteByte(Data_GetTarget(vote) - 1);
 			}
@@ -2334,7 +2315,7 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 		
 		EndMessage();
 	}
-	
+
 	g_curDisplayClient = 0;
 }
 
@@ -2388,10 +2369,7 @@ static void TF2CSGO_SendOptionsToClient(NativeVote vote, int client)
 		optionsEvent.SetString(option, display);
 	}
 	optionsEvent.SetInt("count", itemCount);
-	if (!isTF2SDKModHack)
-	{
-		optionsEvent.SetInt("voteidx", s_nNativeVoteIdx); // TODO(UPDATE)
-	}
+	optionsEvent.SetInt("voteidx", s_nNativeVoteIdx);
 	optionsEvent.FireToClient(client);
 	// FireToClient does not close the handle, so we call Cancel() to do that for us.
 	optionsEvent.Cancel();
@@ -2432,10 +2410,7 @@ static void TF2_VotePass(const char[] translation, const char[] details, int tea
 	}
 
 	votePass.WriteByte(team);
-	if (!isTF2SDKModHack)
-	{
-		votePass.WriteNum(s_nNativeVoteIdx);
-	}
+	votePass.WriteNum(s_nNativeVoteIdx);
 	votePass.WriteString(translation);
 	votePass.WriteString(details);
 
@@ -2457,10 +2432,7 @@ static void TF2_VoteFail(int[] clients, int numClients, int reason, int team)
 	BfWrite voteFailed = UserMessageToBfWrite(StartMessage("VoteFailed", clients, numClients, USERMSG_RELIABLE));
 	
 	voteFailed.WriteByte(team);
-	if (!isTF2SDKModHack)
-	{
-		voteFailed.WriteNum(s_nNativeVoteIdx); // TODO(UPDATE)
-	}
+	voteFailed.WriteNum(s_nNativeVoteIdx);
 	voteFailed.WriteByte(reason);
 
 	EndMessage();
@@ -2500,8 +2472,7 @@ stock static void CSGO_DisplayVoteSetup(int client, ArrayList hVoteTypes)
 		hVoteTypes.GetArray(i, voteData.CallVoteList_VoteType);
 		
 		Game_OverrideTypeToVoteString(voteData.CallVoteList_VoteType, voteIssue, sizeof(voteIssue));
-		
-		
+	
 		voteSetup.AddString("potential_issues", voteIssue);
 	}
 	
@@ -2527,7 +2498,7 @@ static void TF2_DisplayVoteSetup(int client, ArrayList hVoteTypes)
 		
 		char translation[128];
 		Game_OverrideTypeToTranslationString(voteData.CallVoteList_VoteType, translation, sizeof(translation));
-		
+
 		voteSetup.WriteString(voteIssue);
 		voteSetup.WriteString(translation);
 		voteSetup.WriteByte(voteData.CallVoteList_VoteEnabled);
@@ -2542,10 +2513,7 @@ static void TF2CSGO_ResetVote()
 	{
 		if (g_EngineVersion == Engine_TF2)
 		{
-			if (!isTF2SDKModHack)
-			{
-				SetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx", -1);
-			}
+			SetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx", -1);
 			SetEntProp(g_VoteController, Prop_Send, "m_iActiveIssueIndex", INVALID_ISSUE);
 		}
 		SetEntProp(g_VoteController, Prop_Send, "m_iOnlyTeamToVote", g_EngineVersion == Engine_TF2 ? NATIVEVOTES_TF2_ALL_TEAMS : NATIVEVOTES_ALL_TEAMS);
@@ -2597,11 +2565,20 @@ static bool TF2_CheckVotePassType(NativeVotesPassType passType)
 {
 	switch(passType)
 	{
-		case NativeVotesPass_Custom, NativeVotesPass_Restart, NativeVotesPass_ChgLevel,
-		NativeVotesPass_Kick, NativeVotesPass_NextLevel, NativeVotesPass_Extend,
-		NativeVotesPass_Scramble, NativeVotesPass_ChgMission, NativeVotesPass_StartRound, NativeVotesPass_Eternaween,
-		NativeVotesPass_AutoBalanceOn, NativeVotesPass_AutoBalanceOff,
-		NativeVotesPass_ClassLimitsOn, NativeVotesPass_ClassLimitsOff:
+		case NativeVotesPass_Custom,
+		     NativeVotesPass_Restart,
+		     NativeVotesPass_ChgLevel,
+		     NativeVotesPass_Kick,
+		     NativeVotesPass_NextLevel,
+		     NativeVotesPass_Extend,
+		     NativeVotesPass_Scramble,
+		     NativeVotesPass_ChgMission,
+		     NativeVotesPass_StartRound,
+		     NativeVotesPass_Eternaween,
+		     NativeVotesPass_AutoBalanceOn,
+		     NativeVotesPass_AutoBalanceOff,
+		     NativeVotesPass_ClassLimitsOn,
+		     NativeVotesPass_ClassLimitsOff:
 		{
 			return true;
 		}
@@ -2773,7 +2750,6 @@ static void TF2_AddDefaultVotes(ArrayList hVoteTypes, bool bHideDisabledVotes)
 		return;
 	}
 
-	// Not every TF2 mod supports MVM
 	if (FindSendPropInfo("CTFGameRulesProxy", "m_bPlayingMannVsMachine") > 0 && GameRules_GetProp("m_bPlayingMannVsMachine"))
 	{
 		// Default MvM vote types
@@ -2844,10 +2820,19 @@ static bool CSGO_CheckVoteType(NativeVotesType voteType)
 {
 	switch(voteType)
 	{
-		case NativeVotesType_Custom_YesNo, NativeVotesType_Restart,
-		NativeVotesType_Kick, NativeVotesType_KickIdle, NativeVotesType_KickScamming, NativeVotesType_KickCheating,
-		NativeVotesType_ChgLevel, NativeVotesType_NextLevel, NativeVotesType_ScrambleNow, NativeVotesType_SwapTeams,
-		NativeVotesType_Surrender, NativeVotesType_Rematch, NativeVotesType_Continue:
+		case NativeVotesType_Custom_YesNo,
+			 NativeVotesType_Restart,
+			 NativeVotesType_Kick,
+			 NativeVotesType_KickIdle,
+			 NativeVotesType_KickScamming,
+			 NativeVotesType_KickCheating,
+			 NativeVotesType_ChgLevel,
+			 NativeVotesType_NextLevel,
+			 NativeVotesType_ScrambleNow,
+			 NativeVotesType_SwapTeams,
+			 NativeVotesType_Surrender,
+			 NativeVotesType_Rematch,
+			 NativeVotesType_Continue:
 		{
 			return true;
 		}
