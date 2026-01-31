@@ -61,8 +61,8 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 - Automatically generate mapcycle files.
   - Can be refreshed with `sm_reloadmaplist`.
 - <img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> Clean up workshop maps to reduce disk size.
-- **[OPTIONAL]** Automatically generate the mapcycle file (requires [Rest In Pawn](https://github.com/srcdslab/sm-ext-ripext)).
-  - <img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> Import Workshop map collections.
+- **[OPTIONAL]** Automatically generate the mapcycle file.
+  - <img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> Import Workshop map collections (requires [Rest In Pawn](https://github.com/srcdslab/sm-ext-ripext) in order to use that feature).
 > [!WARNING]
 > There's currently a bug where leaving `sm_mapcycle_auto` enabled at all times will make all plugins unable to find [`mapcyclefile`](https://developer.valvesoftware.com/wiki/Mapcycle.txt). But if you're still going to leave it on for whatever reason, `sm_reload_nominations` works as a temporary fix (or alternatively, toggle it on then off).
 
