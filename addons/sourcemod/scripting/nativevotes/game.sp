@@ -365,12 +365,12 @@ static ConVar g_Cvar_HideDisabledIssues;
 /**
  * TODO(UPDATE): For now we only support one vote from NativeVotes at a time.
  * 
- * Ideally we peek and poke at the game's `s_nVoteIdx` and decrement it accordingly, but we also
+ * Ideally we peek and poke at the game's `s_nVoteIdx` and increment it accordingly, but we also
  * have to store an internal list of active votes.
  * 
- * Thank you @Kenzzer‼
+ * TODO: https://github.com/Heapons/sourcemod-nativevotes-updated/issues/2#issuecomment-3825973400
  */
-static int s_nNativeVoteIdx = 0x7FFFFFFF;
+static int s_nNativeVoteIdx = 0;
 
 bool Game_IsGameSupported(char[] engineName="", int maxlength=0)
 {
@@ -439,10 +439,10 @@ void Game_InitializeCvars()
 			g_Cvar_MvM_VoteClassLimits_Enabled = FindConVar("sv_vote_issue_classlimits_allowed_mvm");
 			g_Cvar_VoteExtend_Enabled 		   = FindConVar("sv_vote_issue_extendlevel_allowed");
 			
-			g_Cvar_ClassLimit  = FindConVar("tf_classlimit");
-			g_Cvar_AutoBalance = FindConVar("mp_autoteambalance");
+			g_Cvar_ClassLimit  				   = FindConVar("tf_classlimit");
+			g_Cvar_AutoBalance 				   = FindConVar("mp_autoteambalance");
 			
-			g_Cvar_HideDisabledIssues = FindConVar("sv_vote_ui_hide_disabled_issues");
+			g_Cvar_HideDisabledIssues 		   = FindConVar("sv_vote_ui_hide_disabled_issues");
 		}
 	}
 }
@@ -2110,8 +2110,8 @@ static void TF2CSGO_UpdateVoteCounts(ArrayList votes)
 		{
 			SetEntProp(g_VoteController, Prop_Send, "m_nVoteOptionCount", votes.Get(i), 4, i);
 
-				char szVoteOption[13];
-				Format(szVoteOption, sizeof(szVoteOption), "vote_option%d", i+1);
+			char szVoteOption[13];
+			Format(szVoteOption, sizeof(szVoteOption), "vote_option%d", i+1);
 			changeEvent.SetInt(szVoteOption, votes.Get(i));
 		}
 		changeEvent.SetInt("voteidx", s_nNativeVoteIdx);
@@ -2203,12 +2203,20 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 
 		SetEntProp(g_VoteController, Prop_Send, "m_iOnlyTeamToVote", team);
 		
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < TF2CSGO_COUNT; i++)
 		{
 			SetEntProp(g_VoteController, Prop_Send, "m_nVoteOptionCount", 0, _, i);
 		}
 
-		SetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx", --s_nNativeVoteIdx);
+		// TODO(UPDATE): M-M-M-MULTIVOTE
+		// we need unique vote indices; HUD elements for previous votes aren't cleaned up (?)
+		// the game implements this as `this->m_nVoteIdx = s_nVoteIdx++`
+		s_nNativeVoteIdx = GetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx");
+		
+	#if defined LOG
+		PrintToServer("Starting vote index: %d (controller: %d)", s_nNativeVoteIdx, GetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx"));
+	#endif		
+		SetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx", s_nNativeVoteIdx + 1); // TODO(UPDATE)
 	}
 	
 	// According to Source SDK 2013, vote_options is only sent for a multiple choice vote.
@@ -2472,7 +2480,7 @@ stock static void CSGO_DisplayVoteSetup(int client, ArrayList hVoteTypes)
 		hVoteTypes.GetArray(i, voteData.CallVoteList_VoteType);
 		
 		Game_OverrideTypeToVoteString(voteData.CallVoteList_VoteType, voteIssue, sizeof(voteIssue));
-	
+		
 		voteSetup.AddString("potential_issues", voteIssue);
 	}
 	
