@@ -917,6 +917,8 @@ stock void Game_UpdateClientCount(int num_clients)
 
 public Action Game_ResetVote(Handle timer)
 {
+	g_hVoteTimer = null;
+	
 	switch(g_EngineVersion)
 	{
 		case Engine_Left4Dead, Engine_Left4Dead2:

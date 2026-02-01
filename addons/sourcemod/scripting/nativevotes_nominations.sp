@@ -48,7 +48,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Map Nominations",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Provides Map Nominations",
-	version = "26w05a",
+	version = "26w06a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 

@@ -55,7 +55,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Rock The Vote",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Provides RTV Map Voting",
-	version = "26w05a",
+	version = "26w06a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -349,7 +349,7 @@ void AttemptRTV(int client, bool isVoteMenu=false)
 		return;
 	}
 	
-	if (!CanMapChooserStartVote())
+	if (!CanMapChooserStartVote() && NativeVotes_IsVoteInProgress())
 	{
 		CReplyToCommand(client, "[{lightgreen}Rock The Vote\x01] %t", "RTV Started");
 		return;

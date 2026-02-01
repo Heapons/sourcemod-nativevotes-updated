@@ -46,7 +46,7 @@ public Plugin:myinfo =
 	name = "NativeVotes | Basic Votes",
 	author = "Powerlord and AlliedModders LLC",
 	description = "NativeVotes Basic Vote Commands",
-	version = "26w05a",
+	version = "26w06a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 

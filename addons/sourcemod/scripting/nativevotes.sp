@@ -93,7 +93,7 @@ ConVar g_ConVars[MAX_CONVARS];
 
 //----------------------------------------------------------------------------
 // Used to track current vote data
-//Handle g_hVoteTimer;
+Handle g_hVoteTimer;
 Handle g_hDisplayTimer;
 
 int g_Clients;
@@ -150,7 +150,7 @@ public Plugin myinfo =
 	name = "NativeVotes",
 	author = "Powerlord",
 	description = "Voting API to use the game's native vote panels. Compatible with L4D, L4D2, TF2, and CS:GO.",
-	version = "26w05b",
+	version = "26w06a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 }
 
@@ -653,7 +653,8 @@ public void OnMapEnd()
 	
 	if (g_hDisplayTimer != null)
 	{
-		delete g_hDisplayTimer;
+		KillTimer(g_hDisplayTimer);
+		g_hDisplayTimer = null;
 	}
 
 //	g_hVoteTimer = INVALID_HANDLE;
@@ -1100,7 +1101,8 @@ void EndVoting()
 	
 	if (g_hDisplayTimer != null)
 	{
-		delete g_hDisplayTimer;
+		KillTimer(g_hDisplayTimer);
+		g_hDisplayTimer = null;
 	}
 	
 	if (g_bCancelled)
@@ -1235,6 +1237,12 @@ bool InitializeVoting(NativeVote vote, int time, int flags)
 		return false;
 	}
 	
+	if (g_hVoteTimer != null)
+	{
+		//KillTimer(g_hVoteTimer);
+		g_hVoteTimer = null;
+	}
+
 	Internal_Reset();
 	
 	/* Mark all clients as not voting */
@@ -1403,12 +1411,13 @@ void Internal_Reset(bool cancel=false)
 	
 	if (g_hDisplayTimer != null)
 	{
-		delete g_hDisplayTimer;
+		KillTimer(g_hDisplayTimer);
+		g_hDisplayTimer = null;
 	}
 
 	if (!cancel)
 	{
-		CreateTimer(5.0, Game_ResetVote, TIMER_FLAG_NO_MAPCHANGE);
+		g_hVoteTimer = CreateTimer(5.0, Game_ResetVote, TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
 
