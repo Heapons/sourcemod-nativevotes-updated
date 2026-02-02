@@ -19,12 +19,15 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 - Update [Nominations](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_nominations.sp) and [Rock The Vote](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_rockthevote.sp) to be on par with the latest [Sourcemod](https://github.com/alliedmodders/sourcemod/tree/master/plugins) version.
 
 ## <img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="24" height="24" style="vertical-align: text-bottom;"> Team Fortress 2
-- Fixes.
+- Fixes:
   - ✔️/❌ vote counts.
-  - Proper sounds get played upon selecting an item in a **multi-choice** (≤5 options max.) vote.
+  - <s>Proper sounds get played upon selecting an item in a **multi-choice** (≤5 options) vote.</s>
+    - Temporarily reverted. See: https://github.com/Heapons/sourcemod-nativevotes-updated/issues/2#issuecomment-3825973400.
+  - <img src="https://shared.fastly.steamstatic.com/community_assets/images/apps/3545060/08607ace82bfb52cf8993efe88c2ef00fa25c96f.ico" width="16" height="16" style="vertical-align: text-bottom;"> **Change VIP** vote issue now shows up again.
 - Add [`sm_voterp`](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_voterp.sp).
   - Controls `tf_medieval_autorp` cvar.
-- Map lists in **Vote Setup** now work in **Mann Vs. Machine** as well.
+- Maplists in **Vote Setup** now work in **Mann Vs. Machine** as well.
+- Added `sm_callvote` command and `callvote` chat trigger to open **Vote Setup**.
 
 ## [Rock The Vote](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_rockthevote.sp)
 - Admin commands.
@@ -45,9 +48,6 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 |`sm_rtv_postvoteaction`|`0`|What to do with RTV's after a mapvote has completed.<br>0 - Allow (success = instant change), 1 - Deny|
 
 ## [Nominations](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_nominations.sp)
-### Team Fortress 2
-- Attempting to nominate with no argument will open **Vote Setup** (`callvote`).
-  - Can be toggled with `sm_nominate_use_callvote`.
 - Support partial map name matches
 ---
 |Name|Default Value|Description|
@@ -55,16 +55,13 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 |`sm_nominate_excludeold`|`1`|Specifies if the current map should be excluded from the Nominations list|
 |`sm_nominate_excludecurrent`|`1`|Specifies if the MapChooser excluded maps should also be excluded from Nominations|
 |`sm_nominate_maxfound`|`0`|Maximum number of nomination matches to add to the menu.<br>0 = infinite|
-|`sm_nominate_use_callvote`|`1`|Specifies whether to execute callvote when nominating without specifying the map.|
 
 ## [MapChooser](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_mapchooser.sp)
 - Automatically generate mapcycle files.
   - Can be refreshed with `sm_reloadmaplist`.
 - <img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> Clean up workshop maps to reduce disk size.
-- **[OPTIONAL]** Automatically generate the mapcycle file.
-  - <img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> Import Workshop map collections (requires [Rest In Pawn](https://github.com/srcdslab/sm-ext-ripext) in order to use that feature).
-> [!WARNING]
-> There's currently a bug where leaving `sm_mapcycle_auto` enabled at all times will make all plugins unable to find [`mapcyclefile`](https://developer.valvesoftware.com/wiki/Mapcycle.txt). But if you're still going to leave it on for whatever reason, `sm_reload_nominations` works as a temporary fix (or alternatively, toggle it on then off).
+- Automatically generate the mapcycle file.
+  -  <img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> Import Workshop map collections (requires [Rest In Pawn](https://github.com/srcdslab/sm-ext-ripext) in order to use that feature).
 
 ---
 |Name|Default Value|Description|
@@ -85,6 +82,6 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 |`sm_mapvote_runoff`|`0`|Hold runoff votes if winning choice is less than a certain margin|
 |`sm_mapvote_runoffpercent`|`50`|If winning choice has less than this percent of votes, hold a runoff|
 |`sm_mapcycle_auto`|`0`|Specifies whether to automatically populate the maps list.|
-|`sm_mapcycle_exclude`|`.*itemtest.*\|background01\|^tr.*$`|Specifies which maps shouldn't be automatically added (regex pattern).|
-|`sm_workshop_map_collection`|""|Specifies the workshop collection to fetch the maps from.<br>[<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> **Team Fortress 2**](https://store.steampowered.com/app/440) (or its mods) only|
-|`sm_workshop_map_cleanup`|`0`|Specifies whether to automatically cleanup workshop maps on map change<br>[<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> **Team Fortress 2**](https://store.steampowered.com/app/440) (or its mods) only|
+|`sm_mapcycle_exclude`|`.*test.*\|background01\|^tr.*$`|Specifies which maps shouldn't be automatically added (regex pattern).|
+|<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> `sm_workshop_map_collection`|` `|Specifies the workshop collection to fetch the maps from.|
+|<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> `sm_workshop_map_cleanup`|`0`|Specifies whether to automatically cleanup workshop maps on map change|
