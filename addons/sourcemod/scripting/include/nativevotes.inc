@@ -113,6 +113,7 @@ enum NativeVotesType
 	NativeVotesType_ClassLimitsOn,	/**< TF2: Yes/No, details are ignored */
 	NativeVotesType_ClassLimitsOff,	/**< TF2: Yes/No, details are ignored */
 	NativeVotesType_Extend,			/**< TF2: Yes/No, details are ignored */
+	NativeVotesType_ChgCivilian,	/**< TF2 Classified: Yes/No, target is player userid, details are auto-set by target */
 };
 
 enum NativeVotesPassType
@@ -141,6 +142,7 @@ enum NativeVotesPassType
 	NativeVotesPass_AutoBalanceOff,		/**< TF2: Yes/No, details are ignored */
 	NativeVotesPass_ClassLimitsOn,		/**< TF2: Yes/No, details are ignored */
 	NativeVotesPass_ClassLimitsOff,		/**< TF2: Yes/No, details are ignored */
+	NativeVotesPass_ChgCivilian,		/**< TF2 Classified: Yes/No, target is player userid, details are auto-set by target */
 };
 
 /**
@@ -237,6 +239,7 @@ enum NativeVotesOverride
 	NativeVotesOverride_AutoBalance,
 	NativeVotesOverride_ClassLimits,
 	NativeVotesOverride_Extend,
+	NativeVotesOverride_ChgCivilian,
 	NativeVotesOverride_Count,
 }
 
