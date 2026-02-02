@@ -55,7 +55,7 @@ public Plugin myinfo =
 	name = "NativeVotes | MapChooser",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Automated Map Voting",
-	version = "26w06a",
+	version = "26w06b",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -176,7 +176,7 @@ public void OnPluginStart()
 	g_ConVars[mapvote_runoff] 		 		= CreateConVar("sm_mapvote_runoff", "0", "Hold run of votes if winning choice is less than a certain margin.", _, true, 0.0, true, 1.0);
 	g_ConVars[mapvote_runoffpercent] 		= CreateConVar("sm_mapvote_runoffpercent", "50", "If winning choice has less than this percent of votes, hold a runoff.", _, true, 0.0, true, 100.0);
 	g_ConVars[mapcycle_auto]         		= CreateConVar("sm_mapcycle_auto", "0", "Specifies whether or not to automatically populate the maps list.", _, true, 0.0, true, 1.0);
-	g_ConVars[mapcycle_exclude]      		= CreateConVar("sm_mapcycle_exclude", ".*itemtest.*|background01|^tr.*$", "Specifies which maps shouldn't be automatically added with a regex pattern.");
+	g_ConVars[mapcycle_exclude]      		= CreateConVar("sm_mapcycle_exclude", ".*test.*|background01|^tr.*$", "Specifies which maps shouldn't be automatically added with a regex pattern.");
 	if (engine != Engine_SDK2013 && engine == Engine_TF2)
 	{
 		g_ConVars[workshop_map_collection]  = CreateConVar("sm_workshop_map_collection", "", "Specifies the workshop collection to fetch the maps from.");
@@ -1647,6 +1647,7 @@ void PopulateMapList()
 	{
 		CloseHandle(file);
 	}
+	RequestFrame(RequestFrame_ReadMapList);
 }
 
 void HTTPResponse_GetCollectionDetails(HTTPResponse response, File file)
@@ -1777,4 +1778,15 @@ void CleanupWorkshopMaps()
 		delete dir;
 	}
 	RemoveDir(workshopDir);
+}
+
+void RequestFrame_ReadMapList()
+{
+	if (ReadMapList(g_MapList, g_mapFileSerial, "mapchooser", MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER) != null)
+	{
+		if (g_mapFileSerial == -1)
+		{
+			LogError("Unable to create a valid map list.");
+		}
+	}
 }
