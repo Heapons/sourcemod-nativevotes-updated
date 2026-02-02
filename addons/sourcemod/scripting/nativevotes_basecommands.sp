@@ -48,7 +48,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Basic Commands",
 	author = "Powerlord and AlliedModders LLC",
 	description = "Revote and Cancel support for NativeVotes",
-	version = "26w06a",
+	version = "26w06b",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 }
 
@@ -59,6 +59,7 @@ public void OnPluginStart()
 	
 	AddCommandListener(Command_CancelVote, "sm_cancelvote");
 	AddCommandListener(Command_ReVote, "sm_revote");
+	RegConsoleCmd("sm_callvote", Command_CallVote, "Start a vote on an issue.");
 }
 
 bool PerformCancelVote(int client)
@@ -72,6 +73,23 @@ bool PerformCancelVote(int client)
 	
 	NativeVotes_Cancel();
 	return true;
+}
+
+public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
+{
+	if (!client || IsChatTrigger())
+	{
+		return;
+	}
+	
+	if (strcmp(sArgs, "callvote", false) == 0)
+	{
+		ReplySource old = SetCmdReplySource(SM_REPLY_TO_CHAT);
+		
+		Command_CallVote(client, 0);
+		
+		SetCmdReplySource(old);
+	}
 }
 
 public Action Command_CancelVote(int client, const char[] command, int argc)
@@ -158,6 +176,18 @@ public Action Command_ReVote(int client, const char[] command, int argc)
 		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] %t", "Cannot change vote");
 		return Plugin_Stop;
 	}
+	
+	return Plugin_Continue;
+}
+
+public Action Command_CallVote(int client, int args)
+{
+	if (client <= 0)
+	{
+		return Plugin_Continue;
+	}
+	
+	FakeClientCommand(client, "callvote");
 	
 	return Plugin_Continue;
 }
