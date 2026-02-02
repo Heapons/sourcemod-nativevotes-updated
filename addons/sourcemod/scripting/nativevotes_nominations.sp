@@ -48,7 +48,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Map Nominations",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Provides Map Nominations",
-	version = "26w06a",
+	version = "26w06b",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -58,7 +58,6 @@ enum
 	excludecurrent,
 	maxmatches,
 	allow_workshop,
-	use_callvote,
 
 	nextlevel_allowed,
 
@@ -97,7 +96,6 @@ public void OnPluginStart()
 	g_ConVars[excludecurrent] 	 = CreateConVar("sm_nominate_excludecurrent", "1", "Specifies if the MapChooser excluded maps should also be excluded from Nominations", _, true, 0.0, true, 1.0);
 	g_ConVars[maxmatches] 	  	 = CreateConVar("sm_nominate_maxfound", "0", "Maximum number of nomination matches to add to the menu. 0 = infinite.", _, true, 0.0);
 	//g_ConVars[allow_workshop]  = CreateConVar("sm_nominate_allow_workshop", "0", "Specifies if unlisted workshop maps can be nominated", _, true, 0.0, true, 1.0);
-	g_ConVars[use_callvote]      = CreateConVar("sm_nominate_use_callvote", "1", "Specifies whether to execute callvote when nominating without specifying the map.", _, true, 0.0, true, 1.0);
 
 	g_ConVars[nextlevel_allowed] = FindConVar("sv_vote_issue_nextlevel_allowed");
 
@@ -276,14 +274,7 @@ public Action Command_Nominate(int client, int args)
 	
 	if (args == 0)
 	{
-	    if (g_NativeVotes && NativeVotes_AreVoteCommandsSupported() && g_ConVars[use_callvote].BoolValue && g_ConVars[nextlevel_allowed].BoolValue)
-	    {
-	       FakeClientCommand(client, "callvote");
-	    }
-		else
-	    {
-			OpenNominationMenu(client);
-		}
+	    OpenNominationMenu(client);
 	    return Plugin_Handled;
 	}
 
