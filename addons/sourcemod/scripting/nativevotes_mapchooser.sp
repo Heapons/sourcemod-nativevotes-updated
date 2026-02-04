@@ -55,7 +55,7 @@ public Plugin myinfo =
 	name = "NativeVotes | MapChooser",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Automated Map Voting",
-	version = "26w06b",
+	version = "26w06c",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -698,7 +698,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 	 
 	char map[PLATFORM_MAX_PATH];
 	
-	/* No input given - User our internal nominations and maplist */
+	/* No input given - Use our internal nominations and maplist */
 	if (inputlist == null)
 	{
 		int nominateCount = g_NominateList.Length;
@@ -707,17 +707,26 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 		// New in 1.5.1 to fix missing extend vote
 		if (g_NativeVotes)
 		{
-			if (voteSize > NativeVotes_GetMaxItems())
+			int maxItems = NativeVotes_GetMaxItems();
+			if (maxItems < 1)
 			{
-				voteSize = NativeVotes_GetMaxItems();
+				voteSize = 1;
 			}
-			
+			else if (voteSize > maxItems)
+			{
+				voteSize = maxItems;
+			}
+
 			if (g_ConVars[mapvote_extend].IntValue && g_Extends < g_ConVars[mapvote_extend].IntValue)
 			{
 				voteSize--;
 			}
+
+			if (voteSize < 1)
+			{
+				voteSize = 1;
+			}
 		}
-		
 		/* Smaller of the two - It should be impossible for nominations to exceed the size though (cvar changed mid-map?) */
 		int nominationsToAdd = nominateCount >= voteSize ? voteSize : nominateCount;
 		
