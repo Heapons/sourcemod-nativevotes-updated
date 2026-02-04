@@ -11,7 +11,7 @@ public Plugin myinfo =
     name = "NativeVotes | Scramble Teams",
     author = "Heapons",
     description = "Provides Scramble Teams Voting",
-    version = "26w06c",
+    version = "26w06d",
     url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -23,7 +23,7 @@ enum
     interval,
     restart_round,
     restart_timelimit,
-    enforce_timelimit,
+    mp_match_end_at_timelimit,
 
     MAX_CONVARS
 }
@@ -51,7 +51,7 @@ public void OnPluginStart()
     g_ConVars[interval]          = CreateConVar("sm_scrambleteams_interval", "240.0", "Time (in seconds) after a failed scramble before another can be held", 0, true, 0.00);
     g_ConVars[restart_round]     = CreateConVar("sm_scrambleteams_restart_round", "0", "Whether to restart the round after scrambling teams", 0, true, 0.0, true, 1.0);
     g_ConVars[restart_timelimit] = CreateConVar("sm_scrambleteams_restart_timelimit", "0", "Whether to restart the timelimit after scrambling teams", 0, true, 0.0, true, 1.0);
-    g_ConVars[enforce_timelimit] = CreateConVar("sm_scrambleteams_enforce_timelimit", "0", "Whether to end the game as soon as the timelimit runs out.", 0, true, 0.0, true, 1.0);
+    g_ConVars[mp_match_end_at_timelimit] = FindConVar("mp_match_end_at_timelimit");
 
     RegConsoleCmd("sm_votescramble", Command_VoteScramble);
     RegConsoleCmd("sm_scramble", Command_VoteScramble);
@@ -165,15 +165,12 @@ public void OnClientDisconnect(int client)
 public void Event_TeamplayRoundStart(Event event, const char[] name, bool dontBroadcast)
 {
     // Ends game mid-round once mp_timelimit runs out
-	if (g_ConVars[enforce_timelimit].BoolValue)
-    {
-        int entity = FindEntityByClassname(-1, "tf_gamerules");
-	    if (entity != -1)
-	    {
-	    	SetVariantBool(true);
-	    	AcceptEntityInput(entity, "SetStalemateOnTimelimit", 0, 0);
-	    }
-    }
+	int entity = FindEntityByClassname(-1, "tf_gamerules");
+	if (entity != -1)
+	{
+		SetVariantBool(g_ConVars[mp_match_end_at_timelimit].BoolValue);
+		AcceptEntityInput(entity, "SetStalemateOnTimelimit", 0, 0);
+	}
     // Prevents map reset after scrambling teams
     if (!g_ConVars[restart_timelimit].BoolValue)
     {
