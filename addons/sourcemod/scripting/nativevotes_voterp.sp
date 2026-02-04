@@ -1,6 +1,10 @@
 #include <sourcemod>
+#include <multicolors>
 #include <sdktools>
+
+#undef REQUIRE_PLUGIN
 #include <nativevotes>
+#define REQUIRE_PLUGIN
 
 #pragma semicolon 1
 #pragma newdecls required
@@ -10,7 +14,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Medieval Auto-RP",
 	author = "Heapons",
 	description = "Provides Medieval Auto-RP voting.",
-	version = "26w06b",
+	version = "26w06c",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -24,6 +28,8 @@ enum
 }
 
 ConVar g_ConVars[MAX_CONVARS];
+
+bool g_NativeVotes;
 
 public void OnPluginStart()
 {
@@ -39,6 +45,48 @@ public void OnPluginStart()
     RegConsoleCmd("sm_voterp", Command_VoteRP, "Vote to toggle 'tf_medieval_autorp'.");
 }
 
+public void OnAllPluginsLoaded()
+{
+    g_NativeVotes = LibraryExists("nativevotes");
+}
+
+public void OnLibraryAdded(const char[] name)
+{
+    if (StrEqual(name, "nativevotes", false))
+    {
+        g_NativeVotes = true;
+    }
+}
+
+public void OnLibraryRemoved(const char[] name)
+{
+    if (StrEqual(name, "nativevotes", false))
+    {
+        g_NativeVotes = false;
+    }
+}
+
+int MenuHandler_VoteRP(Menu menu, MenuAction action, int param1, int param2)
+{
+    switch (action)
+    {
+        case MenuAction_VoteEnd:
+        {
+            int item = param1;
+            char info[8];
+            menu.GetItem(item, info, sizeof(info));
+            int value = StringToInt(info);
+            g_ConVars[tf_medieval_autorp].SetInt(value);
+            CPrintToChatAll("[{lightgreen}NativeVotes\x01] tf_medieval_autorp set to %d", value);
+        }
+        case MenuAction_End:
+        {
+            delete menu;
+        }
+    }
+    return 0;
+}
+
 Action Command_VoteRP(int client, int args)
 {
     if (!client || !IsClientInGame(client))
@@ -46,7 +94,7 @@ Action Command_VoteRP(int client, int args)
         return Plugin_Handled;
     }
 
-    if (NativeVotes_IsVoteInProgress())
+    if ((g_NativeVotes && NativeVotes_IsVoteInProgress()) || (!g_NativeVotes && IsVoteInProgress()))
     {
         CPrintToChat(client, "[{lightgreen}NativeVotes\x01] A vote is already in progress.");
         return Plugin_Handled;
@@ -63,13 +111,24 @@ Action Command_VoteRP(int client, int args)
     char title[64];
     Format(title, sizeof(title), "Turn Medieval Auto-RP %s?", enabled ? "off" : "on");
 
-    NativeVote vote = NativeVotes_Create(VoteHandler, NativeVotesType_Custom_YesNo, MENU_ACTIONS_ALL);
-    
-    NativeVotes_SetTitle(vote, title);
-    NativeVotes_SetInitiator(vote, client);
-    NativeVotes_AddItem(vote, enabled ? "0" : "1", enabled ? "Disable" : "Enable");
-    NativeVotes_AddItem(vote, enabled ? "1" : "0", enabled ? "Enable" : "Disable");
-    NativeVotes_DisplayToAll(vote, g_ConVars[vote_duration].IntValue);
+    if (g_NativeVotes)
+    {
+        NativeVote vote = NativeVotes_Create(VoteHandler, NativeVotesType_Custom_YesNo, MENU_ACTIONS_ALL);
+        NativeVotes_SetTitle(vote, title);
+        NativeVotes_SetInitiator(vote, client);
+        NativeVotes_AddItem(vote, enabled ? "0" : "1", enabled ? "Disable" : "Enable");
+        NativeVotes_AddItem(vote, enabled ? "1" : "0", enabled ? "Enable" : "Disable");
+        NativeVotes_DisplayToAll(vote, g_ConVars[vote_duration].IntValue);
+    }
+    else
+    {
+        Menu menu = new Menu(MenuHandler_VoteRP);
+        menu.SetTitle(title);
+        menu.AddItem(enabled ? "0" : "1", enabled ? "Disable" : "Enable");
+        menu.AddItem(enabled ? "1" : "0", enabled ? "Enable" : "Disable");
+        menu.ExitButton = false;
+        menu.DisplayVoteToAll(g_ConVars[vote_duration].IntValue);
+    }
 
     return Plugin_Handled;
 }
