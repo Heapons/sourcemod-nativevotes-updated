@@ -46,7 +46,7 @@ public Plugin:myinfo =
 	name = "NativeVotes | Basic Votes",
 	author = "Powerlord and AlliedModders LLC",
 	description = "NativeVotes Basic Vote Commands",
-	version = "26w06c",
+	version = "26w06d",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -266,6 +266,7 @@ public Action Command_Vote(int client, int args)
 	if (g_NativeVotes)
 	{
 	    NativeVotesType nVoteType = answerCount == 0 ? NativeVotesType_Custom_YesNo : NativeVotesType_Custom_Mult;
+	    voteMenu = NativeVotes_Create(Handler_NativeVoteCallback, nVoteType, view_as<MenuAction>(MENU_ACTIONS_ALL));
 	    if (nVoteType == NativeVotesType_Custom_Mult)
 	    {
 	       for (int i = 0; i < answerCount; i++)
@@ -273,28 +274,24 @@ public Action Command_Vote(int client, int args)
 		       NativeVotes_AddItem(voteMenu, answers[i], answers[i]);
 	       }
 	    }
-	    voteMenu = NativeVotes_Create(Handler_NativeVoteCallback, nVoteType, view_as<MenuAction>(MENU_ACTIONS_ALL));
 	    NativeVotes_SetTitle(voteMenu, g_voteArg);
 		NativeVotes_DisplayToAll(voteMenu, 20);
 	}
 	else
 	{
 		voteMenu = CreateMenu(Handler_VoteCallback, view_as<MenuAction>(MENU_ACTIONS_ALL));
-		SetMenuTitle(voteMenu, "%s?", g_voteArg);
+		SetMenuTitle(voteMenu, g_voteArg);
 
-		switch (answerCount)
+		if (answerCount == 0)
 		{
-			case 0:
+		    AddMenuItem(voteMenu, VOTE_YES, "Yes");
+		    AddMenuItem(voteMenu, VOTE_NO, "No");
+		}
+		else
+		{
+			for (int i = 0; i < answerCount; i++)
 			{
-			    AddMenuItem(voteMenu, VOTE_YES, "Yes");
-			    AddMenuItem(voteMenu, VOTE_NO, "No");
-			}
-			default:
-			{
-				for (int i = 0; i < answerCount; i++)
-				{
-					AddMenuItem(voteMenu, answers[i], answers[i]);
-				}
+				AddMenuItem(voteMenu, answers[i], answers[i]);
 			}
 		}
 
