@@ -43,6 +43,9 @@
 #include <implodeexplode>
 
 EngineVersion g_EngineVersion = Engine_Unknown;
+int g_AppID = 0;
+
+#define APP_TF2CLASSIFIED					3545060
 
 #include "nativevotes/data-keyvalues.sp"
 
@@ -150,7 +153,7 @@ public Plugin myinfo =
 	name = "NativeVotes",
 	author = "Powerlord",
 	description = "Voting API to use the game's native vote panels. Compatible with L4D, L4D2, TF2, and CS:GO.",
-	version = "26w06b",
+	version = "26w06c",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 }
 
@@ -162,6 +165,13 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 		Format(error, err_max, "Unsupported game: %s", engineName);
 		return APLRes_Failure;
 	}
+
+	KeyValues kv = new KeyValues("GameInfo");
+    if (kv.ImportFromFile("gameinfo.txt") && kv.JumpToKey("FileSystem"))
+    {
+		g_AppID = kv.GetNum("SteamAppId");
+    }
+	delete kv;
 	
 	CreateNative("NativeVotes_IsVoteTypeSupported", Native_IsVoteTypeSupported);
 	CreateNative("NativeVotes_Create", Native_Create);
@@ -1282,7 +1292,8 @@ void StartVoting()
 
 	g_TotalClients = g_Clients;
 
-	/* By now we know how many clients were set.
+	/* 
+	 * By now we know how many clients were set.
 	 * If there are none, we should end IMMEDIATELY.
 	 */
 	if (g_Clients == 0)

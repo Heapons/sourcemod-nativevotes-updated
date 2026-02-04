@@ -2848,12 +2848,17 @@ static void TF2_AddDefaultVotes(ArrayList hVoteTypes, bool bHideDisabledVotes)
 		
 		// Extend
 		VoteTypeSet(hVoteTypes, bHideDisabledVotes, NativeVotesOverride_Extend, globalEnable && g_Cvar_VoteExtend_Enabled.BoolValue);
-
-		/* Team Fortress 2 Classified */
-		// ChangeCivilian
-		VoteTypeSet(hVoteTypes, bHideDisabledVotes, NativeVotesOverride_ChgCivilian, globalEnable && g_Cvar_ChangeCivilian_Enabled.BoolValue);
 	}
-	
+
+	switch (g_AppID)
+	{
+		case APP_TF2CLASSIFIED:
+		{
+			/* ChangeCivilian */
+			int entity = FindEntityByClassname(INVALID_ENT_REFERENCE, "tf2c_logic_vip");
+			VoteTypeSet(hVoteTypes, bHideDisabledVotes, NativeVotesOverride_ChgCivilian, globalEnable && g_Cvar_ChangeCivilian_Enabled.BoolValue && entity != INVALID_ENT_REFERENCE);
+		}
+	}
 }
 
 static void VoteTypeSet(ArrayList hVoteTypes, bool bHideDisabledVotes, NativeVotesOverride voteType, bool bEnabled)
@@ -3499,26 +3504,12 @@ static stock bool TF2_OverrideTypeToTranslationString(NativeVotesOverride overri
 		}
 		case NativeVotesOverride_AutoBalance:
 		{
-			if (GetConVarBool(g_Cvar_AutoBalance))
-			{
-				strcopy(translationString, maxlength, TF2_VOTE_MENU_AUTOBALANCE_OFF);
-			}
-			else
-			{
-				strcopy(translationString, maxlength, TF2_VOTE_MENU_AUTOBALANCE_ON);
-			}
+			strcopy(translationString, maxlength, GetConVarBool(g_Cvar_AutoBalance) ? TF2_VOTE_MENU_AUTOBALANCE_OFF : TF2_VOTE_MENU_AUTOBALANCE_ON);
 			valid = true;
 		}
 		case NativeVotesOverride_ClassLimits:
 		{
-			if (GetConVarInt(g_Cvar_ClassLimit))
-			{
-				strcopy(translationString, maxlength, TF2_VOTE_MENU_CLASSLIMIT_OFF);
-			}
-			else
-			{
-				strcopy(translationString, maxlength, TF2_VOTE_MENU_CLASSLIMIT_ON);
-			}
+			strcopy(translationString, maxlength, GetConVarInt(g_Cvar_ClassLimit) ? TF2_VOTE_MENU_CLASSLIMIT_OFF : TF2_VOTE_MENU_CLASSLIMIT_ON);
 			valid = true;
 		}
 		case NativeVotesOverride_Extend:
