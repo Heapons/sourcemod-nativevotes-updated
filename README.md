@@ -57,8 +57,6 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 |`sm_nominate_maxfound`|`0`|Maximum number of nomination matches to add to the menu.<br>0 = infinite|
 
 ## [MapChooser](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_mapchooser.sp)
-- Automatically generate mapcycle files.
-  - Can be refreshed with `sm_reloadmaplist`.
 - <img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> Clean up workshop maps to reduce disk size.
 - Automatically generate the mapcycle file.
   -  <img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> Import Workshop map collections (requires [Rest In Pawn](https://github.com/srcdslab/sm-ext-ripext) in order to use that feature).
