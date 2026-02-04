@@ -280,7 +280,7 @@ public Action Command_ResetRTV(int client, int args)
 {
 	ResetRTV();
 	
-	CPrintToChatAll("[{lightgreen}Rock The Vote\x01] %t", "Cancelled Vote");
+	CPrintToChatAll("[{olive}Rock The Vote\x01] %t", "Cancelled Vote");
 	
 	return Plugin_Handled;
 }
@@ -317,7 +317,7 @@ void MenuHandler_UndoRTV(Menu menu, MenuAction action, int client, int param2)
 
 					g_Voted[client] = false;
 					if (g_Votes > 0) g_Votes--;
-					CPrintToChatAllEx(client, "[{lightgreen}Rock The Vote\x01] %s: %t", name, "Cancelled Vote");
+					CPrintToChatAllEx(client, "[{olive}Rock The Vote\x01] %s: %t", name, "Cancelled Vote");
 				}
 			}
 		}
@@ -332,7 +332,7 @@ void AttemptRTV(int client, bool isVoteMenu=false)
 {
 	if (!g_RTVAllowed || (g_ConVars[postvoteaction].IntValue == 1 && HasEndOfMapVoteFinished()))
 	{
-		CReplyToCommand(client, "[{lightgreen}Rock The Vote\x01] %t", "RTV Not Allowed");
+		CReplyToCommand(client, "[{olive}Rock The Vote\x01] %t", "RTV Not Allowed");
 		if (isVoteMenu && g_NativeVotes)
 		{
 			if (g_Warmup)
@@ -357,13 +357,13 @@ void AttemptRTV(int client, bool isVoteMenu=false)
 	
 	if (!CanMapChooserStartVote() && NativeVotes_IsVoteInProgress())
 	{
-		CReplyToCommand(client, "[{lightgreen}Rock The Vote\x01] %t", "RTV Started");
+		CReplyToCommand(client, "[{olive}Rock The Vote\x01] %t", "RTV Started");
 		return;
 	}
 	
 	if (GetClientCount(true) < g_ConVars[minplayers].IntValue)
 	{
-		CReplyToCommand(client, "[{lightgreen}Rock The Vote\x01] %t", "Minimal Players Not Met");
+		CReplyToCommand(client, "[{olive}Rock The Vote\x01] %t", "Minimal Players Not Met");
 		if (isVoteMenu && g_NativeVotes)
 		{
 			NativeVotes_DisplayCallVoteFail(client, NativeVotesCallFail_Loading);
@@ -383,7 +383,7 @@ void AttemptRTV(int client, bool isVoteMenu=false)
 	g_Votes++;
 	g_Voted[client] = true;
 	
-	CPrintToChatAllEx(client, "[{lightgreen}Rock The Vote\x01] %t", "RTV Requested", name, g_Votes, g_VotesNeeded);
+	CPrintToChatAllEx(client, "[{olive}Rock The Vote\x01] %t", "RTV Requested", name, g_Votes, g_VotesNeeded);
 	
 	if (g_Votes >= g_VotesNeeded)
 	{
@@ -414,7 +414,7 @@ void StartRTV()
 			GetMapDisplayName(map, map, sizeof(map));
 			Format(map, sizeof(map), "\x05%s\x01", map);
 			
-			CPrintToChatAll("[{lightgreen}Rock The Vote\x01] %t", "Changing Maps", map);
+			CPrintToChatAll("[{olive}Rock The Vote\x01] %t", "Changing Maps", map);
 			CreateTimer(5.0, Timer_ChangeMap, _, TIMER_FLAG_NO_MAPCHANGE);
 			g_InChange = true;
 			

@@ -202,7 +202,7 @@ public Action Command_ForceScramble(int client, int args)
 public Action Command_ResetScramble(int client, int args)
 {
     ResetScramble();
-    CPrintToChatAll("[{lightgreen}Scramble Teams\x01] %t", "Cancelled Vote");
+    CPrintToChatAll("[{olive}Scramble Teams\x01] %t", "Cancelled Vote");
     return Plugin_Handled;
 }
 
@@ -238,7 +238,7 @@ void MenuHandler_UndoScramble(Menu menu, MenuAction action, int client, int para
 
                     g_Voted[client] = false;
                     if (g_Votes > 0) g_Votes--;
-                    CPrintToChatAllEx(client, "[{lightgreen}Scramble Teams\x01] %s: %t", name, "Cancelled Vote");
+                    CPrintToChatAllEx(client, "[{olive}Scramble Teams\x01] %s: %t", name, "Cancelled Vote");
                 }
             }
         }
@@ -253,7 +253,7 @@ void AttemptScramble(int client, bool isVoteMenu=false)
 {
     if (!g_ScrambleAllowed)
     {
-        CReplyToCommand(client, "[{lightgreen}Scramble Teams\x01] %t", "Scramble Not Allowed");
+        CReplyToCommand(client, "[{olive}Scramble Teams\x01] %t", "Scramble Not Allowed");
         if (isVoteMenu && g_NativeVotes)
         {
             int timeleft = g_ScrambleTime - GetTime();
@@ -271,13 +271,13 @@ void AttemptScramble(int client, bool isVoteMenu=false)
 
     if (g_NativeVotes && NativeVotes_IsVoteInProgress())
     {
-        CReplyToCommand(client, "[{lightgreen}Scramble Teams\x01] %t", "Vote in Progress");
+        CReplyToCommand(client, "[{olive}Scramble Teams\x01] %t", "Vote in Progress");
         return;
     }
 
     if (GetClientCount(true) < g_ConVars[minplayers].IntValue)
     {
-        CReplyToCommand(client, "[{lightgreen}Scramble Teams\x01] %t", "Minimal Players Not Met");
+        CReplyToCommand(client, "[{olive}Scramble Teams\x01] %t", "Minimal Players Not Met");
         if (isVoteMenu && g_NativeVotes)
         {
             NativeVotes_DisplayCallVoteFail(client, NativeVotesCallFail_Loading);
@@ -297,7 +297,7 @@ void AttemptScramble(int client, bool isVoteMenu=false)
     g_Votes++;
     g_Voted[client] = true;
 
-    CPrintToChatAllEx(client, "[{lightgreen}Scramble Teams\x01] %t", "Scramble Requested", name, g_Votes, g_VotesNeeded);
+    CPrintToChatAllEx(client, "[{olive}Scramble Teams\x01] %t", "Scramble Requested", name, g_Votes, g_VotesNeeded);
 
     if (g_Votes >= g_VotesNeeded)
     {
@@ -415,7 +415,7 @@ void ScrambleVoteResult(NativeVote vote, int num_votes, int num_clients, const i
     {
         NativeVotes_DisplayPassEx(vote, NativeVotesPass_Scramble);
 
-        CPrintToChatAll("[{lightgreen}Scramble Teams\x01] %t", "Scrambling Teams");
+        CPrintToChatAll("[{olive}Scramble Teams\x01] %t", "Scrambling Teams");
         ServerCommand("mp_scrambleteams");
         if (g_ConVars[restart_round].BoolValue)
         {
@@ -425,7 +425,7 @@ void ScrambleVoteResult(NativeVote vote, int num_votes, int num_clients, const i
     else if (yesVotes == 0 && noVotes == 0)
     {
         NativeVotes_DisplayFail(vote, NativeVotesFail_NotEnoughVotes);
-        CPrintToChatAll("[{lightgreen}Scramble Teams\x01] %t", "No Votes");
+        CPrintToChatAll("[{olive}Scramble Teams\x01] %t", "No Votes");
     }
     else
     {
@@ -441,7 +441,7 @@ int MenuHandler_Scramble(Menu menu, MenuAction action, int client, int param2)
         {
             if (param2 == 0)
             {
-                CPrintToChatAll("[{lightgreen}Scramble Teams\x01] %t", "Scrambling Teams");
+                CPrintToChatAll("[{olive}Scramble Teams\x01] %t", "Scrambling Teams");
                 ServerCommand("mp_scrambleteams");
                 if (g_ConVars[restart_round].BoolValue)
                 {
@@ -450,7 +450,7 @@ int MenuHandler_Scramble(Menu menu, MenuAction action, int client, int param2)
             }
             else
             {
-                CPrintToChatAll("[{lightgreen}Scramble Teams\x01] %t", "No Votes");
+                CPrintToChatAll("[{olive}Scramble Teams\x01] %t", "No Votes");
             }
         }
         case MenuAction_End:

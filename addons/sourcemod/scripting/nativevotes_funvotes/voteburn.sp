@@ -36,7 +36,7 @@ void DisplayVoteBurnMenu(int client, int target, char name[MAX_NAME_LENGTH])
 {
 	if (!IsPlayerAlive(target))
 	{
-		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] %t", "Cannot be performed on dead", name);
+		CReplyToCommand(client, "[{olive}NativeVotes\x01] %t", "Cannot be performed on dead", name);
 		return;
 	}
 	
@@ -48,7 +48,7 @@ void DisplayVoteBurnMenu(int client, int target, char name[MAX_NAME_LENGTH])
 	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
 
 	LogAction(client, target, "\"%L\" initiated a burn vote against %N", client, target);
-	CShowActivity2(client, "[{lightgreen}NativeVotes\x01] ", "%t", "Initiated Vote Burn", playerName);
+	CShowActivity2(client, "[{olive}NativeVotes\x01] ", "%t", "Initiated Vote Burn", playerName);
 	
 	g_voteType = burn;
 	
@@ -125,15 +125,15 @@ public int MenuHandler_Burn(Handle menu, MenuAction action, int param1, int para
 			userid = StringToInt(info);
 			if ((target = GetClientOfUserId(userid)) == 0)
 			{
-				CPrintToChat(param1, "[{lightgreen}NativeVotes\x01] %t", "Player no longer available");
+				CPrintToChat(param1, "[{olive}NativeVotes\x01] %t", "Player no longer available");
 			}
 			else if (!CanUserTarget(param1, target))
 			{
-				CPrintToChat(param1, "[{lightgreen}NativeVotes\x01] %t", "Unable to target");
+				CPrintToChat(param1, "[{olive}NativeVotes\x01] %t", "Unable to target");
 			}
 			else if (!IsPlayerAlive(target))
 			{
-				CPrintToChat(param1, "[{lightgreen}NativeVotes\x01] %t", "Player has since died");
+				CPrintToChat(param1, "[{olive}NativeVotes\x01] %t", "Player has since died");
 			}
 			else
 			{
@@ -149,13 +149,13 @@ public Action Command_VoteBurn(int client, int args)
 {
 	if (args < 1)
 	{
-		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] Usage: sm_voteburn <player>");
+		CReplyToCommand(client, "[{olive}NativeVotes\x01] Usage: sm_voteburn <player>");
 		return Plugin_Handled;
 	}
 	
 	if (Internal_IsVoteInProgress())
 	{
-		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] %t", "Vote in Progress");
+		CReplyToCommand(client, "[{olive}NativeVotes\x01] %t", "Vote in Progress");
 		return Plugin_Handled;
 	}
 	

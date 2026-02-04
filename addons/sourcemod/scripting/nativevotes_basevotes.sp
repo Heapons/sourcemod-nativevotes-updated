@@ -225,7 +225,7 @@ public Action Command_Vote(int client, int args)
 {
 	if (args < 1)
 	{
-	    CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] Usage: sm_vote <title> [option1] [option2] ... [option5]");
+	    CReplyToCommand(client, "[{olive}NativeVotes\x01] Usage: sm_vote <title> [option1] [option2] ... [option5]");
 		return Plugin_Handled;
 	}
 	
@@ -259,7 +259,7 @@ public Action Command_Vote(int client, int args)
 		}
 	}
 	LogAction(client, -1, "\"%L\" initiated a generic vote.", client);
-	CShowActivity2(client, "[{lightgreen}NativeVotes\x01] ", "%t", "Initiate Vote", g_voteArg);
+	CShowActivity2(client, "[{olive}NativeVotes\x01] ", "%t", "Initiate Vote", g_voteArg);
 	g_voteType = question;
 	Handle voteMenu;
 

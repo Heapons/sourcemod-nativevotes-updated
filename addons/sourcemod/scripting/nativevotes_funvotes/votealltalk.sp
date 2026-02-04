@@ -36,7 +36,7 @@ void DisplayVoteAllTalkMenu(int client)
 {
 	if (Internal_IsVoteInProgress())
 	{
-		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] %t", "Vote in Progress");
+		CReplyToCommand(client, "[{olive}NativeVotes\x01] %t", "Vote in Progress");
 		return;
 	}	
 	
@@ -46,7 +46,7 @@ void DisplayVoteAllTalkMenu(int client)
 	}
 	
 	LogAction(client, -1, "\"%L\" initiated an alltalk vote.", client);
-	CShowActivity2(client, "[{lightgreen}NativeVotes\x01] ", "%t", "Initiated Vote Alltalk");
+	CShowActivity2(client, "[{olive}NativeVotes\x01] ", "%t", "Initiated Vote Alltalk");
 	
 	g_voteType = voteType:alltalk;
 	g_voteInfo[VOTE_NAME][0] = '\0';
@@ -128,7 +128,7 @@ public Action Command_VoteAlltalk(int client, int args)
 {
 	if (args > 0)
 	{
-		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] Usage: sm_votealltalk");
+		CReplyToCommand(client, "[{olive}NativeVotes\x01] Usage: sm_votealltalk");
 		return Plugin_Handled;
 	}
 	

@@ -69,7 +69,7 @@ bool PerformCancelVote(int client)
 		return false;
 	}
 
-	CShowActivity2(client, "[{lightgreen}NativeVotes\x01] ", "%t", "Cancelled Vote");
+	CShowActivity2(client, "[{olive}NativeVotes\x01] ", "%t", "Cancelled Vote");
 	
 	NativeVotes_Cancel();
 	return true;
@@ -163,7 +163,7 @@ public Action Command_ReVote(int client, const char[] command, int argc)
 			return Plugin_Continue;
 		}
 		
-		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] %t", "Cannot participate in vote");
+		CReplyToCommand(client, "[{olive}NativeVotes\x01] %t", "Cannot participate in vote");
 		return Plugin_Stop;
 	}
 	
@@ -173,7 +173,7 @@ public Action Command_ReVote(int client, const char[] command, int argc)
 	}
 	else if (!IsVoteInProgress())
 	{
-		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] %t", "Cannot change vote");
+		CReplyToCommand(client, "[{olive}NativeVotes\x01] %t", "Cannot change vote");
 		return Plugin_Stop;
 	}
 	

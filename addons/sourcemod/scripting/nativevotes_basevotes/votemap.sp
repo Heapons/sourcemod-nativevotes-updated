@@ -41,7 +41,7 @@ bool g_VoteMapInUse;
 void DisplayVoteMapMenu(int client, int mapCount, char maps[5][PLATFORM_MAX_PATH])
 {
 	LogAction(client, -1, "\"%L\" initiated a map vote.", client);
-	CShowActivity2(client, "[{lightgreen}NativeVotes\x01] ", "%t", "Initiated Vote Map");
+	CShowActivity2(client, "[{olive}NativeVotes\x01] ", "%t", "Initiated Vote Map");
 	
 	g_voteType = map;
 
@@ -234,7 +234,7 @@ public void AdminMenu_VoteMap(Handle topmenu, TopMenuAction action, TopMenuObjec
 			}
 			else
 			{
-				CPrintToChat(param, "[{lightgreen}NativeVotes\x01] %T", "Map Vote In Use", param);
+				CPrintToChat(param, "[{olive}NativeVotes\x01] %T", "Map Vote In Use", param);
 			}
 		}
 		case TopMenuAction_DrawOption:
@@ -249,13 +249,13 @@ public Action Command_Votemap(int client, int args)
 {
 	if (args < 1)
 	{
-		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] Usage: sm_votemap <mapname> [mapname2] ... [mapname5]");
+		CReplyToCommand(client, "[{olive}NativeVotes\x01] Usage: sm_votemap <mapname> [mapname2] ... [mapname5]");
 		return Plugin_Handled;
 	}
 	
 	if (Internal_IsVoteInProgress())
 	{
-		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] %t", "Vote in Progress");
+		CReplyToCommand(client, "[{olive}NativeVotes\x01] %t", "Vote in Progress");
 		return Plugin_Handled;
 	}
 	
@@ -277,7 +277,7 @@ public Action Command_Votemap(int client, int args)
 		
 		if (!IsMapValid(maps[mapCount]))
 		{
-			CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] %t", "Map was not found", maps[mapCount]);
+			CReplyToCommand(client, "[{olive}NativeVotes\x01] %t", "Map was not found", maps[mapCount]);
 			return Plugin_Handled;
 		}
 

@@ -77,7 +77,7 @@ int MenuHandler_VoteRP(Menu menu, MenuAction action, int param1, int param2)
             menu.GetItem(item, info, sizeof(info));
             int value = StringToInt(info);
             g_ConVars[tf_medieval_autorp].SetInt(value);
-            CPrintToChatAll("[{lightgreen}NativeVotes\x01] tf_medieval_autorp set to %d", value);
+            CPrintToChatAll("[{olive}NativeVotes\x01] tf_medieval_autorp set to %d", value);
         }
         case MenuAction_End:
         {
@@ -96,14 +96,14 @@ Action Command_VoteRP(int client, int args)
 
     if ((g_NativeVotes && NativeVotes_IsVoteInProgress()) || (!g_NativeVotes && IsVoteInProgress()))
     {
-        CPrintToChat(client, "[{lightgreen}NativeVotes\x01] A vote is already in progress.");
+        CPrintToChat(client, "[{olive}NativeVotes\x01] A vote is already in progress.");
         return Plugin_Handled;
     }
 
     bool isMedieval = g_ConVars[tf_medieval].BoolValue || GameRules_GetProp("m_bPlayingMedieval") || FindEntityByClassname(-1, "tf_logic_medieval") != -1;
     if (!isMedieval)
     {
-        CPrintToChat(client, "[{lightgreen}NativeVotes\x01] This vote is only available in Medieval Mode.");
+        CPrintToChat(client, "[{olive}NativeVotes\x01] This vote is only available in Medieval Mode.");
         return Plugin_Handled;
     }
 

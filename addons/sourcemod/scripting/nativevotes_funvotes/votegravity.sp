@@ -35,7 +35,7 @@
 void DisplayVoteGravityMenu(int client, int count, char items[5][64])
 {
 	LogAction(client, -1, "\"%L\" initiated a gravity vote.", client);
-	CShowActivity2(client, "[{lightgreen}NativeVotes\x01] ", "%t", "Initiated Vote Gravity");
+	CShowActivity2(client, "[{olive}NativeVotes\x01] ", "%t", "Initiated Vote Gravity");
 	
 	g_voteType = voteType:gravity;
 	
@@ -112,13 +112,13 @@ public Action Command_VoteGravity(int client, int args)
 {
 	if (args < 1)
 	{
-		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] Usage: sm_votegravity <amount> [amount2] ... [amount5]");
+		CReplyToCommand(client, "[{olive}NativeVotes\x01] Usage: sm_votegravity <amount> [amount2] ... [amount5]");
 		return Plugin_Handled;
 	}
 	
 	if (Internal_IsVoteInProgress())
 	{
-		CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] %t", "Vote in Progress");
+		CReplyToCommand(client, "[{olive}NativeVotes\x01] %t", "Vote in Progress");
 		return Plugin_Handled;
 	}
 	
@@ -141,7 +141,7 @@ public Action Command_VoteGravity(int client, int args)
 		float temp;
 		if (StringToFloatEx(items[count], temp) == 0)
 		{
-			CReplyToCommand(client, "[{lightgreen}NativeVotes\x01] %t", "Invalid Amount");
+			CReplyToCommand(client, "[{olive}NativeVotes\x01] %t", "Invalid Amount");
 			return Plugin_Handled;
 		}
 
