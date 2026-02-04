@@ -55,7 +55,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Rock The Vote",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Provides RTV Map Voting",
-	version = "26w06b",
+	version = "26w06c",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -304,22 +304,28 @@ void UndoRTV(int client)
 
 void MenuHandler_UndoRTV(Menu menu, MenuAction action, int client, int param2)
 {
-	if (action == MenuAction_Select)
+	switch (action)
 	{
-		if (param2 == 0) // Yes
+		case MenuAction_Select:
 		{
-			if (g_Voted[client])
+			if (param2 == 0) // Yes
 			{
-				char name[MAX_NAME_LENGTH];
-				GetPlayerName(client, name, sizeof(name));
+				if (g_Voted[client])
+				{
+					char name[MAX_NAME_LENGTH];
+					GetPlayerName(client, name, sizeof(name));
 
-				g_Voted[client] = false;
-				if (g_Votes > 0) g_Votes--;
-				CPrintToChatAllEx(client, "[{lightgreen}Rock The Vote\x01] %s: %t", name, "Cancelled Vote");
+					g_Voted[client] = false;
+					if (g_Votes > 0) g_Votes--;
+					CPrintToChatAllEx(client, "[{lightgreen}Rock The Vote\x01] %s: %t", name, "Cancelled Vote");
+				}
 			}
 		}
+		case MenuAction_End:
+		{
+			delete menu;
+		}
 	}
-	delete menu;
 }
 
 void AttemptRTV(int client, bool isVoteMenu=false)
