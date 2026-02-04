@@ -59,12 +59,6 @@ public void OnPluginStart()
     RegAdminCmd("sm_forcescramble", Command_ForceScramble, ADMFLAG_CHANGEMAP);
     RegAdminCmd("sm_resetscramble", Command_ResetScramble, ADMFLAG_CHANGEMAP);
 
-    int flags = GetCommandFlags("mp_scrambleteams");
-    if (flags & FCVAR_CHEAT)
-    {
-        SetCommandFlags("mp_scrambleteams", flags & ~FCVAR_CHEAT);
-    }
-
     AutoExecConfig(true, "votescramble");
 
     OnMapEnd();

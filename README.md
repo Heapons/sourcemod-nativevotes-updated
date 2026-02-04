@@ -30,7 +30,7 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 - Added `sm_callvote` command and `callvote` chat trigger to open **Vote Setup**.
 
 ## [Rock The Vote](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_rockthevote.sp)
-- Admin commands.
+- Admin commands:
   - `sm_forcertv`.
     - Force a RTV.
   - `sm_resetrtv`.
@@ -85,3 +85,31 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 |`sm_mapcycle_exclude`|`.*test.*\|background01\|^tr.*$`|Specifies which maps shouldn't be automatically added (regex pattern).|
 |<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> `sm_workshop_map_collection`|` `|Specifies the workshop collection to fetch the maps from.|
 |<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> `sm_workshop_map_cleanup`|`0`|Specifies whether to automatically cleanup workshop maps on map change|
+
+## [Scramble Teams](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_votescramble.sp)
+> This is a module that makes Scramble Team votes behave like Rock The Vote.
+
+- Player commands:
+  - `sm_votescramble` (alias: `sm_scramble`).
+    - Attempt and request a Scramble Teams vote.
+- Admin commands:
+  - `sm_forcescramble`.
+    - Force a scramble teams vote.
+  - `sm_resetscramble`.
+    - Reset scramble teams counts.
+- Allow players to retract their scramble teams vote.
+  - Execute `sm_votescramble` or `sm_scramble` again to undo.
+
+> [!NOTE]
+> It overrides built-in **Scramble Teams** vote issue.
+
+---
+|Name|Default Value|Description|
+|-|-|-|
+|`sm_scrambleteams_needed`|`0.60`|Percentage of players needed to scramble teams|
+|`sm_scrambleteams_minplayers`|`0`|Number of players required before scramble will be enabled|
+|`sm_scrambleteams_initialdelay`|`30.0`|Time (in seconds) before first scramble can be held|
+|`sm_scrambleteams_interval`|`240.0`|Time (in seconds) after a failed scramble before another can be held|
+|`sm_scrambleteams_restart_round`|`0`|Whether to restart the round after scrambling teams|
+|`sm_scrambleteams_restart_timelimit`|`0`|Whether to restart the timelimit after scrambling teams|
+|`sm_scrambleteams_enforce_timelimit`|`0`|Whether to end the game as soon as the timelimit runs out|

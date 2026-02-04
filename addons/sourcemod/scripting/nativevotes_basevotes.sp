@@ -508,7 +508,7 @@ public Handler_NativeVoteCallback(Handle:menu, MenuAction:action, param1, param2
 		{
 			char item[64], display[64];
 			float percent, limit;
-			int votes, totalVotes;;
+			int votes, totalVotes;
 			
 			new NativeVotesType:nVoteType = NativeVotes_GetType(menu);
 
