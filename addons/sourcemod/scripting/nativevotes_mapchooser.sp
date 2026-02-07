@@ -55,7 +55,7 @@ public Plugin myinfo =
 	name = "NativeVotes | MapChooser",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Automated Map Voting",
-	version = "26w06d",
+	version = "26w06e",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -117,6 +117,7 @@ bool g_MapVoteCompleted;
 bool g_ChangeMapAtRoundEnd;
 bool g_ChangeMapInProgress;
 int g_mapFileSerial = -1;
+int g_AppID;
 
 MapChange g_ChangeTime;
 
@@ -152,6 +153,13 @@ public void OnPluginStart()
 	{
 		engine = Engine_TF2;
 	}
+
+	if (kv.JumpToKey("FileSystem"))
+	{
+		g_AppID = kv.GetNum("SteamAppId");
+	}
+
+	delete kv;
 
 	int arraySize = ByteCountToCells(PLATFORM_MAX_PATH);
 	g_MapList = new ArrayList(arraySize);
@@ -393,7 +401,7 @@ public Action Command_SetNextMap(int client, int args)
 {
 	if (args < 1)
 	{
-		CReplyToCommand(client, "[{olive}MapChooser\x01] Usage: sm_setnextmap <map>");
+		CReplyToCommand(client, "[\x04MapChooser\x01] Usage: sm_setnextmap <map>");
 		return Plugin_Handled;
 	}
 
@@ -402,14 +410,14 @@ public Action Command_SetNextMap(int client, int args)
 
 	if (FindMap(map, displayName, sizeof(displayName)) == FindMap_NotFound)
 	{
-		CReplyToCommand(client, "[{olive}MapChooser\x01] %t", "Map was not found", map);
+		CReplyToCommand(client, "[\x04MapChooser\x01] %t", "Map was not found", map);
 		return Plugin_Handled;
 	}
 	
 	GetMapDisplayName(displayName, displayName, sizeof(displayName));
 	Format(displayName, sizeof(displayName), "\x05%s\x01", displayName);
 	
-	CShowActivity2(client, "[{olive}MapChooser\x01] ", "%t", "Changed Next Map", displayName);
+	CShowActivity2(client, "[\x04MapChooser\x01] ", "%t", "Changed Next Map", displayName);
 	if (client > 0)
 	{
 		LogAction(client, -1, "\"%L\" changed nextmap to \"%s\"", client, map);
@@ -880,7 +888,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 	}
 
 	LogAction(-1, -1, "Voting for next map has started.");
-	CPrintToChatAll("[{olive}MapChooser\x01] %t", "Nextmap Voting Started");
+	CPrintToChatAll("[\x04MapChooser\x01] %t", "Nextmap Voting Started");
 }
 
 public void Handler_NV_VoteFinishedGeneric(NativeVote menu, int num_votes,  int num_clients, const int[] client_indexes, const int[] client_votes, int num_items, const int[] item_indexes, const int[] item_votes)
@@ -948,7 +956,7 @@ public void Handler_VoteFinishedGenericShared(const char[] map, const char[] dis
 			}
 		}
 
-		CPrintToChatAll("[{olive}MapChooser\x01] %t", "Current Map Extended", RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
+		CPrintToChatAll("[\x04MapChooser\x01] %t", "Current Map Extended", RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
 		LogAction(-1, -1, "Voting for next map has finished. The current map has been extended.");
 		
 		if (isNativeVotes)
@@ -964,7 +972,7 @@ public void Handler_VoteFinishedGenericShared(const char[] map, const char[] dis
 	}
 	else if (strcmp(map, VOTE_DONTCHANGE, false) == 0)
 	{
-		CPrintToChatAll("[{olive}MapChooser\x01] %t", "Current Map Stays", RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
+		CPrintToChatAll("[\x04MapChooser\x01] %t", "Current Map Stays", RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
 		LogAction(-1, -1, "Voting for next map has finished. 'No Change' was the winner");
 		
 		if (isNativeVotes)
@@ -1005,7 +1013,7 @@ public void Handler_VoteFinishedGenericShared(const char[] map, const char[] dis
 		
 		char formattedName[PLATFORM_MAX_PATH];
 		Format(formattedName, sizeof(formattedName), "\x05%s\x01", displayName);
-		CPrintToChatAll("[{olive}MapChooser\x01] %t", "Nextmap Voting Finished", formattedName, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
+		CPrintToChatAll("[\x04MapChooser\x01] %t", "Nextmap Voting Finished", formattedName, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
 		LogAction(-1, -1, "Voting for next map has finished. Nextmap: %s.", map);
 	}	
 }
@@ -1048,7 +1056,7 @@ public void Handler_NV_MapVoteFinished(NativeVote menu, int num_votes, int num_c
 			float map2percent = float(item_votes[1])/ float(num_votes) * 100;
 			
 			
-			CPrintToChatAll("[{olive}MapChooser\x01] %t", "Starting Runoff", g_ConVars[mapvote_runoffpercent].FloatValue, info1, map1percent, info2, map2percent);
+			CPrintToChatAll("[\x04MapChooser\x01] %t", "Starting Runoff", g_ConVars[mapvote_runoffpercent].FloatValue, info1, map1percent, info2, map2percent);
 			LogMessage("Voting for next map was indecisive, beginning runoff vote");
 					
 			return;
@@ -1109,7 +1117,7 @@ public void Handler_MapVoteFinished(Menu menu, int num_votes, int num_clients, c
 			float map1percent = float(item_info[0][VOTEINFO_ITEM_VOTES])/ float(num_votes) * 100;
 			float map2percent = float(item_info[1][VOTEINFO_ITEM_VOTES])/ float(num_votes) * 100;
 			
-			CPrintToChatAll("[{olive}MapChooser\x01] %t", "Starting Runoff", g_ConVars[mapvote_runoffpercent].FloatValue, info1, map1percent, info2, map2percent);
+			CPrintToChatAll("[\x04MapChooser\x01] %t", "Starting Runoff", g_ConVars[mapvote_runoffpercent].FloatValue, info1, map1percent, info2, map2percent);
 			LogMessage("Voting for next map was indecisive, beginning runoff vote");
 					
 			return;
@@ -1745,24 +1753,14 @@ void HTTPResponse_GetCollectionDetails(HTTPResponse response, File file)
 
 void CleanupWorkshopMaps()
 {
-	KeyValues kv = new KeyValues("GameInfo");
-	int appid;
-	if (kv.ImportFromFile("gameinfo.txt") && kv.JumpToKey("FileSystem"))
-	{
-		appid = kv.GetNum("SteamAppId");
-	}
-	delete kv;
-
 	char workshopDir[PLATFORM_MAX_PATH];
-	Format(workshopDir, sizeof(workshopDir), "../steamapps/workshop/content/%d", appid);
+	Format(workshopDir, sizeof(workshopDir), "../steamapps/workshop/content/%d", g_AppID);
 
 	DirectoryListing dir = OpenDirectory(workshopDir);
 	if (dir != null)
 	{
-		char ugcid[PLATFORM_MAX_PATH];
+		char ugcid[PLATFORM_MAX_PATH], path[PLATFORM_MAX_PATH];
 		FileType type;
-		char path[PLATFORM_MAX_PATH];
-
 		while (dir.GetNext(ugcid, sizeof(ugcid), type))
 		{
 			if (type != FileType_Directory)

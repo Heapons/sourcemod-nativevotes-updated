@@ -44,7 +44,7 @@ void DisplayVoteBanMenu(int client, int target)
 	GetClientIP(target, g_voteInfo[VOTE_IP], sizeof(g_voteInfo[]));
 
 	LogAction(client, target, "\"%L\" initiated a ban vote against %s", client, playerName);
-	CShowActivity2(client, "[{olive}NativeVotes\x01] ", "%t", "Initiated Vote Ban", playerName);
+	CShowActivity2(client, "[\x04NativeVotes\x01] ", "%t", "Initiated Vote Ban", playerName);
 
 	g_voteType = ban;
 	
@@ -117,11 +117,11 @@ public int MenuHandler_Ban(Handle menu, MenuAction action, int param1, int param
 			userid = StringToInt(info);
 			if ((target = GetClientOfUserId(userid)) == 0)
 			{
-				CPrintToChat(param1, "[{olive}NativeVotes\x01] %t", "Player no longer available");
+				CPrintToChat(param1, "[\x04NativeVotes\x01] %t", "Player no longer available");
 			}
 			else if (!CanUserTarget(param1, target))
 			{
-				CPrintToChat(param1, "[{olive}NativeVotes\x01] %t", "Unable to target");
+				CPrintToChat(param1, "[\x04NativeVotes\x01] %t", "Unable to target");
 			}
 			else
 			{
@@ -138,13 +138,13 @@ public Action Command_Voteban(int client, int args)
 {
 	if (args < 1)
 	{
-		CReplyToCommand(client, "[{olive}NativeVotes\x01] Usage: sm_voteban <player> [reason]");
+		CReplyToCommand(client, "[\x04NativeVotes\x01] Usage: sm_voteban <player> [reason]");
 		return Plugin_Handled;
 	}
 	
 	if (Internal_IsVoteInProgress())
 	{
-		CReplyToCommand(client, "[{olive}NativeVotes\x01] %t", "Vote in Progress");
+		CReplyToCommand(client, "[\x04NativeVotes\x01] %t", "Vote in Progress");
 		return Plugin_Handled;
 	}
 	

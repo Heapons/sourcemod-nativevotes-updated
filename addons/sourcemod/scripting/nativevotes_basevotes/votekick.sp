@@ -116,11 +116,11 @@ public int MenuHandler_Kick(Handle menu, MenuAction action, int param1, int para
 			userid = StringToInt(info);
 			if ((target = GetClientOfUserId(userid)) == 0)
 			{
-				CPrintToChat(param1, "[{olive}NativeVotes\x01] %t", "Player no longer available");
+				CPrintToChat(param1, "[\x04NativeVotes\x01] %t", "Player no longer available");
 			}
 			else if (!CanUserTarget(param1, target))
 			{
-				CPrintToChat(param1, "[{olive}NativeVotes\x01] %t", "Unable to target");
+				CPrintToChat(param1, "[\x04NativeVotes\x01] %t", "Unable to target");
 			}
 			else
 			{
@@ -137,12 +137,12 @@ public Action Command_Votekick(int client, int args)
 {
 	if (args < 1)
 	{
-		CReplyToCommand(client, "[{olive}NativeVotes\x01] Usage: sm_votekick <player> [reason]");
+		CReplyToCommand(client, "[\x04NativeVotes\x01] Usage: sm_votekick <player> [reason]");
 		return Plugin_Handled;
 	}
 	if (Internal_IsVoteInProgress())
 	{
-		CReplyToCommand(client, "[{olive}NativeVotes\x01] %t", "Vote in Progress");
+		CReplyToCommand(client, "[\x04NativeVotes\x01] %t", "Vote in Progress");
 		return Plugin_Handled;
 	}
 	if (!TestVoteDelay(client))

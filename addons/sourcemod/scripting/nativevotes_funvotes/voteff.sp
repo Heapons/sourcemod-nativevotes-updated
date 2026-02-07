@@ -36,7 +36,7 @@ void DisplayVoteFFMenu(int client)
 {
 	if (Internal_IsVoteInProgress())
 	{
-		CReplyToCommand(client, "[{olive}NativeVotes\x01] %t", "Vote in Progress");
+		CReplyToCommand(client, "[\x04NativeVotes\x01] %t", "Vote in Progress");
 		return;
 	}	
 	
@@ -46,7 +46,7 @@ void DisplayVoteFFMenu(int client)
 	}
 	
 	LogAction(client, -1, "\"%L\" initiated a friendly fire vote.", client);
-	CShowActivity2(client, "[{olive}NativeVotes\x01] ", "%t", "Initiated Vote FF");
+	CShowActivity2(client, "[\x04NativeVotes\x01] ", "%t", "Initiated Vote FF");
 	
 	g_voteType = voteType:ff;
 	g_voteInfo[VOTE_NAME][0] = '\0';
@@ -109,7 +109,7 @@ public Action Command_VoteFF(int client, int args)
 {
 	if (args > 0)
 	{
-		CReplyToCommand(client, "[{olive}NativeVotes\x01] Usage: sm_voteff");
+		CReplyToCommand(client, "[\x04NativeVotes\x01] Usage: sm_voteff");
 		return Plugin_Handled;
 	}
 	

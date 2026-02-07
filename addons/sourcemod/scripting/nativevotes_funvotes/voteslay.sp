@@ -36,7 +36,7 @@ void DisplayVoteSlayMenu(int client, int target, char name[MAX_NAME_LENGTH])
 {
 	if (!IsPlayerAlive(target))
 	{
-		CReplyToCommand(client, "[{olive}NativeVotes\x01] %t", "Cannot be performed on dead", name);
+		CReplyToCommand(client, "[\x04NativeVotes\x01] %t", "Cannot be performed on dead", name);
 		return;
 	}
 	
@@ -48,7 +48,7 @@ void DisplayVoteSlayMenu(int client, int target, char name[MAX_NAME_LENGTH])
 	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
 
 	LogAction(client, target, "\"%L\" initiated a slay vote against %N", client, target);
-	CShowActivity2(client, "[{olive}NativeVotes\x01] ", "%t", "Initiated Vote Slay", playerName);
+	CShowActivity2(client, "[\x04NativeVotes\x01] ", "%t", "Initiated Vote Slay", playerName);
 	
 	g_voteType = slay;
 	
@@ -151,13 +151,13 @@ public Action Command_VoteSlay(int client, int args)
 {
 	if (args < 1)
 	{
-		CReplyToCommand(client, "[{olive}NativeVotes\x01] Usage: sm_voteslay <player>");
+		CReplyToCommand(client, "[\x04NativeVotes\x01] Usage: sm_voteslay <player>");
 		return Plugin_Handled;
 	}
 	
 	if (Internal_IsVoteInProgress())
 	{
-		CReplyToCommand(client, "[{olive}NativeVotes\x01] %t", "Vote in Progress");
+		CReplyToCommand(client, "[\x04NativeVotes\x01] %t", "Vote in Progress");
 		return Plugin_Handled;
 	}
 	

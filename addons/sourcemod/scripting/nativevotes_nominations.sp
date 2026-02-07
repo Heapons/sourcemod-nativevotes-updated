@@ -48,7 +48,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Map Nominations",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Provides Map Nominations",
-	version = "26w06d",
+	version = "26w06e",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -197,7 +197,7 @@ public Action Command_Addmap(int client, int args)
 {
 	if (args < 1)
 	{
-		CReplyToCommand(client, "[{olive}NativeVotes\x01] Usage: sm_nominate_addmap <mapname>");
+		CReplyToCommand(client, "[\x04NativeVotes\x01] Usage: sm_nominate_addmap <mapname>");
 		return Plugin_Handled;
 	}
 	
@@ -207,7 +207,7 @@ public Action Command_Addmap(int client, int args)
 	if (FindMap(mapname, resolvedMap, sizeof(resolvedMap)) == FindMap_NotFound)
 	{
 		// We couldn't resolve the map entry to a filename, so...
-		CReplyToCommand(client, "[{olive}Nominations\x01] %t", "Map was not found", mapname);
+		CReplyToCommand(client, "[\x04Nominations\x01] %t", "Map was not found", mapname);
 		return Plugin_Handled;		
 	}
 	
@@ -218,7 +218,7 @@ public Action Command_Addmap(int client, int args)
 	int status;
 	if (!g_MapTrie.GetValue(resolvedMap, status))
 	{
-		CReplyToCommand(client, "[{olive}Nominations\x01] %t", "Map Not In Pool", displayName);
+		CReplyToCommand(client, "[\x04Nominations\x01] %t", "Map Not In Pool", displayName);
 		return Plugin_Handled;		
 	}
 	
@@ -227,14 +227,14 @@ public Action Command_Addmap(int client, int args)
 	if (result > Nominate_Replaced)
 	{
 		/* We assume already in vote is the casue because the maplist does a Map Validity check and we forced, so it can't be full */
-		CReplyToCommand(client, "[{olive}Nominations\x01] %t", "Map Already In Vote", displayName);
+		CReplyToCommand(client, "[\x04Nominations\x01] %t", "Map Already In Vote", displayName);
 		
 		return Plugin_Handled;	
 	}
 		
 	g_MapTrie.SetValue(resolvedMap, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
 	
-	CReplyToCommand(client, "[{olive}Nominations\x01] %t", "Map Inserted", displayName);
+	CReplyToCommand(client, "[\x04Nominations\x01] %t", "Map Inserted", displayName);
 	LogAction(client, -1, "\"%L\" inserted map \"%s\".", client, mapname);
 
 	return Plugin_Handled;		
@@ -288,7 +288,7 @@ public Action Command_Nominate(int client, int args)
 
 	if (matches <= 0)
 	{
-		CReplyToCommand(client, "[{olive}Nominations\x01] %t", "Map was not found", mapname);
+		CReplyToCommand(client, "[\x04Nominations\x01] %t", "Map was not found", mapname);
 	}
 	// One result
 	else if (matches == 1)
@@ -367,7 +367,7 @@ void AttemptNominate(int client, const char[] map, int size, bool isVoteMenu)
 	if (FindMap(map, mapname, size) == FindMap_NotFound)
 	{
 		// We couldn't resolve the map entry to a filename, so...
-		CReplyToCommand(client, "[{olive}Nominations\x01] %t", "Map was not found", mapname);
+		CReplyToCommand(client, "[\x04Nominations\x01] %t", "Map was not found", mapname);
 		
 		if (isVoteMenu && g_NativeVotes)
 		{
@@ -383,7 +383,7 @@ void AttemptNominate(int client, const char[] map, int size, bool isVoteMenu)
 	int status;
 	if (!g_MapTrie.GetValue(mapname, status))
 		{
-			CReplyToCommand(client, "[{olive}Nominations\x01] %t", "Map Not In Pool", displayName);
+			CReplyToCommand(client, "[\x04Nominations\x01] %t", "Map Not In Pool", displayName);
 			if (isVoteMenu && g_NativeVotes)
 			{
 				NativeVotes_DisplayCallVoteFail(client, NativeVotesCallFail_MapNotValid);
@@ -399,7 +399,7 @@ void AttemptNominate(int client, const char[] map, int size, bool isVoteMenu)
 			{
 				NativeVotes_DisplayCallVoteFail(client, NativeVotesCallFail_MapNotValid);
 			}
-			CReplyToCommand(client, "[{olive}Nominations\x01] %t", "Can't Nominate Current Map");
+			CReplyToCommand(client, "[\x04Nominations\x01] %t", "Can't Nominate Current Map");
 		}
 		
 		if ((status & MAPSTATUS_EXCLUDE_PREVIOUS) == MAPSTATUS_EXCLUDE_PREVIOUS)
@@ -408,7 +408,7 @@ void AttemptNominate(int client, const char[] map, int size, bool isVoteMenu)
 			{
 				NativeVotes_DisplayCallVoteFail(client, NativeVotesCallFail_MapNotValid);
 			}
-			CReplyToCommand(client, "[{olive}Nominations\x01] %t", "Map in Exclude List");
+			CReplyToCommand(client, "[\x04Nominations\x01] %t", "Map in Exclude List");
 		}
 		
 		if ((status & MAPSTATUS_EXCLUDE_NOMINATED) == MAPSTATUS_EXCLUDE_NOMINATED)
@@ -417,7 +417,7 @@ void AttemptNominate(int client, const char[] map, int size, bool isVoteMenu)
 			{
 				NativeVotes_DisplayCallVoteFail(client, NativeVotesCallFail_MapNotValid);
 			}
-			CReplyToCommand(client, "[{olive}Nominations\x01] %t", "Map Already Nominated");
+			CReplyToCommand(client, "[\x04Nominations\x01] %t", "Map Already Nominated");
 		}
 		
 		return;
@@ -433,7 +433,7 @@ void AttemptNominate(int client, const char[] map, int size, bool isVoteMenu)
 			{
 				NativeVotes_DisplayCallVoteFail(client, NativeVotesCallFail_MapNotValid);
 			}
-			CReplyToCommand(client, "[{olive}Nominations\x01] %t", "Map Already In Vote", displayName);
+			CReplyToCommand(client, "[\x04Nominations\x01] %t", "Map Already In Vote", displayName);
 		}
 		else
 		{
@@ -441,7 +441,7 @@ void AttemptNominate(int client, const char[] map, int size, bool isVoteMenu)
 			{
 				NativeVotes_DisplayCallVoteFail(client, NativeVotesCallFail_MapNotValid);
 			}
-			CReplyToCommand(client, "[{olive}Nominations\x01] %t", "Max Nominations");
+			CReplyToCommand(client, "[\x04Nominations\x01] %t", "Max Nominations");
 		}
 		
 		return;	
@@ -455,11 +455,11 @@ void AttemptNominate(int client, const char[] map, int size, bool isVoteMenu)
 
 	if (result == Nominate_Added)
 	{
-		CPrintToChatAllEx(client, "[{olive}Nominations\x01] %t", "Map Nominated", name, displayName);
+		CPrintToChatAllEx(client, "[\x04Nominations\x01] %t", "Map Nominated", name, displayName);
 	}
 	else
 	{
-		CReplyToCommandEx(client, client, "[{olive}Nominations\x01] %t", "Map Nominated", name, displayName);
+		CReplyToCommandEx(client, client, "[\x04Nominations\x01] %t", "Map Nominated", name, displayName);
 	}
 	
 	return;

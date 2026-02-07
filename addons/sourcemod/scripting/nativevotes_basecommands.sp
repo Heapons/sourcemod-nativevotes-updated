@@ -48,7 +48,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Basic Commands",
 	author = "Powerlord and AlliedModders LLC",
 	description = "Revote and Cancel support for NativeVotes",
-	version = "26w06d",
+	version = "26w06e",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 }
 
@@ -69,7 +69,7 @@ bool PerformCancelVote(int client)
 		return false;
 	}
 
-	CShowActivity2(client, "[{olive}NativeVotes\x01] ", "%t", "Cancelled Vote");
+	CShowActivity2(client, "[\x04NativeVotes\x01] ", "%t", "Cancelled Vote");
 	
 	NativeVotes_Cancel();
 	return true;
@@ -163,7 +163,7 @@ public Action Command_ReVote(int client, const char[] command, int argc)
 			return Plugin_Continue;
 		}
 		
-		CReplyToCommand(client, "[{olive}NativeVotes\x01] %t", "Cannot participate in vote");
+		CReplyToCommand(client, "[\x04NativeVotes\x01] %t", "Cannot participate in vote");
 		return Plugin_Stop;
 	}
 	
@@ -173,7 +173,7 @@ public Action Command_ReVote(int client, const char[] command, int argc)
 	}
 	else if (!IsVoteInProgress())
 	{
-		CReplyToCommand(client, "[{olive}NativeVotes\x01] %t", "Cannot change vote");
+		CReplyToCommand(client, "[\x04NativeVotes\x01] %t", "Cannot change vote");
 		return Plugin_Stop;
 	}
 	
