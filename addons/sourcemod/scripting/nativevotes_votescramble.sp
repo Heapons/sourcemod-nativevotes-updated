@@ -162,6 +162,23 @@ public void OnClientDisconnect(int client)
     }
 }
 
+public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
+{
+    if (!client || IsChatTrigger())
+    {
+        return;
+    }
+    
+    if (strcmp(sArgs, "scramble", false) == 0)
+    {
+        ReplySource old = SetCmdReplySource(SM_REPLY_TO_CHAT);
+        
+        Command_VoteScramble(client, 0);
+        
+        SetCmdReplySource(old);
+    }
+}
+
 public void Event_TeamplayRoundStart(Event event, const char[] name, bool dontBroadcast)
 {
     // Ends game mid-round once mp_timelimit runs out
