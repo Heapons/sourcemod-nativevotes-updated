@@ -172,7 +172,7 @@ public void Event_TeamplayRoundStart(Event event, const char[] name, bool dontBr
 		AcceptEntityInput(entity, "SetStalemateOnTimelimit", 0, 0);
 	}
     // Prevents map reset after scrambling teams
-    if (g_ConVars[restart_timelimit].IntValue >= 0)
+    if (g_ConVars[restart_timelimit].FloatValue >= 0.0)
     {
         GameRules_SetPropFloat("m_flMapResetTime", g_ConVars[restart_timelimit].FloatValue);
     }
