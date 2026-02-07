@@ -10,8 +10,8 @@ public Plugin myinfo =
 {
     name = "NativeVotes | Scramble Teams",
     author = "Heapons",
-    description = "Provides Scramble Teams Voting",
-    version = "26w06d",
+    description = "Provides RTV-style Scramble Teams Voting",
+    version = "26w06e",
     url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -45,12 +45,12 @@ public void OnPluginStart()
     LoadTranslations("rockthevote.phrases");
     LoadTranslations("votescramble.phrases");
 
-    g_ConVars[needed]            = CreateConVar("sm_scrambleteams_needed", "0.60", "Percentage of players needed to scramble teams (Def 60%)", 0, true, 0.05, true, 1.0);
-    g_ConVars[minplayers]        = CreateConVar("sm_scrambleteams_minplayers", "0", "Number of players required before scramble will be enabled.", 0, true, 0.0, true, float(MAXPLAYERS));
-    g_ConVars[initialdelay]      = CreateConVar("sm_scrambleteams_initialdelay", "30.0", "Time (in seconds) before first scramble can be held", 0, true, 0.00);
-    g_ConVars[interval]          = CreateConVar("sm_scrambleteams_interval", "240.0", "Time (in seconds) after a failed scramble before another can be held", 0, true, 0.00);
-    g_ConVars[restart_round]     = CreateConVar("sm_scrambleteams_restart_round", "0", "Whether to restart the round after scrambling teams", 0, true, 0.0, true, 1.0);
-    g_ConVars[restart_timelimit] = CreateConVar("sm_scrambleteams_restart_timelimit", "0", "Whether to restart the timelimit after scrambling teams", 0, true, 0.0, true, 1.0);
+    g_ConVars[needed]                    = CreateConVar("sm_scrambleteams_needed", "0.60", "Percentage of players needed to scramble teams (Def 60%)", 0, true, 0.05, true, 1.0);
+    g_ConVars[minplayers]                = CreateConVar("sm_scrambleteams_minplayers", "0", "Number of players required before scramble will be enabled.", 0, true, 0.0, true, float(MAXPLAYERS));
+    g_ConVars[initialdelay]              = CreateConVar("sm_scrambleteams_initialdelay", "30.0", "Time (in seconds) before first scramble can be held", 0, true, 0.00);
+    g_ConVars[interval]                  = CreateConVar("sm_scrambleteams_interval", "240.0", "Time (in seconds) after a failed scramble before another can be held", 0, true, 0.00);
+    g_ConVars[restart_round]             = CreateConVar("sm_scrambleteams_restart_round", "0", "Whether to restart the round after scrambling teams", 0, true, 0.0, true, 1.0);
+    g_ConVars[restart_timelimit]         = CreateConVar("sm_scrambleteams_restart_timelimit", "-1.0", "Override map timer after scrambling teams (leave it to '-1.0' for default behaviour)", 0, true, -1.0);
     g_ConVars[mp_match_end_at_timelimit] = FindConVar("mp_match_end_at_timelimit");
 
     RegConsoleCmd("sm_votescramble", Command_VoteScramble);
@@ -172,9 +172,9 @@ public void Event_TeamplayRoundStart(Event event, const char[] name, bool dontBr
 		AcceptEntityInput(entity, "SetStalemateOnTimelimit", 0, 0);
 	}
     // Prevents map reset after scrambling teams
-    if (!g_ConVars[restart_timelimit].BoolValue)
+    if (g_ConVars[restart_timelimit].IntValue >= 0)
     {
-        GameRules_SetPropFloat("m_flMapResetTime", 0.0);
+        GameRules_SetPropFloat("m_flMapResetTime", g_ConVars[restart_timelimit].FloatValue);
     }
 }
 
@@ -199,7 +199,7 @@ public Action Command_ForceScramble(int client, int args)
 public Action Command_ResetScramble(int client, int args)
 {
     ResetScramble();
-    CPrintToChatAll("[{olive}Scramble Teams\x01] %t", "Cancelled Vote");
+    CPrintToChatAll("[\x04Scramble Teams\x01] %t", "Cancelled Vote");
     return Plugin_Handled;
 }
 
@@ -235,7 +235,7 @@ void MenuHandler_UndoScramble(Menu menu, MenuAction action, int client, int para
 
                     g_Voted[client] = false;
                     if (g_Votes > 0) g_Votes--;
-                    CPrintToChatAllEx(client, "[{olive}Scramble Teams\x01] %s: %t", name, "Cancelled Vote");
+                    CPrintToChatAllEx(client, "[\x04Scramble Teams\x01] %s: %t", name, "Cancelled Vote");
                 }
             }
         }
@@ -250,7 +250,7 @@ void AttemptScramble(int client, bool isVoteMenu=false)
 {
     if (!g_ScrambleAllowed)
     {
-        CReplyToCommand(client, "[{olive}Scramble Teams\x01] %t", "Scramble Not Allowed");
+        CReplyToCommand(client, "[\x04Scramble Teams\x01] %t", "Scramble Not Allowed");
         if (isVoteMenu && g_NativeVotes)
         {
             int timeleft = g_ScrambleTime - GetTime();
@@ -268,13 +268,13 @@ void AttemptScramble(int client, bool isVoteMenu=false)
 
     if (g_NativeVotes && NativeVotes_IsVoteInProgress())
     {
-        CReplyToCommand(client, "[{olive}Scramble Teams\x01] %t", "Vote in Progress");
+        CReplyToCommand(client, "[\x04Scramble Teams\x01] %t", "Vote in Progress");
         return;
     }
 
     if (GetClientCount(true) < g_ConVars[minplayers].IntValue)
     {
-        CReplyToCommand(client, "[{olive}Scramble Teams\x01] %t", "Minimal Players Not Met");
+        CReplyToCommand(client, "[\x04Scramble Teams\x01] %t", "Minimal Players Not Met");
         if (isVoteMenu && g_NativeVotes)
         {
             NativeVotes_DisplayCallVoteFail(client, NativeVotesCallFail_Loading);
@@ -294,7 +294,7 @@ void AttemptScramble(int client, bool isVoteMenu=false)
     g_Votes++;
     g_Voted[client] = true;
 
-    CPrintToChatAllEx(client, "[{olive}Scramble Teams\x01] %t", "Scramble Requested", name, g_Votes, g_VotesNeeded);
+    CPrintToChatAllEx(client, "[\x04Scramble Teams\x01] %t", "Scramble Requested", name, g_Votes, g_VotesNeeded);
 
     if (g_Votes >= g_VotesNeeded)
     {
@@ -412,7 +412,7 @@ void ScrambleVoteResult(NativeVote vote, int num_votes, int num_clients, const i
     {
         NativeVotes_DisplayPassEx(vote, NativeVotesPass_Scramble);
 
-        CPrintToChatAll("[{olive}Scramble Teams\x01] %t", "Scrambling Teams");
+        CPrintToChatAll("[\x04Scramble Teams\x01] %t", "Scrambling Teams");
         ServerCommand("mp_scrambleteams");
         if (g_ConVars[restart_round].BoolValue)
         {
@@ -422,7 +422,7 @@ void ScrambleVoteResult(NativeVote vote, int num_votes, int num_clients, const i
     else if (yesVotes == 0 && noVotes == 0)
     {
         NativeVotes_DisplayFail(vote, NativeVotesFail_NotEnoughVotes);
-        CPrintToChatAll("[{olive}Scramble Teams\x01] %t", "No Votes");
+        CPrintToChatAll("[\x04Scramble Teams\x01] %t", "No Votes");
     }
     else
     {
@@ -438,7 +438,7 @@ int MenuHandler_Scramble(Menu menu, MenuAction action, int client, int param2)
         {
             if (param2 == 0)
             {
-                CPrintToChatAll("[{olive}Scramble Teams\x01] %t", "Scrambling Teams");
+                CPrintToChatAll("[\x04Scramble Teams\x01] %t", "Scrambling Teams");
                 ServerCommand("mp_scrambleteams");
                 if (g_ConVars[restart_round].BoolValue)
                 {
@@ -447,7 +447,7 @@ int MenuHandler_Scramble(Menu menu, MenuAction action, int client, int param2)
             }
             else
             {
-                CPrintToChatAll("[{olive}Scramble Teams\x01] %t", "No Votes");
+                CPrintToChatAll("[\x04Scramble Teams\x01] %t", "No Votes");
             }
         }
         case MenuAction_End:
