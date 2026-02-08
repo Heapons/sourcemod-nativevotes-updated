@@ -17,6 +17,8 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
   - Team-colored player names.
   - Highlight map names.
 - Update [Nominations](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_nominations.sp) and [Rock The Vote](https://github.com/Heapons/sourcemod-nativevotes-updated/blob/master/addons/sourcemod/scripting/nativevotes_rockthevote.sp) to be on par with the latest [Sourcemod](https://github.com/alliedmodders/sourcemod/tree/master/plugins) version.
+- Vote Progress HUD:
+  - <img src="https://shared.fastly.steamstatic.com/community_assets/images/apps/3545060/08607ace82bfb52cf8993efe88c2ef00fa25c96f.ico" width="16" height="16" style="vertical-align: text-bottom;"> Added `nativevotes_progress_hintcaption` convar to use the style of tutorial hints.
 
 ## <img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="24" height="24" style="vertical-align: text-bottom;"> Team Fortress 2
 - Fixes:
