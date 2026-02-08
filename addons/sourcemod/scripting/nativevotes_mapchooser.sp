@@ -50,12 +50,14 @@
 #pragma semicolon 1
 #pragma newdecls required
 
+#define PLUGIN_PREFIX "[\x04MapChooser\x01]"
+
 public Plugin myinfo =
 {
 	name = "NativeVotes | MapChooser",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Automated Map Voting",
-	version = "26w06f",
+	version = "26w06g",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -401,7 +403,7 @@ public Action Command_SetNextMap(int client, int args)
 {
 	if (args < 1)
 	{
-		CReplyToCommand(client, "[\x04MapChooser\x01] Usage: sm_setnextmap <map>");
+		CReplyToCommand(client, PLUGIN_PREFIX ... " Usage: sm_setnextmap <map>");
 		return Plugin_Handled;
 	}
 
@@ -410,7 +412,7 @@ public Action Command_SetNextMap(int client, int args)
 
 	if (FindMap(map, displayName, sizeof(displayName)) == FindMap_NotFound)
 	{
-		CReplyToCommand(client, "[\x04MapChooser\x01] %t", "Map was not found", map);
+		CReplyToCommand(client, PLUGIN_PREFIX ... " %t", "Map was not found", map);
 		return Plugin_Handled;
 	}
 	
@@ -888,7 +890,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 	}
 
 	LogAction(-1, -1, "Voting for next map has started.");
-	CPrintToChatAll("[\x04MapChooser\x01] %t", "Nextmap Voting Started");
+	CPrintToChatAll(PLUGIN_PREFIX ... " %t", "Nextmap Voting Started");
 }
 
 public void Handler_NV_VoteFinishedGeneric(NativeVote menu, int num_votes,  int num_clients, const int[] client_indexes, const int[] client_votes, int num_items, const int[] item_indexes, const int[] item_votes)
@@ -956,7 +958,7 @@ public void Handler_VoteFinishedGenericShared(const char[] map, const char[] dis
 			}
 		}
 
-		CPrintToChatAll("[\x04MapChooser\x01] %t", "Current Map Extended", RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
+		CPrintToChatAll(PLUGIN_PREFIX ... " %t", "Current Map Extended", RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
 		LogAction(-1, -1, "Voting for next map has finished. The current map has been extended.");
 		
 		if (isNativeVotes)
@@ -972,7 +974,7 @@ public void Handler_VoteFinishedGenericShared(const char[] map, const char[] dis
 	}
 	else if (strcmp(map, VOTE_DONTCHANGE, false) == 0)
 	{
-		CPrintToChatAll("[\x04MapChooser\x01] %t", "Current Map Stays", RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
+		CPrintToChatAll(PLUGIN_PREFIX ... " %t", "Current Map Stays", RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
 		LogAction(-1, -1, "Voting for next map has finished. 'No Change' was the winner");
 		
 		if (isNativeVotes)
@@ -1013,7 +1015,7 @@ public void Handler_VoteFinishedGenericShared(const char[] map, const char[] dis
 		
 		char formattedName[PLATFORM_MAX_PATH];
 		Format(formattedName, sizeof(formattedName), "\x05%s\x01", displayName);
-		CPrintToChatAll("[\x04MapChooser\x01] %t", "Nextmap Voting Finished", formattedName, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
+		CPrintToChatAll(PLUGIN_PREFIX ... " %t", "Nextmap Voting Finished", formattedName, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
 		LogAction(-1, -1, "Voting for next map has finished. Nextmap: %s.", map);
 	}	
 }
@@ -1640,7 +1642,7 @@ void PopulateMapList()
 			continue;
 
 		len = strlen(mapName);
-		if (len <= 4 || !StrEqual(mapName[len-4], ".bsp", false))
+		if (len <= 4 || !StrEqual(mapName[len-4], ".bsp"))
 			continue;
 
 		mapName[len-4] = '\0';
@@ -1667,7 +1669,21 @@ void PopulateMapList()
 	{
 		CloseHandle(file);
 	}
-	RequestFrame(RequestFrame_ReadMapList);
+
+	CreateTimer(3.0, Timer_ReadMapList, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+}
+
+public Action Timer_ReadMapList(Handle timer, any data)
+{
+	if (ReadMapList(g_MapList, g_mapFileSerial, "mapchooser", MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER) != null)
+	{
+		if (g_mapFileSerial == -1)
+		{
+			LogError("Unable to create a valid map list.");
+			return Plugin_Continue;
+		}
+	}
+	return Plugin_Stop;
 }
 
 void HTTPResponse_GetCollectionDetails(HTTPResponse response, File file)
@@ -1788,15 +1804,4 @@ void CleanupWorkshopMaps()
 		delete dir;
 	}
 	RemoveDir(workshopDir);
-}
-
-void RequestFrame_ReadMapList()
-{
-	if (ReadMapList(g_MapList, g_mapFileSerial, "mapchooser", MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER) != null)
-	{
-		if (g_mapFileSerial == -1)
-		{
-			LogError("Unable to create a valid map list.");
-		}
-	}
 }

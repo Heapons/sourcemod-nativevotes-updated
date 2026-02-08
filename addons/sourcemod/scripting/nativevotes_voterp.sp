@@ -9,12 +9,14 @@
 #pragma semicolon 1
 #pragma newdecls required
 
+#define PLUGIN_PREFIX "[\x04NativeVotes\x01]"
+
 public Plugin myinfo =
 {
 	name = "NativeVotes | Medieval Auto-RP",
 	author = "Heapons",
 	description = "Provides Medieval Auto-RP voting.",
-	version = "26w06f",
+	version = "26w06g",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -77,7 +79,7 @@ int MenuHandler_VoteRP(Menu menu, MenuAction action, int param1, int param2)
             menu.GetItem(item, info, sizeof(info));
             int value = StringToInt(info);
             g_ConVars[tf_medieval_autorp].SetInt(value);
-            CPrintToChatAll("[\x04NativeVotes\x01] tf_medieval_autorp set to %d", value);
+            CPrintToChatAll(PLUGIN_PREFIX ... " tf_medieval_autorp set to %d", value);
         }
         case MenuAction_End:
         {
@@ -96,14 +98,14 @@ Action Command_VoteRP(int client, int args)
 
     if ((g_NativeVotes && NativeVotes_IsVoteInProgress()) || (!g_NativeVotes && IsVoteInProgress()))
     {
-        CPrintToChat(client, "[\x04NativeVotes\x01] A vote is already in progress.");
+        CPrintToChat(client, PLUGIN_PREFIX ... " A vote is already in progress.");
         return Plugin_Handled;
     }
 
     bool isMedieval = g_ConVars[tf_medieval].BoolValue || GameRules_GetProp("m_bPlayingMedieval") || FindEntityByClassname(-1, "tf_logic_medieval") != -1;
     if (!isMedieval)
     {
-        CPrintToChat(client, "[\x04NativeVotes\x01] This vote is only available in Medieval Mode.");
+        CPrintToChat(client, PLUGIN_PREFIX ... " This vote is only available in Medieval Mode.");
         return Plugin_Handled;
     }
 

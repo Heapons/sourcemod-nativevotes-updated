@@ -40,13 +40,14 @@
 #include <adminmenu>
 #include <nativevotes>
 
+#define PLUGIN_PREFIX "[\x04NativeVotes\x01]"
 
 public Plugin:myinfo =
 {
 	name = "NativeVotes | Basic Votes",
 	author = "Powerlord and AlliedModders LLC",
 	description = "NativeVotes Basic Vote Commands",
-	version = "26w06f",
+	version = "26w06g",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -225,7 +226,7 @@ public Action Command_Vote(int client, int args)
 {
 	if (args < 1)
 	{
-	    CReplyToCommand(client, "[\x04NativeVotes\x01] Usage: sm_vote <title> [option1] [option2] ... [option5]");
+	    CReplyToCommand(client, PLUGIN_PREFIX ... " Usage: sm_vote <title> [option1] [option2] ... [option5]");
 		return Plugin_Handled;
 	}
 	

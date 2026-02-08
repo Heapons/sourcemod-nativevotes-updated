@@ -13,7 +13,7 @@ public Plugin myinfo =
     name = "NativeVotes | Scramble Teams",
     author = "Heapons",
     description = "Provides RTV-style Scramble Teams Voting",
-    version = "26w06f",
+    version = "26w06g",
     url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
