@@ -50,7 +50,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Basic Commands",
 	author = "Powerlord and AlliedModders LLC",
 	description = "Revote and Cancel support for NativeVotes",
-	version = "26w06g",
+	version = "26w06h",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 }
 
