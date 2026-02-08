@@ -23,8 +23,7 @@ enum
     minplayers,
     initialdelay,
     interval,
-    restart_round,
-    restart_timelimit,
+    full_reset,
     mp_match_end_at_timelimit,
     mp_timelimit,
 
@@ -41,6 +40,7 @@ bool g_Voted[MAXPLAYERS+1] = {false, ...};
 bool g_NativeVotes;
 bool g_RegisteredScramble = false;
 int g_ScrambleTime = 0;
+float g_MapResetTime = 0;
 
 public void OnPluginStart()
 {
@@ -48,12 +48,27 @@ public void OnPluginStart()
     LoadTranslations("rockthevote.phrases");
     LoadTranslations("votescramble.phrases");
 
+    KeyValues kv = new KeyValues("GameInfo");
+	kv.ImportFromFile("gameinfo.txt");
+
+	char gameDir[128];
+	GetGameFolderName(gameDir, sizeof(gameDir));
+
+    EngineVersion engine = GetEngineVersion();
+	if (!StrEqual(gameDir, "tf") &&
+		(kv.GetNum("DependsOnAppID") == 440 ||
+		(engine == Engine_SDK2013 && FileExists("resource/tf.ttf"))))
+	{
+		engine = Engine_TF2;
+	}
+
+    delete kv;
+
     g_ConVars[needed]                    = CreateConVar("sm_scrambleteams_needed", "0.60", "Percentage of players needed to scramble teams (Def 60%)", 0, true, 0.05, true, 1.0);
     g_ConVars[minplayers]                = CreateConVar("sm_scrambleteams_minplayers", "0", "Number of players required before scramble will be enabled.", 0, true, 0.0, true, float(MAXPLAYERS));
     g_ConVars[initialdelay]              = CreateConVar("sm_scrambleteams_initialdelay", "30.0", "Time (in seconds) before first scramble can be held", 0, true, 0.00);
     g_ConVars[interval]                  = CreateConVar("sm_scrambleteams_interval", "240.0", "Time (in seconds) after a failed scramble before another can be held", 0, true, 0.00);
-    g_ConVars[restart_round]             = CreateConVar("sm_scrambleteams_restart_round", "0", "Whether to restart the round after scrambling teams", 0, true, 0.0, true, 1.0);
-    g_ConVars[restart_timelimit]         = CreateConVar("sm_scrambleteams_restart_timelimit", "-1.0", "Override map timer after scrambling teams (leave it to '-1.0' for default behaviour)", 0, true, -1.0);
+    g_ConVars[full_reset]                = CreateConVar("sm_scrambleteams_full_reset", "1", "Whether time/rounds played should reset after a scramble is triggered ", 0, true, 0.0, true, 1.0);
     g_ConVars[mp_match_end_at_timelimit] = FindConVar("mp_match_end_at_timelimit");
     g_ConVars[mp_timelimit]              = FindConVar("mp_timelimit");
 
@@ -72,6 +87,14 @@ public void OnPluginStart()
         if (IsClientConnected(i))
         {
             OnClientConnected(i);
+        }
+    }
+
+    switch (engine)
+    {
+        case Engine_TF2:
+        {
+            HookEvent("teamplay_round_start", Event_TeamplayRoundStart);
         }
     }
 }
@@ -185,17 +208,10 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 
 public void Event_TeamplayRoundStart(Event event, const char[] name, bool dontBroadcast)
 {
-    // Ends game mid-round once mp_timelimit runs out
-	int entity = FindEntityByClassname(-1, "tf_gamerules");
-	if (entity != -1)
-	{
-		SetVariantBool(g_ConVars[mp_match_end_at_timelimit].BoolValue);
-		AcceptEntityInput(entity, "SetStalemateOnTimelimit", 0, 0);
-	}
-    // Prevents map reset after scrambling teams
-    if (g_ConVars[restart_timelimit].FloatValue >= 0.0)
+    CreateTimer(g_ConVars[initialdelay].FloatValue, Timer_DelayScramble, _, TIMER_FLAG_NO_MAPCHANGE);
+    if (!g_ConVars[full_reset].BoolValue)
     {
-        GameRules_SetPropFloat("m_flMapResetTime", g_ConVars[restart_timelimit].FloatValue);
+        GameRules_SetPropFloat("m_flMapResetTime", g_MapResetTime);
     }
 }
 
@@ -433,13 +449,11 @@ void ScrambleVoteResult(NativeVote vote, int num_votes, int num_clients, const i
     if (yesVotes > noVotes)
     {
         NativeVotes_DisplayPassEx(vote, NativeVotesPass_Scramble);
-
         CPrintToChatAll(PLUGIN_PREFIX ... " %t", "Scrambling Teams");
-        ServerCommand("mp_scrambleteams");
-        if (g_ConVars[restart_round].BoolValue)
-        {
-            ServerCommand("mp_restartgame 5");
-        }
+
+        // mp_scrambleteams 2 preserves rounds played for mp_maxrounds.
+        ServerCommand(g_ConVars[full_reset].BoolValue ? "mp_scrambleteams" : "mp_scrambleteams 2");
+        g_MapResetTime = GameRules_GetPropFloat("m_flMapResetTime");
     }
     else if (yesVotes == 0 && noVotes == 0)
     {
@@ -461,11 +475,7 @@ int MenuHandler_Scramble(Menu menu, MenuAction action, int client, int param2)
             if (param2 == 0)
             {
                 CPrintToChatAll(PLUGIN_PREFIX ... " %t", "Scrambling Teams");
-                ServerCommand("mp_scrambleteams");
-                if (g_ConVars[restart_round].BoolValue)
-                {
-                    ServerCommand("mp_restartgame 5");
-                }
+                ServerCommand(g_ConVars[full_reset].BoolValue ? "mp_scrambleteams" : "mp_scrambleteams 2");
             }
             else
             {
