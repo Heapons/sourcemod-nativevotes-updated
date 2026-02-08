@@ -87,6 +87,7 @@ enum
 	progress_chat,
 	progress_console,
 	progress_client_console,
+	progress_hintcaption,
 	vote_delay,
 
 	MAX_CONVARS
@@ -118,7 +119,7 @@ float g_fStartTime;
 int g_TimeLeft;
 int g_ClientVotes[MAXPLAYERS+1];
 bool g_bRevoting[MAXPLAYERS+1];
-char g_LeaderList[1024];
+int g_HintCaptionEnt = -1;
 
 ConVar sv_vote_holder_may_vote_no;
 
@@ -262,12 +263,19 @@ public void OnPluginStart()
 	LoadTranslations("core.phrases");
 	LoadTranslations("nativevotes.phrases.txt");
 	
-	g_ConVars[progress_hintbox]  	   = CreateConVar("nativevotes_progress_hintbox", "0", "Show current vote progress in a hint box", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_ConVars[progress_chat] 		   = CreateConVar("nativevotes_progress_chat", "0", "Show current vote progress as chat messages", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_ConVars[progress_console]  	   = CreateConVar("nativevotes_progress_console", "0", "Show current vote progress as console messages", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_ConVars[progress_client_console] = CreateConVar("nativevotes_progress_client_console", "0", "Show current vote progress as console messages to clients", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_ConVars[vote_delay] 		 	   = CreateConVar("nativevotes_vote_delay", "30", "Sets the recommended time in between public votes", FCVAR_NONE, true, 0.0);
+	g_ConVars[progress_hintbox]  	   = CreateConVar("nativevotes_progress_hintbox", "0", "Show current vote progress in a hint box", _, true, 0.0, true, 1.0);
+	g_ConVars[progress_chat] 		   = CreateConVar("nativevotes_progress_chat", "0", "Show current vote progress as chat messages", _, true, 0.0, true, 1.0);
+	g_ConVars[progress_console]  	   = CreateConVar("nativevotes_progress_console", "0", "Show current vote progress as console messages", _, true, 0.0, true, 1.0);
+	g_ConVars[progress_client_console] = CreateConVar("nativevotes_progress_client_console", "0", "Show current vote progress as console messages to clients", _, true, 0.0, true, 1.0);
+	g_ConVars[vote_delay] 		 	   = CreateConVar("nativevotes_vote_delay", "0", "Sets the recommended time in between public votes", _, true, 0.0);
 	g_ConVars[vote_delay].AddChangeHook(OnVoteDelayChange);
+	switch (g_AppID)
+	{
+		case APP_TF2CLASSIFIED:
+		{
+			g_ConVars[progress_hintcaption] = CreateConVar("nativevotes_progress_hintcaption", "0", "Show current vote progress in a instructor hint caption", _, true, 0.0, true, 1.0);
+		}
+	}
 
 	Game_InitializeCvars();
 
@@ -667,6 +675,12 @@ public void OnMapEnd()
 		g_hDisplayTimer = null;
 	}
 
+	if (g_HintCaptionEnt != -1 && IsValidEntity(g_HintCaptionEnt))
+	{
+		RemoveEdict(g_HintCaptionEnt);
+		g_HintCaptionEnt = -1;
+	}
+
 //	g_hVoteTimer = INVALID_HANDLE;
 }
 
@@ -786,7 +800,6 @@ void OnVoteSelect(NativeVote vote, int client, int item)
 				}
 			}
 			
-			BuildVoteLeaders();
 			DrawHintProgress();
 			
 			OnSelect(g_hCurVote, client, item);
@@ -1024,7 +1037,9 @@ bool:SendResultCallback(Handle:vote, num_votes, num_items, const votes[][])
 
 void DrawHintProgress()
 {
-	if (!g_ConVars[progress_hintbox].BoolValue || NativeVotes_GetType(g_hCurVote) == NativeVotesType_Custom_YesNo)
+	bool showHintbox = g_ConVars[progress_hintbox].BoolValue;
+	bool showHintCaption = g_ConVars[progress_hintcaption] != null && g_ConVars[progress_hintcaption].BoolValue;
+	if (!showHintbox && !showHintCaption)
 	{
 		return;
 	}
@@ -1038,12 +1053,68 @@ void DrawHintProgress()
 	
 	int iTimeRemaining = RoundFloat(timeRemaining);
 
-	PrintHintTextToAll("%t%s", "Vote Count", g_NumVotes, g_TotalClients, iTimeRemaining, g_LeaderList);
+	NativeVotesType voteType = Data_GetType(g_hCurVote);
+	bool isMultVote = (voteType == NativeVotesType_Custom_Mult || voteType == NativeVotesType_NextLevelMult);
+	char leaderList[256];
+	if (isMultVote)
+	{
+		BuildVoteLeaders(leaderList, sizeof(leaderList));
+	}
+	else
+	{
+		leaderList[0] = '\0';
+	}
+
+	if (showHintbox)
+	{
+		if (isMultVote)
+		{
+			PrintHintTextToAll("%t%s", "Vote Count", g_NumVotes, g_TotalClients, iTimeRemaining, leaderList);
+		}
+		else
+		{
+			PrintHintTextToAll("%t", "Vote Count", g_NumVotes, g_TotalClients, iTimeRemaining);
+		}
+	}
+
+	if (showHintCaption)
+	{
+		char baseText[TRANSLATION_LENGTH];
+		Format(baseText, sizeof(baseText), "%t", "Vote Count", g_NumVotes, g_TotalClients, iTimeRemaining);
+		if (isMultVote && leaderList[0] != '\0')
+		{
+			int baseLen = strlen(baseText);
+			int maxLeaderLen = 256 - baseLen - 1;
+			if (maxLeaderLen < 1)
+			{
+				ShowHintCaption(baseText);
+			}
+			else
+			{
+				char[] cappedLeaders = new char[maxLeaderLen + 1];
+				BuildVoteLeaders(cappedLeaders, maxLeaderLen + 1);
+				char caption[256];
+				Format(caption, sizeof(caption), "%s\n%s", baseText, cappedLeaders);
+				ShowHintCaption(caption);
+			}
+		}
+		else
+		{
+			ShowHintCaption(baseText);
+		}
+	}
 }
 
-void BuildVoteLeaders()
+void BuildVoteLeaders(char[] leaderList, int leaderListSize)
 {
-	if (g_NumVotes == 0 || !g_ConVars[progress_hintbox].BoolValue)
+	if (leaderListSize <= 1)
+	{
+		return;
+	}
+
+	leaderList[0] = '\0';
+
+	if (g_NumVotes == 0)
 	{
 		return;
 	}
@@ -1055,15 +1126,50 @@ void BuildVoteLeaders()
 	
 	int num_items = Internal_GetResults(votes);
 	
-	/* Take the top 3 (if applicable) and draw them */
-	g_LeaderList[0] = '\0';
-	
-	for (int i = 0; i < num_items && i < 3; i++)
+	int limit = leaderListSize - 1;
+
+	/* Build the full leaderboard (bounded by buffer size) */
+	for (int i = 0; i < num_items; i++)
 	{
 		int cur_item = votes[i][VOTEINFO_ITEM_INDEX];
 		char choice[256];
 		Data_GetItemDisplay(g_hCurVote, cur_item, choice, sizeof(choice));
-		Format(g_LeaderList, sizeof(g_LeaderList), "%s\n%i. %s: (%i)", g_LeaderList, i+1, choice, votes[i][VOTEINFO_ITEM_VOTES]);
+		char line[256];
+		Format(line, sizeof(line), "%i. %s: (%i)", i + 1, choice, votes[i][VOTEINFO_ITEM_VOTES]);
+		int used = strlen(leaderList);
+		int sepLen = (used == 0) ? 0 : 1;
+		int lineLen = strlen(line);
+		if (used + sepLen + lineLen > limit)
+		{
+			int remaining = num_items - i;
+			if (remaining > 0)
+			{
+				char moreLine[64];
+				Format(moreLine, sizeof(moreLine), "... (+%d more)", remaining);
+				int moreLen = strlen(moreLine);
+				if (used + sepLen + moreLen <= limit)
+				{
+					if (used == 0)
+					{
+						Format(leaderList, limit + 1, "%s", moreLine);
+					}
+					else
+					{
+						Format(leaderList, limit + 1, "%s\n%s", leaderList, moreLine);
+					}
+				}
+			}
+			break;
+		}
+
+		if (used == 0)
+		{
+			Format(leaderList, limit + 1, "%s", line);
+		}
+		else
+		{
+			Format(leaderList, limit + 1, "%s\n%s", leaderList, line);
+		}
 	}
 	
 }
@@ -1099,6 +1205,8 @@ void DecrementPlayerCount()
 
 void EndVoting()
 {
+	EndHintCaption();
+	
 	int voteDelay = g_ConVars[vote_delay].IntValue;
 	if (voteDelay < 1)
 	{
@@ -1417,7 +1525,6 @@ void Internal_Reset(bool cancel=false)
 	g_hCurVote = null;
 	g_NumVotes = 0;
 	g_bCancelled = false;
-	g_LeaderList[0] = '\0';
 	g_TotalClients = 0;
 	
 	if (g_hDisplayTimer != null)
@@ -2549,4 +2656,89 @@ public int Native_RedrawVoteItem(Handle plugin, int numParams)
 	
 	GetNativeString(1, g_newMenuItem, TRANSLATION_LENGTH);
 	return view_as<int>(Plugin_Changed);
+}
+
+void SetupInstructorHint()
+{
+	if (g_HintCaptionEnt != -1 && IsValidEntity(g_HintCaptionEnt))
+	{
+		return;
+	}
+
+	g_HintCaptionEnt = CreateEntityByName("env_instructor_hint");
+	if (g_HintCaptionEnt == -1)
+	{
+		return;
+	}
+
+	DispatchKeyValue(g_HintCaptionEnt, "hint_replace_key", "nativevotes_progress");
+	DispatchKeyValue(g_HintCaptionEnt, "hint_static", "1");
+	DispatchKeyValue(g_HintCaptionEnt, "hint_allow_nodraw_target", "1");
+	DispatchKeyValue(g_HintCaptionEnt, "hint_nooffscreen", "1");
+	DispatchKeyValue(g_HintCaptionEnt, "hint_forcecaption", "1");
+	DispatchKeyValue(g_HintCaptionEnt, "hint_timeout", "2");
+	DispatchKeyValue(g_HintCaptionEnt, "hint_icon_onscreen", "tf2c_clock");
+	DispatchKeyValue(g_HintCaptionEnt, "hint_icon_offscreen", "tf2c_clock");
+	DispatchSpawn(g_HintCaptionEnt);
+}
+
+void ShowHintCaption(const char[] caption)
+{
+	if (g_ConVars[progress_hintcaption] == null || !g_ConVars[progress_hintcaption].BoolValue)
+	{
+		return;
+	}
+
+	SetupInstructorHint();
+	if (g_HintCaptionEnt == -1 || !IsValidEntity(g_HintCaptionEnt))
+	{
+		return;
+	}
+
+	DispatchKeyValue(g_HintCaptionEnt, "hint_caption", caption);
+	DispatchKeyValue(g_HintCaptionEnt, "hint_activator_caption", caption);
+	bool sent = false;
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i) && !IsFakeClient(i))
+		{
+			SetVariantString(caption);
+			AcceptEntityInput(g_HintCaptionEnt, "SetCaption", i, i);
+			AcceptEntityInput(g_HintCaptionEnt, "ShowHint", i, i);
+			sent = true;
+		}
+	}
+
+	if (!sent)
+	{
+		return;
+	}
+}
+
+void EndHintCaption()
+{
+	if (g_ConVars[progress_hintcaption] == null || !g_ConVars[progress_hintcaption].BoolValue)
+	{
+		return;
+	}
+
+	if (g_HintCaptionEnt == -1 || !IsValidEntity(g_HintCaptionEnt))
+	{
+		return;
+	}
+
+	bool sent = false;
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i) && !IsFakeClient(i))
+		{
+			AcceptEntityInput(g_HintCaptionEnt, "EndHint", i, i);
+			sent = true;
+		}
+	}
+
+	if (!sent)
+	{
+		return;
+	}
 }
