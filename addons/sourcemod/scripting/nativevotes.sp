@@ -154,7 +154,7 @@ public Plugin myinfo =
 	name = "NativeVotes",
 	author = "Powerlord",
 	description = "Voting API to use the game's native vote panels. Compatible with L4D, L4D2, TF2, and CS:GO.",
-	version = "26w06g",
+	version = "26w06h",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 }
 
@@ -2658,7 +2658,7 @@ public int Native_RedrawVoteItem(Handle plugin, int numParams)
 	return view_as<int>(Plugin_Changed);
 }
 
-void SetupInstructorHint()
+void EnsureHintCaptionEntity()
 {
 	if (g_HintCaptionEnt != -1 && IsValidEntity(g_HintCaptionEnt))
 	{
@@ -2689,30 +2689,32 @@ void ShowHintCaption(const char[] caption)
 		return;
 	}
 
-	SetupInstructorHint();
+	EnsureHintCaptionEntity();
 	if (g_HintCaptionEnt == -1 || !IsValidEntity(g_HintCaptionEnt))
+	{
+		return;
+	}
+
+	int activator = -1;
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i) && !IsFakeClient(i))
+		{
+			activator = i;
+			break;
+		}
+	}
+
+	if (activator == -1)
 	{
 		return;
 	}
 
 	DispatchKeyValue(g_HintCaptionEnt, "hint_caption", caption);
 	DispatchKeyValue(g_HintCaptionEnt, "hint_activator_caption", caption);
-	bool sent = false;
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if (IsClientInGame(i) && !IsFakeClient(i))
-		{
-			SetVariantString(caption);
-			AcceptEntityInput(g_HintCaptionEnt, "SetCaption", i, i);
-			AcceptEntityInput(g_HintCaptionEnt, "ShowHint", i, i);
-			sent = true;
-		}
-	}
-
-	if (!sent)
-	{
-		return;
-	}
+	SetVariantString(caption);
+	AcceptEntityInput(g_HintCaptionEnt, "SetCaption", activator);
+	AcceptEntityInput(g_HintCaptionEnt, "ShowHint", activator);
 }
 
 void EndHintCaption()
@@ -2727,18 +2729,20 @@ void EndHintCaption()
 		return;
 	}
 
-	bool sent = false;
+	int activator = -1;
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i) && !IsFakeClient(i))
 		{
-			AcceptEntityInput(g_HintCaptionEnt, "EndHint", i, i);
-			sent = true;
+			activator = i;
+			break;
 		}
 	}
 
-	if (!sent)
+	if (activator == -1)
 	{
 		return;
 	}
+
+	AcceptEntityInput(g_HintCaptionEnt, "EndHint", activator);
 }
