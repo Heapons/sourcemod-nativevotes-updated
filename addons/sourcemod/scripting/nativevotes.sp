@@ -1080,7 +1080,7 @@ void DrawHintProgress()
 	if (showHintCaption)
 	{
 		char baseText[TRANSLATION_LENGTH];
-		Format(baseText, sizeof(baseText), "%t", "Vote Count", g_NumVotes, g_TotalClients, iTimeRemaining);
+		Format(baseText, sizeof(baseText), "%T", "Vote Count", LANG_SERVER, g_NumVotes, g_TotalClients, iTimeRemaining);
 		if (isMultVote && leaderList[0] != '\0')
 		{
 			int baseLen = strlen(baseText);
@@ -2676,7 +2676,7 @@ void EnsureHintCaptionEntity()
 	DispatchKeyValue(g_HintCaptionEnt, "hint_allow_nodraw_target", "1");
 	DispatchKeyValue(g_HintCaptionEnt, "hint_nooffscreen", "1");
 	DispatchKeyValue(g_HintCaptionEnt, "hint_forcecaption", "1");
-	DispatchKeyValue(g_HintCaptionEnt, "hint_timeout", "2");
+	DispatchKeyValue(g_HintCaptionEnt, "hint_timeout", "4");
 	DispatchKeyValue(g_HintCaptionEnt, "hint_icon_onscreen", "tf2c_clock");
 	DispatchKeyValue(g_HintCaptionEnt, "hint_icon_offscreen", "tf2c_clock");
 	DispatchSpawn(g_HintCaptionEnt);
@@ -2695,26 +2695,11 @@ void ShowHintCaption(const char[] caption)
 		return;
 	}
 
-	int activator = -1;
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if (IsClientInGame(i) && !IsFakeClient(i))
-		{
-			activator = i;
-			break;
-		}
-	}
-
-	if (activator == -1)
-	{
-		return;
-	}
-
 	DispatchKeyValue(g_HintCaptionEnt, "hint_caption", caption);
 	DispatchKeyValue(g_HintCaptionEnt, "hint_activator_caption", caption);
 	SetVariantString(caption);
-	AcceptEntityInput(g_HintCaptionEnt, "SetCaption", activator);
-	AcceptEntityInput(g_HintCaptionEnt, "ShowHint", activator);
+	AcceptEntityInput(g_HintCaptionEnt, "SetCaption");
+	AcceptEntityInput(g_HintCaptionEnt, "ShowHint");
 }
 
 void EndHintCaption()
@@ -2729,20 +2714,5 @@ void EndHintCaption()
 		return;
 	}
 
-	int activator = -1;
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if (IsClientInGame(i) && !IsFakeClient(i))
-		{
-			activator = i;
-			break;
-		}
-	}
-
-	if (activator == -1)
-	{
-		return;
-	}
-
-	AcceptEntityInput(g_HintCaptionEnt, "EndHint", activator);
+	AcceptEntityInput(g_HintCaptionEnt, "EndHint");
 }
