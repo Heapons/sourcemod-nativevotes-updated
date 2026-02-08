@@ -110,5 +110,4 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 |`sm_scrambleteams_minplayers`|`0`|Number of players required before scramble will be enabled|
 |`sm_scrambleteams_initialdelay`|`30.0`|Time (in seconds) before first scramble can be held|
 |`sm_scrambleteams_interval`|`240.0`|Time (in seconds) after a failed scramble before another can be held|
-|`sm_scrambleteams_restart_round`|`0`|Whether to restart the round after scrambling teams|
-|`sm_scrambleteams_restart_timelimit`|`-1.0`|Override map timer after scrambling teams (leave it to '-1.0' for default behaviour)|
+|`sm_scrambleteams_full_reset`|`1`|Whether time/rounds played should reset after a scramble is triggered|
