@@ -81,6 +81,7 @@ This fork aims to expand upon [<img src="https://avatars.githubusercontent.com/u
 |`sm_mapvote_voteduration`|`20`|Specifies how long the mapvote should be available for (in seconds)|
 |`sm_mapvote_runoff`|`0`|Hold runoff votes if winning choice is less than a certain margin|
 |`sm_mapvote_runoffpercent`|`50`|If winning choice has less than this percent of votes, hold a runoff|
+|`sm_mapvote_shuffle_nominations`|`0`|If set, allows infinite nominations and picks a random subset to appear in the vote.|
 |`sm_mapcycle_auto`|`0`|Specifies whether to automatically populate the maps list.|
 |`sm_mapcycle_exclude`|`.*test.*\|background01\|^tr.*$`|Specifies which maps shouldn't be automatically added (regex pattern).|
 |<img src="https://cdn.fastly.steamstatic.com/steamcommunity/public/images/apps/440/033bdd91842b6aca0633ee1e5f3e6b82f2e8962f.ico" width="16" height="16" style="vertical-align: text-bottom;"> `sm_workshop_map_collection`|` `|Specifies the workshop collection to fetch the maps from.|
