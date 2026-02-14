@@ -36,6 +36,7 @@
  
 #include <sourcemod>
 #include <mapchooser>
+#include <sdktools>
 #include <nextmap>
 #include <regex>
 
@@ -87,6 +88,7 @@ enum
 	mapvote_voteduration,
 	mapvote_runoff,
 	mapvote_runoffpercent,
+	mapvote_shuffle_nominations,
 	mapcycle_auto,
 	mapcycle_exclude,
 	workshop_map_collection,
@@ -112,7 +114,6 @@ Menu g_VoteMenu;
 NativeVote g_VoteNative;
 
 int g_Extends;
-int g_TotalRounds;
 bool g_HasVoteStarted;
 bool g_WaitingForVote;
 bool g_MapVoteCompleted;
@@ -185,8 +186,10 @@ public void OnPluginStart()
 	g_ConVars[mapvote_voteduration]  		= CreateConVar("sm_mapvote_voteduration", "20", "Specifies how long the mapvote should be available for.", _, true, 5.0);
 	g_ConVars[mapvote_runoff] 		 		= CreateConVar("sm_mapvote_runoff", "0", "Hold run of votes if winning choice is less than a certain margin.", _, true, 0.0, true, 1.0);
 	g_ConVars[mapvote_runoffpercent] 		= CreateConVar("sm_mapvote_runoffpercent", "50", "If winning choice has less than this percent of votes, hold a runoff.", _, true, 0.0, true, 100.0);
+	g_ConVars[mapvote_shuffle_nominations]	= CreateConVar("sm_mapvote_shuffle_nominations", "0", "If set, allows infinite nominations and picks a random subset to appear in the vote.", _, true, 0.0, true, 1.0);
 	g_ConVars[mapcycle_auto]         		= CreateConVar("sm_mapcycle_auto", "0", "Specifies whether or not to automatically populate the maps list.", _, true, 0.0, true, 1.0);
 	g_ConVars[mapcycle_exclude]      		= CreateConVar("sm_mapcycle_exclude", ".*test.*|background01|^tr.*$", "Specifies which maps shouldn't be automatically added with a regex pattern.");
+
 	if (engine != Engine_SDK2013 && engine == Engine_TF2)
 	{
 		g_ConVars[workshop_map_collection]  = CreateConVar("sm_workshop_map_collection", "", "Specifies the workshop collection to fetch the maps from.");
@@ -209,7 +212,6 @@ public void OnPluginStart()
 			case Engine_TF2:
 			{
 				HookEvent("teamplay_win_panel", Event_TeamplayWinPanel);
-				HookEvent("teamplay_restart_round", Event_TeamplayRestartRound);
 				HookEvent("arena_win_panel", Event_TeamplayWinPanel);
 			}
 			case Engine_NuclearDawn:
@@ -334,9 +336,7 @@ public void OnConfigsExecuted()
 
 	CreateNextVote();
 	SetupTimeleftTimer();
-	
-	g_TotalRounds = 0;
-	
+		
 	g_Extends = 0;
 	
 	g_MapVoteCompleted = false;
@@ -492,12 +492,6 @@ public Action Timer_StartMapVote(Handle timer, DataPack data)
 	return Plugin_Stop;
 }
 
-public void Event_TeamplayRestartRound(Event event, const char[] name, bool dontBroadcast)
-{
-	/* Game got restarted - reset our round count tracking */
-	g_TotalRounds = 0;	
-}
-
 public void Event_TeamplayWinPanel(Event event, const char[] name, bool dontBroadcast)
 {
 	if (g_ChangeMapAtRoundEnd)
@@ -512,14 +506,13 @@ public void Event_TeamplayWinPanel(Event event, const char[] name, bool dontBroa
 		
 	if (event.GetInt("round_complete") == 1 || StrEqual(name, "arena_win_panel"))
 	{
-		g_TotalRounds++;
 		
 		if (!g_MapList.Length || g_HasVoteStarted || g_MapVoteCompleted || !g_ConVars[mapvote_endvote].BoolValue)
 		{
 			return;
 		}
 		
-		CheckMaxRounds(g_TotalRounds);
+		CheckMaxRounds();
 		
 		switch(event.GetInt("winning_team"))
 		{
@@ -569,8 +562,6 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 	{
 		SetFailState("Mod exceed maximum team count - Please file a bug report.");	
 	}
-
-	g_TotalRounds++;
 	
 	g_winCount[winner]++;
 	
@@ -580,7 +571,7 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 	}
 	
 	CheckWinLimit(g_winCount[winner]);
-	CheckMaxRounds(g_TotalRounds);
+	CheckMaxRounds();
 }
 
 public void CheckWinLimit(int winner_score)
@@ -598,10 +589,11 @@ public void CheckWinLimit(int winner_score)
 	}
 }
 
-public void CheckMaxRounds(int roundcount)
+public void CheckMaxRounds()
 {		
 	if (g_ConVars[mp_maxrounds])
 	{
+		int roundcount = GameRules_GetProp("m_nRoundsPlayed");
 		int maxrounds = g_ConVars[mp_maxrounds].IntValue;
 		if (maxrounds)
 		{
@@ -648,6 +640,17 @@ public Action Command_MapVote(int client, int args)
 	InitiateVote(MapChange_MapEnd, null);
 
 	return Plugin_Handled;	
+}
+
+void ShuffleNominations()
+{
+	int lengthList = g_NominateList.Length;
+    for (int i = lengthList - 1; i > 0; --i)
+    {
+        int j = GetRandomInt(0, i);
+        g_NominateList.SwapAt(i, j);
+		g_NominateOwners.SwapAt(i, j);
+    }
 }
 
 /**
@@ -742,6 +745,11 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 		}
 		/* Smaller of the two - It should be impossible for nominations to exceed the size though (cvar changed mid-map?) */
 		int nominationsToAdd = nominateCount >= voteSize ? voteSize : nominateCount;
+
+		if(g_ConVars[mapvote_shuffle_nominations].BoolValue && nominateCount > voteSize)
+		{
+			ShuffleNominations();
+		}
 		
 		for (int i = 0; i < nominationsToAdd; i++)
 		{
@@ -1412,8 +1420,8 @@ NominateResult InternalNominateMap(char[] map, bool force, int owner)
 	{
 		maxIncludes = g_ConVars[mapvote_include].IntValue;
 	}
-	
-	if (g_NominateList.Length >= maxIncludes && !force)
+
+	if (!g_ConVars[mapvote_shuffle_nominations].BoolValue && g_NominateList.Length >= maxIncludes && !force)
 	{
 		return Nominate_VoteFull;
 	}
@@ -1421,17 +1429,20 @@ NominateResult InternalNominateMap(char[] map, bool force, int owner)
 	g_NominateList.PushString(map);
 	g_NominateOwners.Push(owner);
 	
-	while (g_NominateList.Length > g_ConVars[mapvote_include].IntValue)
+	if (!g_ConVars[mapvote_shuffle_nominations].BoolValue)
 	{
-		char oldmap[PLATFORM_MAX_PATH];
-		g_NominateList.GetString(0, oldmap, sizeof(oldmap));
-		Call_StartForward(g_NominationsResetForward);
-		Call_PushString(oldmap);
-		Call_PushCell(g_NominateOwners.Get(0));
-		Call_Finish();
-		
-		g_NominateList.Erase(0);
-		g_NominateOwners.Erase(0);
+		while (g_NominateList.Length > g_ConVars[mapvote_include].IntValue)
+		{
+			char oldmap[PLATFORM_MAX_PATH];
+			g_NominateList.GetString(0, oldmap, sizeof(oldmap));
+			Call_StartForward(g_NominationsResetForward);
+			Call_PushString(oldmap);
+			Call_PushCell(g_NominateOwners.Get(0));
+			Call_Finish();
+
+			g_NominateList.Erase(0);
+			g_NominateOwners.Erase(0);
+		}
 	}
 	
 	return Nominate_Added;

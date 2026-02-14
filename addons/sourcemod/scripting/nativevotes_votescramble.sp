@@ -41,6 +41,7 @@ bool g_NativeVotes;
 bool g_RegisteredScramble = false;
 int g_ScrambleTime = 0;
 float g_MapResetTime = 0;
+int g_SetRoundsPlayedTo = -1;
 
 public void OnPluginStart()
 {
@@ -212,7 +213,14 @@ public void Event_TeamplayRoundStart(Event event, const char[] name, bool dontBr
     if (!g_ConVars[full_reset].BoolValue)
     {
         GameRules_SetPropFloat("m_flMapResetTime", g_MapResetTime);
+
+        // If this isn't -1 we know our plugin just triggered a scramble, gotta change it back
+        if (g_SetRoundsPlayedTo >= 0)
+        {
+            GameRules_SetProp("m_nRoundsPlayed", g_SetRoundsPlayedTo);
+        }
     }
+    g_SetRoundsPlayedTo = -1;
 }
 
 public Action Command_VoteScramble(int client, int args)
@@ -451,9 +459,10 @@ void ScrambleVoteResult(NativeVote vote, int num_votes, int num_clients, const i
         NativeVotes_DisplayPassEx(vote, NativeVotesPass_Scramble);
         CPrintToChatAll(PLUGIN_PREFIX ... " %t", "Scrambling Teams");
 
-        // mp_scrambleteams 2 preserves rounds played for mp_maxrounds.
+        // mp_scrambleteams 2 SHOULD preserve rounds played for mp_maxrounds, but doesn't appear to at the moment.
         ServerCommand(g_ConVars[full_reset].BoolValue ? "mp_scrambleteams" : "mp_scrambleteams 2");
         g_MapResetTime = GameRules_GetPropFloat("m_flMapResetTime");
+        g_SetRoundsPlayedTo = GameRules_GetProp("m_nRoundsPlayed");
     }
     else if (yesVotes == 0 && noVotes == 0)
     {
