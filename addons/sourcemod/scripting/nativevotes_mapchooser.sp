@@ -36,6 +36,7 @@
  
 #include <sourcemod>
 #include <mapchooser>
+#include <sdktools>
 #include <nextmap>
 #include <regex>
 
@@ -113,7 +114,6 @@ Menu g_VoteMenu;
 NativeVote g_VoteNative;
 
 int g_Extends;
-int g_TotalRounds;
 bool g_HasVoteStarted;
 bool g_WaitingForVote;
 bool g_MapVoteCompleted;
@@ -212,7 +212,6 @@ public void OnPluginStart()
 			case Engine_TF2:
 			{
 				HookEvent("teamplay_win_panel", Event_TeamplayWinPanel);
-				HookEvent("teamplay_restart_round", Event_TeamplayRestartRound);
 				HookEvent("arena_win_panel", Event_TeamplayWinPanel);
 			}
 			case Engine_NuclearDawn:
@@ -337,9 +336,7 @@ public void OnConfigsExecuted()
 
 	CreateNextVote();
 	SetupTimeleftTimer();
-	
-	g_TotalRounds = 0;
-	
+		
 	g_Extends = 0;
 	
 	g_MapVoteCompleted = false;
@@ -495,12 +492,6 @@ public Action Timer_StartMapVote(Handle timer, DataPack data)
 	return Plugin_Stop;
 }
 
-public void Event_TeamplayRestartRound(Event event, const char[] name, bool dontBroadcast)
-{
-	/* Game got restarted - reset our round count tracking */
-	g_TotalRounds = 0;	
-}
-
 public void Event_TeamplayWinPanel(Event event, const char[] name, bool dontBroadcast)
 {
 	if (g_ChangeMapAtRoundEnd)
@@ -515,14 +506,13 @@ public void Event_TeamplayWinPanel(Event event, const char[] name, bool dontBroa
 		
 	if (event.GetInt("round_complete") == 1 || StrEqual(name, "arena_win_panel"))
 	{
-		g_TotalRounds++;
 		
 		if (!g_MapList.Length || g_HasVoteStarted || g_MapVoteCompleted || !g_ConVars[mapvote_endvote].BoolValue)
 		{
 			return;
 		}
 		
-		CheckMaxRounds(g_TotalRounds);
+		CheckMaxRounds();
 		
 		switch(event.GetInt("winning_team"))
 		{
@@ -572,8 +562,6 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 	{
 		SetFailState("Mod exceed maximum team count - Please file a bug report.");	
 	}
-
-	g_TotalRounds++;
 	
 	g_winCount[winner]++;
 	
@@ -583,7 +571,7 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 	}
 	
 	CheckWinLimit(g_winCount[winner]);
-	CheckMaxRounds(g_TotalRounds);
+	CheckMaxRounds();
 }
 
 public void CheckWinLimit(int winner_score)
@@ -601,10 +589,11 @@ public void CheckWinLimit(int winner_score)
 	}
 }
 
-public void CheckMaxRounds(int roundcount)
+public void CheckMaxRounds()
 {		
 	if (g_ConVars[mp_maxrounds])
 	{
+		int roundcount = GameRules_GetProp("m_nRoundsPlayed");
 		int maxrounds = g_ConVars[mp_maxrounds].IntValue;
 		if (maxrounds)
 		{
