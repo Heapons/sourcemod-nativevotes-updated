@@ -89,6 +89,7 @@ enum
 	mapvote_runoffpercent,
 	mapcycle_auto,
 	mapcycle_exclude,
+	mapvote_shuffle_nominations,
 	workshop_map_collection,
 	workshop_cleanup,
 
@@ -187,6 +188,8 @@ public void OnPluginStart()
 	g_ConVars[mapvote_runoffpercent] 		= CreateConVar("sm_mapvote_runoffpercent", "50", "If winning choice has less than this percent of votes, hold a runoff.", _, true, 0.0, true, 100.0);
 	g_ConVars[mapcycle_auto]         		= CreateConVar("sm_mapcycle_auto", "0", "Specifies whether or not to automatically populate the maps list.", _, true, 0.0, true, 1.0);
 	g_ConVars[mapcycle_exclude]      		= CreateConVar("sm_mapcycle_exclude", ".*test.*|background01|^tr.*$", "Specifies which maps shouldn't be automatically added with a regex pattern.");
+	g_ConVars[mapvote_shuffle_nominations]	= CreateConVar("sm_mapvote_shuffle_nominations", "0", "If set, allows infinite nominations and picks a random subset to appear in the vote.", _, true, 0.0, true, 1.0);
+
 	if (engine != Engine_SDK2013 && engine == Engine_TF2)
 	{
 		g_ConVars[workshop_map_collection]  = CreateConVar("sm_workshop_map_collection", "", "Specifies the workshop collection to fetch the maps from.");
@@ -650,6 +653,17 @@ public Action Command_MapVote(int client, int args)
 	return Plugin_Handled;	
 }
 
+void ShuffleNominations()
+{
+	int lengthList = g_NominateList.Length;
+    for (int i = lengthList - 1; i > 0; --i)
+    {
+        int j = GetRandomInt(0, i);
+        g_NominateList.SwapAt(i, j);
+		g_NominateOwners.SwapAt(i, j);
+    }
+}
+
 /**
  * Starts a new map vote
  *
@@ -742,6 +756,11 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 		}
 		/* Smaller of the two - It should be impossible for nominations to exceed the size though (cvar changed mid-map?) */
 		int nominationsToAdd = nominateCount >= voteSize ? voteSize : nominateCount;
+
+		if(g_ConVars[mapvote_shuffle_nominations].BoolValue && nominateCount > voteSize)
+		{
+			ShuffleNominations();
+		}
 		
 		for (int i = 0; i < nominationsToAdd; i++)
 		{
@@ -1412,6 +1431,11 @@ NominateResult InternalNominateMap(char[] map, bool force, int owner)
 	{
 		maxIncludes = g_ConVars[mapvote_include].IntValue;
 	}
+
+	if (!g_ConVars[mapvote_shuffle_nominations].BoolValue && g_NominateList.Length >= maxIncludes && !force)
+	{
+		return Nominate_VoteFull;
+	}
 	
 	if (g_NominateList.Length >= maxIncludes && !force)
 	{
@@ -1421,17 +1445,20 @@ NominateResult InternalNominateMap(char[] map, bool force, int owner)
 	g_NominateList.PushString(map);
 	g_NominateOwners.Push(owner);
 	
-	while (g_NominateList.Length > g_ConVars[mapvote_include].IntValue)
+	if (!g_ConVars[mapvote_shuffle_nominations].BoolValue)
 	{
-		char oldmap[PLATFORM_MAX_PATH];
-		g_NominateList.GetString(0, oldmap, sizeof(oldmap));
-		Call_StartForward(g_NominationsResetForward);
-		Call_PushString(oldmap);
-		Call_PushCell(g_NominateOwners.Get(0));
-		Call_Finish();
-		
-		g_NominateList.Erase(0);
-		g_NominateOwners.Erase(0);
+		while (g_NominateList.Length > g_ConVars[mapvote_include].IntValue)
+		{
+			char oldmap[PLATFORM_MAX_PATH];
+			g_NominateList.GetString(0, oldmap, sizeof(oldmap));
+			Call_StartForward(g_NominationsResetForward);
+			Call_PushString(oldmap);
+			Call_PushCell(g_NominateOwners.Get(0));
+			Call_Finish();
+
+			g_NominateList.Erase(0);
+			g_NominateOwners.Erase(0);
+		}
 	}
 	
 	return Nominate_Added;
