@@ -2852,7 +2852,7 @@ static void TF2_AddDefaultVotes(ArrayList hVoteTypes, bool bHideDisabledVotes)
 
 	switch (g_AppID)
 	{
-		case APP_TF2CLASSIFIED:
+		case 3545060: // Team Fortress 2 Classified
 		{
 			/* ChangeCivilian */
 			int entity = FindEntityByClassname(INVALID_ENT_REFERENCE, "tf2c_logic_vip");

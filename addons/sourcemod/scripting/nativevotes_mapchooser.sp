@@ -57,7 +57,7 @@ public Plugin myinfo =
 	name = "NativeVotes | MapChooser",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Automated Map Voting",
-	version = "26w06h",
+	version = "26w07a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -674,6 +674,8 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 		data.Reset();
 		return;
 	}
+
+	g_WaitingForVote = false;
 	
 	/* If the main map vote has completed (and chosen result) and its currently changing (not a delayed change) we block further attempts */
 	if (g_MapVoteCompleted && g_ChangeMapInProgress)
@@ -682,8 +684,6 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 	}
 	
 	g_ChangeTime = when;
-	
-	g_WaitingForVote = false;
 		
 	g_HasVoteStarted = true;
 	if (g_NativeVotes)

@@ -57,7 +57,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Rock The Vote",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Provides RTV Map Voting",
-	version = "26w06h",
+	version = "26w07a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -357,7 +357,7 @@ void AttemptRTV(int client, bool isVoteMenu=false)
 		return;
 	}
 	
-	if (!CanMapChooserStartVote() && NativeVotes_IsVoteInProgress())
+	if (!CanMapChooserStartVote() || (g_NativeVotes && NativeVotes_IsVoteInProgress()) || (!g_NativeVotes && IsVoteInProgress()))
 	{
 		CReplyToCommand(client, PLUGIN_PREFIX ... " %t", "RTV Started");
 		return;
@@ -493,7 +493,7 @@ void RemoveVoteHandler()
 
 public Action Menu_RTV(int client, NativeVotesOverride overrideType, const char[] voteArgument)
 {
-	if (client <= 0 || NativeVotes_IsVoteInProgress())
+	if (client <= 0 || (g_NativeVotes && NativeVotes_IsVoteInProgress()) || (!g_NativeVotes && IsVoteInProgress()))
 	{
 		return Plugin_Handled;
 	}
@@ -505,8 +505,6 @@ public Action Menu_RTV(int client, NativeVotesOverride overrideType, const char[
 	}
 	
 	ReplySource old = SetCmdReplySource(SM_REPLY_TO_CHAT);
-
-	FakeClientCommand(client, "sm_nominate %s", voteArgument);
 
 	AttemptRTV(client, true);
 	
