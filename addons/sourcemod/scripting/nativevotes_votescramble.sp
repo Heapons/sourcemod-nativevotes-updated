@@ -40,7 +40,7 @@ bool g_Voted[MAXPLAYERS+1] = {false, ...};
 bool g_NativeVotes;
 bool g_RegisteredScramble = false;
 int g_ScrambleTime = 0;
-float g_MapResetTime = 0;
+float g_MapResetTime = -1.0;
 int g_SetRoundsPlayedTo = -1;
 
 public void OnPluginStart()
@@ -212,7 +212,27 @@ public void Event_TeamplayRoundStart(Event event, const char[] name, bool dontBr
     CreateTimer(g_ConVars[initialdelay].FloatValue, Timer_DelayScramble, _, TIMER_FLAG_NO_MAPCHANGE);
     if (!g_ConVars[full_reset].BoolValue)
     {
-        GameRules_SetPropFloat("m_flMapResetTime", g_MapResetTime);
+        // If this isn't -1 we know our plugin just triggered a scramble, gotta change it back
+        if (g_MapResetTime >= 0) {        
+            GameRules_SetPropFloat("m_flMapResetTime", g_MapResetTime);
+
+            // Some gamemodes create a team_round_timer that mimics mp_timelimit, we can update these by setting mp_timelimit to 0 and back.
+            if (g_ConVars[mp_timelimit].IntValue > 0) {
+                int flags = g_ConVars[mp_timelimit].Flags;
+                int oldFlags = flags;
+                int oldValue = g_ConVars[mp_timelimit].IntValue;
+
+                // Don't notify about this cvar change.
+                flags = flags & ~FCVAR_NOTIFY;
+                g_ConVars[mp_timelimit].Flags = flags;
+                g_ConVars[mp_timelimit].IntValue = 0;
+
+                DataPack pack;
+                CreateDataTimer(0.1, Timer_FixCTFTimer, pack, TIMER_FLAG_NO_MAPCHANGE);
+                pack.WriteCell(oldValue);
+                pack.WriteCell(oldFlags);
+            }
+        }
 
         // If this isn't -1 we know our plugin just triggered a scramble, gotta change it back
         if (g_SetRoundsPlayedTo >= 0)
@@ -221,6 +241,7 @@ public void Event_TeamplayRoundStart(Event event, const char[] name, bool dontBr
         }
     }
     g_SetRoundsPlayedTo = -1;
+    g_MapResetTime = -1.0;
 }
 
 public Action Command_VoteScramble(int client, int args)
@@ -503,6 +524,15 @@ public Action Timer_DelayScramble(Handle timer)
 {
     g_ScrambleAllowed = true;
     return Plugin_Continue;
+}
+
+public Action Timer_FixCTFTimer(Handle timer, DataPack pack)
+{
+    pack.Reset();
+    int oldValue = pack.ReadCell();
+    int oldFlags = pack.ReadCell();
+    g_ConVars[mp_timelimit].IntValue = oldValue;
+    g_ConVars[mp_timelimit].Flags = oldFlags;
 }
 
 void GetPlayerName(int client, char[] name, int maxlen)
