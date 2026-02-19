@@ -57,7 +57,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Rock The Vote",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Provides RTV Map Voting",
-	version = "26w07a",
+	version = "26w08a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -103,8 +103,8 @@ public void OnPluginStart()
 	
 	RegConsoleCmd("sm_rtv", Command_RTV);
 	RegConsoleCmd("sm_rockthevote", Command_RTV);
-	RegAdminCmd("sm_forcertv", Command_ForceRTV, ADMFLAG_CHANGEMAP);
-	RegAdminCmd("sm_resetrtv", Command_ResetRTV, ADMFLAG_CHANGEMAP);
+	RegAdminCmd("sm_forcertv", Command_ForceRTV, ADMFLAG_VOTE|ADMFLAG_CHANGEMAP);
+	RegAdminCmd("sm_resetrtv", Command_ResetRTV, ADMFLAG_VOTE|ADMFLAG_CHANGEMAP);
 	
 	AutoExecConfig(true, "rtv");
 
@@ -357,7 +357,7 @@ void AttemptRTV(int client, bool isVoteMenu=false)
 		return;
 	}
 	
-	if (!CanMapChooserStartVote() || (g_NativeVotes && NativeVotes_IsVoteInProgress()) || (!g_NativeVotes && IsVoteInProgress()))
+	if (!CanMapChooserStartVote())
 	{
 		CReplyToCommand(client, PLUGIN_PREFIX ... " %t", "RTV Started");
 		return;
@@ -436,8 +436,6 @@ void StartRTV()
 		ResetRTV();
 		
 		g_RTVAllowed = false;
-		g_RTVTime = GetTime() + g_ConVars[interval].IntValue;
-
 		CreateTimer(g_ConVars[interval].FloatValue, Timer_DelayRTV, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
@@ -491,6 +489,17 @@ void RemoveVoteHandler()
 		
 }
 
+public Action Timer_Menu_RTV(Handle timer, int client)
+{
+	ReplySource old = SetCmdReplySource(SM_REPLY_TO_CHAT);
+
+	AttemptRTV(client, true);
+
+	SetCmdReplySource(old);
+
+	return Plugin_Handled;
+}
+
 public Action Menu_RTV(int client, NativeVotesOverride overrideType, const char[] voteArgument)
 {
 	if (client <= 0 || (g_NativeVotes && NativeVotes_IsVoteInProgress()) || (!g_NativeVotes && IsVoteInProgress()))
@@ -503,7 +512,13 @@ public Action Menu_RTV(int client, NativeVotesOverride overrideType, const char[
 		NativeVotes_DisplayCallVoteFail(client, NativeVotesCallFail_SpecifyMap);
 		return Plugin_Handled;
 	}
-	
+
+	if (CommandExists("sm_nominate"))
+	{
+		CreateTimer(0.1, Timer_Menu_RTV, client);
+		return Plugin_Handled;
+	}
+
 	ReplySource old = SetCmdReplySource(SM_REPLY_TO_CHAT);
 
 	AttemptRTV(client, true);
