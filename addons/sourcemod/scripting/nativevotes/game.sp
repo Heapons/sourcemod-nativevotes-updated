@@ -225,6 +225,19 @@ enum
 #define TF2CLASSIFIED_VOTE_CHANGE_CIVILIAN_PASSED	"#TF_vote_passed_change_civilian"
 
 //----------------------------------------------------------------------------
+// Fortress Connected
+
+#define FC_VOTE_STRING_CHANGE_DIFFICULTY	"ChangeDifficulty"
+
+#define FC_VOTE_MENU_CHANGE_DIFFICULTY		"#Vote_changedifficulty"
+#define FC_VOTE_PASSED_CHANGE_DIFFICULTY	"#Vote_passed_changedifficulty"		
+
+#define FC_VOTE_STRING_CHANGE_GAMEMODE		"ChangeGamemode"
+
+#define FC_VOTE_MENU_CHANGE_GAMEMODE		"#Vote_changegamemode"
+#define FC_VOTE_PASSED_CHANGE_GAMEMODE		"#Vote_passed_changegamemode"
+
+//----------------------------------------------------------------------------
 // CSGO
 // User vote to kick user.
 #define CSGO_VOTE_KICK_IDLE_START			"#SFUI_vote_kick_player_idle"
@@ -373,15 +386,18 @@ static ConVar g_Cvar_AutoBalance;
 
 static ConVar g_Cvar_HideDisabledIssues;
 
+// TF2 Classified
 static ConVar g_Cvar_ChangeCivilian_Enabled;
+
+// Fortress Connected
+static ConVar g_Cvar_ChangeDifficulty_Enabled;
+static ConVar g_Cvar_ChangeGamemode_Enabled;
 
 /**
  * TODO(UPDATE): For now we only support one vote from NativeVotes at a time.
  * 
  * Ideally we peek and poke at the game's `s_nVoteIdx` and increment it accordingly, but we also
  * have to store an internal list of active votes.
- * 
- * TODO: https://github.com/Heapons/sourcemod-nativevotes-updated/issues/2#issuecomment-3825973400
  */
 static int s_nNativeVoteIdx = 0;
 
@@ -459,6 +475,10 @@ void Game_InitializeCvars()
 
 			// Team Fortress 2 Classified
 			g_Cvar_ChangeCivilian_Enabled	   = FindConVar("tf2c_vote_issue_change_civilian_allowed");
+
+			// Fortress Connected
+			g_Cvar_ChangeDifficulty_Enabled	   = FindConVar("sv_vote_issue_changedifficulty_allowed");
+			g_Cvar_ChangeGamemode_Enabled	   = FindConVar("sv_vote_issue_changegamemode_allowed");
 		}
 	}
 }
@@ -1231,6 +1251,10 @@ static NativeVotesPassType VoteTypeToVotePass(NativeVotesType voteType)
 		{
 			passType = NativeVotesPass_ChgCivilian;
 		}
+		case NativeVotesType_ChgGamemode:
+		{
+			passType = NativeVotesPass_ChgGamemode;
+		}
 		default:
 		{
 			passType = NativeVotesPass_Custom;
@@ -1465,7 +1489,6 @@ static int VoteCallFailTypeToInt(NativeVotesCallFailType failType)
 			}				
 		}
 	}
-	
 	return VOTE_FAILED_GENERIC;
 }
 
@@ -1935,7 +1958,6 @@ static void L4D2_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 			Data_GetTitle(vote, details, MAX_VOTE_DETAILS_LENGTH);
 			bCustom = true;
 		}
-		
 		default:
 		{
 			Data_GetDetails(vote, details, MAX_VOTE_DETAILS_LENGTH);
@@ -2197,7 +2219,7 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 		}
 	}
 	
-	switch(g_EngineVersion)
+	switch (g_EngineVersion)
 	{
 		case Engine_CSGO:
 		{
@@ -2337,15 +2359,10 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 				bfStart.WriteString(details);
 			}
 			bfStart.WriteByte(bYesNo);
-			if (!IsFakeClient(clients[i]))
-			{
-				bfStart.WriteByte(Data_GetTarget(vote) - 1);
-			}
+			bfStart.WriteByte(Data_GetTarget(vote) - 1);
 		}
-		
 		EndMessage();
 	}
-
 	g_curDisplayClient = 0;
 }
 
@@ -2547,7 +2564,7 @@ static void TF2CSGO_ResetVote()
 			SetEntProp(g_VoteController, Prop_Send, "m_iActiveIssueIndex", INVALID_ISSUE);
 		}
 		SetEntProp(g_VoteController, Prop_Send, "m_iOnlyTeamToVote", g_EngineVersion == Engine_TF2 ? NATIVEVOTES_TF2_ALL_TEAMS : NATIVEVOTES_ALL_TEAMS);
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < TF2CSGO_COUNT; i++)
 		{
 			SetEntProp(g_VoteController, Prop_Send, "m_nVoteOptionCount", 0, _, i);
 		}
@@ -2591,7 +2608,9 @@ static bool TF2_CheckVoteType(NativeVotesType voteType)
 			 NativeVotesType_ClassLimitsOn,
 			 NativeVotesType_ClassLimitsOff,
 			 NativeVotesType_Extend,
-			 NativeVotesType_ChgCivilian:
+			 NativeVotesType_ChgCivilian,
+			 NativeVotesType_ChgDifficulty,
+			 NativeVotesType_ChgGamemode:
 		{
 			return true;
 		}
@@ -2622,7 +2641,9 @@ static bool TF2_CheckVotePassType(NativeVotesPassType passType)
 		     NativeVotesPass_AutoBalanceOff,
 		     NativeVotesPass_ClassLimitsOn,
 		     NativeVotesPass_ClassLimitsOff,
-		     NativeVotesPass_ChgCivilian:
+		     NativeVotesPass_ChgCivilian,
+			 NativeVotesPass_ChgDifficulty,
+			 NativeVotesPass_ChgGamemode:
 		{
 			return true;
 		}
@@ -2718,6 +2739,14 @@ static bool TF2_VoteTypeToTranslation(NativeVotesType voteType, char[] translati
 		{
 			strcopy(translation, maxlength, TF2CLASSIFIED_VOTE_CHANGE_CIVILIAN_START);
 		}
+        case NativeVotesType_ChgDifficulty:
+        {
+            strcopy(translation, maxlength, FC_VOTE_MENU_CHANGE_DIFFICULTY);
+        }
+        case NativeVotesType_ChgGamemode:
+        {
+            strcopy(translation, maxlength, FC_VOTE_MENU_CHANGE_GAMEMODE);
+        }
 		default:
 		{
 			strcopy(translation, maxlength, TF2_VOTE_CUSTOM);
@@ -2786,6 +2815,14 @@ static void TF2_VotePassToTranslation(NativeVotesPassType passType, char[] trans
 		case NativeVotesPass_ChgCivilian:
 		{
 			strcopy(translation, maxlength, TF2CLASSIFIED_VOTE_CHANGE_CIVILIAN_PASSED);
+		}
+		case NativeVotesPass_ChgDifficulty:
+		{
+			strcopy(translation, maxlength, FC_VOTE_PASSED_CHANGE_DIFFICULTY);
+		}
+		case NativeVotesPass_ChgGamemode:
+		{
+			strcopy(translation, maxlength, FC_VOTE_PASSED_CHANGE_GAMEMODE);
 		}
 		default:
 		{
@@ -2857,6 +2894,14 @@ static void TF2_AddDefaultVotes(ArrayList hVoteTypes, bool bHideDisabledVotes)
 			/* ChangeCivilian */
 			int entity = FindEntityByClassname(INVALID_ENT_REFERENCE, "tf2c_logic_vip");
 			VoteTypeSet(hVoteTypes, bHideDisabledVotes, NativeVotesOverride_ChgCivilian, globalEnable && g_Cvar_ChangeCivilian_Enabled.BoolValue && entity != INVALID_ENT_REFERENCE);
+		}
+		case 3561600: // Fortress Connected
+		{
+			/* ChangeDifficulty */
+			VoteTypeSet(hVoteTypes, bHideDisabledVotes, NativeVotesOverride_ChgDifficulty, globalEnable && g_Cvar_ChangeDifficulty_Enabled.BoolValue);
+
+			/* ChangeGamemode */
+			VoteTypeSet(hVoteTypes, bHideDisabledVotes, NativeVotesOverride_ChgGamemode, globalEnable && g_Cvar_ChangeGamemode_Enabled.BoolValue);
 		}
 	}
 }
@@ -3167,8 +3212,23 @@ static stock bool TF2_VoteTypeToVoteString(NativeVotesType voteType, char[] vote
 		{
 			strcopy(voteString, maxlength, TF2_VOTE_STRING_EXTEND);
 		}
+		case NativeVotesType_ChgCivilian:
+		{
+			strcopy(voteString, maxlength, TF2CLASSIFIED_VOTE_STRING_CHANGE_CIVILIAN);
+			valid = true;
+		}
+		case NativeVotesType_ChgDifficulty:
+		{
+			strcopy(voteString, maxlength, FC_VOTE_STRING_CHANGE_DIFFICULTY);
+			valid = true;
+		}
+		case NativeVotesType_ChgGamemode:
+		{
+			strcopy(voteString, maxlength, FC_VOTE_STRING_CHANGE_GAMEMODE);
+			valid = true;
+		}
 	}
-	
+
 	return valid;
 }
 
@@ -3220,6 +3280,14 @@ static stock NativeVotesType TF2_VoteStringToVoteType(const char[] voteString)
 	{
 		voteType = NativeVotesType_ChgCivilian;
 	}
+	else if (StrEqual(voteString, FC_VOTE_STRING_CHANGE_DIFFICULTY, false))
+	{
+		voteType = NativeVotesType_ChgDifficulty;
+	}
+	else if (StrEqual(voteString, FC_VOTE_STRING_CHANGE_GAMEMODE, false))
+	{
+		voteType = NativeVotesType_ChgGamemode;
+	}
 	else
 	{
 		voteType = NativeVotesType_None;
@@ -3234,7 +3302,7 @@ static stock NativeVotesOverride TF2_VoteTypeToVoteOverride(NativeVotesType vote
 	
 	switch (voteType)
 	{
-		case NativeVotesType_Kick, NativeVotesType_KickCheating, 	 NativeVotesType_KickIdle, 	 NativeVotesType_KickScamming:
+		case NativeVotesType_Kick, NativeVotesType_KickCheating, NativeVotesType_KickIdle, NativeVotesType_KickScamming:
 		{
 			overrideType = NativeVotesOverride_Kick;
 		}
@@ -3258,13 +3326,11 @@ static stock NativeVotesOverride TF2_VoteTypeToVoteOverride(NativeVotesType vote
 		{
 			overrideType = NativeVotesOverride_Eternaween;
 		}
-		case NativeVotesType_AutoBalanceOn,
-			 NativeVotesType_AutoBalanceOff:
+		case NativeVotesType_AutoBalanceOn, NativeVotesType_AutoBalanceOff:
 		{
 			overrideType = NativeVotesOverride_AutoBalance;
 		}
-		case NativeVotesType_ClassLimitsOn,
-			 NativeVotesType_ClassLimitsOff:
+		case NativeVotesType_ClassLimitsOn, NativeVotesType_ClassLimitsOff:
 		{
 			overrideType = NativeVotesOverride_ClassLimits;
 		}
@@ -3275,6 +3341,14 @@ static stock NativeVotesOverride TF2_VoteTypeToVoteOverride(NativeVotesType vote
 		case NativeVotesType_ChgCivilian:
 		{
 			overrideType = NativeVotesOverride_ChgCivilian;
+		}
+		case NativeVotesType_ChgDifficulty:
+		{
+			overrideType = NativeVotesOverride_ChgDifficulty;
+		}
+		case NativeVotesType_ChgGamemode:
+		{
+			overrideType = NativeVotesOverride_ChgGamemode;
 		}
 		default:
 		{
@@ -3335,6 +3409,14 @@ static stock NativeVotesType TF2_VoteOverrideToVoteType(NativeVotesOverride over
 		{
 			voteType = NativeVotesType_ChgCivilian;
 		}
+		case NativeVotesOverride_ChgDifficulty:
+		{
+			voteType = NativeVotesType_ChgDifficulty;
+		}
+		case NativeVotesOverride_ChgGamemode:
+		{
+			voteType = NativeVotesType_ChgGamemode;
+		}
 		default:
 		{
 			voteType = NativeVotesType_None;
@@ -3391,6 +3473,14 @@ static stock NativeVotesOverride TF2_VoteStringToVoteOverride(const char[] voteS
 	else if (StrEqual(voteString, TF2CLASSIFIED_VOTE_STRING_CHANGE_CIVILIAN, false))
 	{
 		overrideType = NativeVotesOverride_ChgCivilian;
+	}
+	else if (StrEqual(voteString, FC_VOTE_STRING_CHANGE_DIFFICULTY, false))
+	{
+		overrideType = NativeVotesOverride_ChgDifficulty;
+	}
+	else if (StrEqual(voteString, FC_VOTE_STRING_CHANGE_GAMEMODE, false))
+	{
+		overrideType = NativeVotesOverride_ChgGamemode;
 	}
 	else
 	{
@@ -3449,22 +3539,32 @@ static stock bool TF2_OverrideTypeToVoteString(NativeVotesOverride overrideType,
 			strcopy(voteString, maxlength, TF2_VOTE_STRING_CLASSLIMIT);
 			valid = true;
 		}
-		case NativeVotesOverride_Extend:
-		{
-			strcopy(voteString, maxlength, TF2_VOTE_STRING_EXTEND);
-		}		
-		case NativeVotesOverride_ChgMission:
-		{
-			strcopy(voteString, maxlength, TF2_VOTE_STRING_CHANGEMISSION);
-		}
-		case NativeVotesOverride_ChgCivilian:
-		{
-			strcopy(voteString, maxlength, TF2CLASSIFIED_VOTE_STRING_CHANGE_CIVILIAN);
-			valid = true;
-		}
-	}
-	
-	return valid;
+		   case NativeVotesOverride_Extend:
+		   {
+			   strcopy(voteString, maxlength, TF2_VOTE_STRING_EXTEND);
+		   }
+		   case NativeVotesOverride_ChgMission:
+		   {
+			   strcopy(voteString, maxlength, TF2_VOTE_STRING_CHANGEMISSION);
+		   }
+		   case NativeVotesOverride_ChgCivilian:
+		   {
+			   strcopy(voteString, maxlength, TF2CLASSIFIED_VOTE_STRING_CHANGE_CIVILIAN);
+			   valid = true;
+		   }
+		   case NativeVotesOverride_ChgDifficulty:
+		   {
+			   strcopy(voteString, maxlength, FC_VOTE_STRING_CHANGE_DIFFICULTY);
+			   valid = true;
+		   }
+		   case NativeVotesOverride_ChgGamemode:
+		   {
+			   strcopy(voteString, maxlength, FC_VOTE_STRING_CHANGE_GAMEMODE);
+			   valid = true;
+		   }
+	   }
+   
+	   return valid;
 }
 
 static stock bool TF2_OverrideTypeToTranslationString(NativeVotesOverride overrideType, char[] translationString, int maxlength)
@@ -3521,6 +3621,16 @@ static stock bool TF2_OverrideTypeToTranslationString(NativeVotesOverride overri
 			strcopy(translationString, maxlength, TF2CLASSIFIED_VOTE_MENU_CHANGE_CIVILIAN);
 			valid = true;
 		}
+		case NativeVotesOverride_ChgDifficulty:
+		{
+			strcopy(translationString, maxlength, FC_VOTE_MENU_CHANGE_DIFFICULTY);
+			valid = true;
+		}
+		case NativeVotesOverride_ChgGamemode:
+		{
+			strcopy(translationString, maxlength, FC_VOTE_MENU_CHANGE_GAMEMODE);
+			valid = true;
+		}
 	}
 	
 	return valid;
@@ -3548,6 +3658,6 @@ stock bool Game_IsVoteTypeYesNo(NativeVotesType voteType)
 			return false;
 		}
 	}
-	
+
 	return true;
 }

@@ -86,6 +86,7 @@ enum
 	progress_console,
 	progress_client_console,
 	progress_hintcaption,
+	progress_hintcaption_icon,
 	vote_delay,
 
 	MAX_CONVARS
@@ -151,7 +152,7 @@ public Plugin myinfo =
 	name = "NativeVotes",
 	author = "Powerlord",
 	description = "Voting API to use the game's native vote panels. Compatible with L4D, L4D2, TF2, and CS:GO.",
-	version = "26w07a",
+	version = "26w08a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 }
 
@@ -270,7 +271,8 @@ public void OnPluginStart()
 	Event instructor = CreateEvent("instructor_server_hint_create", true);
 	if (instructor != null)
 	{
-		g_ConVars[progress_hintcaption] = CreateConVar("nativevotes_progress_hintcaption", "0", "Show current vote progress in a instructor hint caption", _, true, 0.0, true, 1.0);
+		g_ConVars[progress_hintcaption]      = CreateConVar("nativevotes_progress_hintcaption", "0", "Show current vote progress in a instructor hint caption", _, true, 0.0, true, 1.0);
+		g_ConVars[progress_hintcaption_icon] = CreateConVar("nativevotes_progress_hintcaption_icon", "icon_tip", "Set the icon to use in instructor hint captions during votes");
 		instructor.Cancel();
 	}
 
@@ -597,6 +599,10 @@ public Action Command_CallVote(int client, const char[] command, int argc)
 			Call_PushCell(kickType);
 			Call_PushCell(target);
 			Call_Finish(result);
+            if (result >= Plugin_Handled)
+            {
+                return result;
+            }
 		}
 	}
 	
@@ -999,7 +1005,7 @@ bool:SendResultCallback(Handle:vote, num_votes, num_items, const votes[][])
 	new client_votes[MaxClients];
 	
 	new num_clients;
-	for (new i = 1; i <= MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (g_ClientVotes[i] > VOTE_PENDING)
 		{
@@ -1044,7 +1050,7 @@ void DrawHintProgress()
 
 	NativeVotesType voteType = Data_GetType(g_hCurVote);
 	bool isMultVote = (voteType == NativeVotesType_Custom_Mult || voteType == NativeVotesType_NextLevelMult);
-	char leaderList[256];
+	char leaderList[1024];
 	if (isMultVote)
 	{
 		BuildVoteLeaders(leaderList, sizeof(leaderList));
@@ -1077,7 +1083,7 @@ void DrawHintProgress()
 				int maxLeaderLen = 256 - baseLen - 1;
 				if (maxLeaderLen < 1)
 				{
-					char caption[256];
+					char caption[1024];
 					Format(caption, sizeof(caption), "%t", "Vote Count", g_NumVotes, g_TotalClients, iTimeRemaining);
 					SendInstructorHint(client, caption);
 				}
@@ -1085,14 +1091,14 @@ void DrawHintProgress()
 				{
 					char[] cappedLeaders = new char[maxLeaderLen + 1];
 					BuildVoteLeaders(cappedLeaders, maxLeaderLen + 1);
-					char caption[256];
+					char caption[1024];
 					Format(caption, sizeof(caption), "%s\n%s", baseText, cappedLeaders);
 					SendInstructorHint(client, caption);
 				}
 			}
 			else
 			{
-				char caption[256];
+				char caption[1024];
 				Format(caption, sizeof(caption), "%t", "Vote Count", g_NumVotes, g_TotalClients, iTimeRemaining);
 				SendInstructorHint(client, caption);
 			}
@@ -1121,13 +1127,13 @@ void BuildVoteLeaders(char[] leaderList, int leaderListSize)
 	
 	int num_items = Internal_GetResults(votes);
 
-	/* Build the full leaderboard (bounded by buffer size) */
+	/* Build the full leaderboard */
 	for (int i = 0; i < num_items; i++)
 	{
 		int cur_item = votes[i][VOTEINFO_ITEM_INDEX];
-		char choice[256];
+		char choice[1024];
 		Data_GetItemDisplay(g_hCurVote, cur_item, choice, sizeof(choice));
-		char line[256];
+		char line[1024];
 		Format(line, sizeof(line), "%i. %s: (%i)", i + 1, choice, votes[i][VOTEINFO_ITEM_VOTES]);
 		if (i == 0)
 		{
@@ -1327,8 +1333,11 @@ bool InitializeVoting(NativeVote vote, int time, int flags)
 	
 	if (g_hVoteTimer != null)
 	{
-		//KillTimer(g_hVoteTimer);
-		g_hVoteTimer = null;
+		delete g_hVoteTimer;
+	}
+	if (g_hDisplayTimer != null)
+	{
+		delete g_hDisplayTimer;
 	}
 
 	Internal_Reset();
@@ -1499,8 +1508,7 @@ void Internal_Reset(bool cancel=false)
 	
 	if (g_hDisplayTimer != null)
 	{
-		KillTimer(g_hDisplayTimer);
-		g_hDisplayTimer = null;
+		delete g_hDisplayTimer;
 	}
 
 	if (!cancel)
@@ -1671,6 +1679,7 @@ public int Native_Create(Handle plugin, int numParams)
 	
 	if (voteType != NativeVotesType_NextLevelMult && voteType != NativeVotesType_Custom_Mult)
 	{
+		SetGlobalTransTarget(LANG_SERVER);
 		Data_AddItem(vote, "yes", "Yes");
 		Data_AddItem(vote, "no", "No");
 	}
@@ -2246,7 +2255,6 @@ public int Native_DisplayPass(Handle plugin, int numParams)
 	{
 		Game_DisplayVotePass(vote);		
 	}
-
 }
 
 // native NativeVotes_DisplayPassCustomToOne(Handle vote, client, const char[] format, any:...);
@@ -2649,8 +2657,13 @@ void SendInstructorHint(int client, const char[] caption)
 	event.SetInt("hint_target", client);
 	event.SetInt("hint_activator_userid", GetClientUserId(client));
 	event.SetInt("hint_timeout", 0);
-	event.SetString("hint_icon_onscreen", "tf2c_clock");
-	event.SetString("hint_icon_offscreen", "tf2c_clock");
+	char icon[64];
+	g_ConVars[progress_hintcaption_icon].GetString(icon, sizeof(icon));
+	if (icon[0] != '\0')
+	{
+		event.SetString("hint_icon_onscreen", icon);
+		event.SetString("hint_icon_offscreen", icon);
+	}
 	event.SetString("hint_activator_caption", caption);
 	event.SetInt("hint_allow_nodraw_target", 1);
 	event.SetInt("hint_nooffscreen", 1);

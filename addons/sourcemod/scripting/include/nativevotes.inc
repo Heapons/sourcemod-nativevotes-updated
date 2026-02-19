@@ -83,67 +83,69 @@ MenuAction_DisplayItem	Item text is being drawn to the display (param1=client, p
  */
 enum NativeVotesType
 {
-	NativeVotesType_None = 0,		/**< Special placeholder for callvote with no arguments for NativeVotes_OnCallVote */
-	NativeVotesType_Custom_YesNo,	/**< Yes/No, details are vote text. */
-	NativeVotesType_Custom_Mult,	/**< TF2/CS:GO: Multiple-choice, details are vote text. */
-	NativeVotesType_ChgCampaign,	/**< L4D/L4D2: Yes/No, details are campaign name */
-	NativeVotesType_ChgDifficulty,	/**< L4D/L4D2: Yes/No, details are difficulty number in L4D/L4D2 */
-	NativeVotesType_ReturnToLobby,	/**< L4D/L4D2: Yes/No, details are ignored */
-	NativeVotesType_AlltalkOn,		/**< L4D2: Yes/No, details are ignored (handled internally by extension) */
-	NativeVotesType_AlltalkOff,		/**< L4D2: Yes/No, details are ignored (handled internally by extension) */
-	NativeVotesType_Restart,		/**< Yes/No, details are ignored */
-	NativeVotesType_Kick,			/**< Yes/No, target is player userid, details are auto-set by target */
-	NativeVotesType_KickIdle,		/**< TF2/CS:GO: Yes/No, target is player userid, details are auto-set by target */
-	NativeVotesType_KickScamming,	/**< TF2/CS:GO: Yes/No, target is player userid, details are auto-set by target */
-	NativeVotesType_KickCheating,	/**< TF2/CS:GO: Yes/No, target is player userid, details are auto-set by target */
-	NativeVotesType_ChgLevel,		/**< Yes/No, details are level number in L4D/L4D2 or map name in TF2 */
-	NativeVotesType_NextLevel,		/**< TF2/CS:GO: Yes/No, details are map name */
-	NativeVotesType_NextLevelMult,	/**< TF2/CS:GO: Multiple-choice, details are ignored */
-	NativeVotesType_ScrambleNow,	/**< TF2/CS:GO: Yes/No, details are ignored */
-	NativeVotesType_ScrambleEnd,	/**< TF2: Yes/No, details are ignored */
-	NativeVotesType_ChgMission,		/**< TF2: Yes/No, details are popfile */
-	NativeVotesType_SwapTeams,		/**< CS:GO: Yes/No, details are ignored */
-	NativeVotesType_Surrender,		/**< CS:GO: Yes/No, details are ignored */
-	NativeVotesType_Rematch,		/**< CS:GO: Yes/No, details are ignored */
-	NativeVotesType_Continue,		/**< CS:GO: Yes/No, details are ignored */
-	NativeVotesType_StartRound,		/**< TF2: Yes/No, details are ignored */
-	NativeVotesType_Eternaween,		/**< TF2: Yes/No, details are ignored */
-	NativeVotesType_AutoBalanceOn,	/**< TF2: Yes/No, details are ignored */
-	NativeVotesType_AutoBalanceOff,	/**< TF2: Yes/No, details are ignored */
-	NativeVotesType_ClassLimitsOn,	/**< TF2: Yes/No, details are ignored */
-	NativeVotesType_ClassLimitsOff,	/**< TF2: Yes/No, details are ignored */
-	NativeVotesType_Extend,			/**< TF2: Yes/No, details are ignored */
-	NativeVotesType_ChgCivilian,	/**< TF2 Classified: Yes/No, target is player userid, details are auto-set by target */
+	NativeVotesType_None = 0,		     /**< Special placeholder for callvote with no arguments for NativeVotes_OnCallVote */
+	NativeVotesType_Custom_YesNo,	     /**< Yes/No, details are vote text. */
+	NativeVotesType_Custom_Mult,	     /**< TF2/CS:GO: Multiple-choice, details are vote text. */
+	NativeVotesType_ChgCampaign,	     /**< L4D/L4D2: Yes/No, details are campaign name */
+	NativeVotesType_ChgDifficulty,       /**< L4D/L4D2/Fortress Connected: Yes/No, details are difficulty number */
+	NativeVotesType_ReturnToLobby,	     /**< L4D/L4D2: Yes/No, details are ignored */
+	NativeVotesType_AlltalkOn,		     /**< L4D2: Yes/No, details are ignored (handled internally by extension) */
+	NativeVotesType_AlltalkOff,		     /**< L4D2: Yes/No, details are ignored (handled internally by extension) */
+	NativeVotesType_Restart,		     /**< Yes/No, details are ignored */
+	NativeVotesType_Kick,			     /**< Yes/No, target is player userid, details are auto-set by target */
+	NativeVotesType_KickIdle,		     /**< TF2/CS:GO: Yes/No, target is player userid, details are auto-set by target */
+	NativeVotesType_KickScamming,	     /**< TF2/CS:GO: Yes/No, target is player userid, details are auto-set by target */
+	NativeVotesType_KickCheating,	     /**< TF2/CS:GO: Yes/No, target is player userid, details are auto-set by target */
+	NativeVotesType_ChgLevel,		     /**< Yes/No, details are level number in L4D/L4D2 or map name in TF2 */
+	NativeVotesType_NextLevel,		     /**< TF2/CS:GO: Yes/No, details are map name */
+	NativeVotesType_NextLevelMult,	     /**< TF2/CS:GO: Multiple-choice, details are ignored */
+	NativeVotesType_ScrambleNow,	     /**< TF2/CS:GO: Yes/No, details are ignored */
+	NativeVotesType_ScrambleEnd,	     /**< TF2: Yes/No, details are ignored */
+	NativeVotesType_ChgMission,		     /**< TF2: Yes/No, details are popfile */
+	NativeVotesType_SwapTeams,		     /**< CS:GO: Yes/No, details are ignored */
+	NativeVotesType_Surrender,		     /**< CS:GO: Yes/No, details are ignored */
+	NativeVotesType_Rematch,		     /**< CS:GO: Yes/No, details are ignored */
+	NativeVotesType_Continue,		     /**< CS:GO: Yes/No, details are ignored */
+	NativeVotesType_StartRound,		     /**< TF2: Yes/No, details are ignored */
+	NativeVotesType_Eternaween,		     /**< TF2: Yes/No, details are ignored */
+	NativeVotesType_AutoBalanceOn,	     /**< TF2: Yes/No, details are ignored */
+	NativeVotesType_AutoBalanceOff,	     /**< TF2: Yes/No, details are ignored */
+	NativeVotesType_ClassLimitsOn,	     /**< TF2: Yes/No, details are ignored */
+	NativeVotesType_ClassLimitsOff,	     /**< TF2: Yes/No, details are ignored */
+	NativeVotesType_Extend,			     /**< TF2: Yes/No, details are ignored */
+	NativeVotesType_ChgCivilian,	     /**< TF2 Classified: Yes/No, target is player userid, details are auto-set by target */
+	NativeVotesType_ChgGamemode          /**< Fortress Connected: Yes/No, details are gamemode number */
 };
 
 enum NativeVotesPassType
 {
-	NativeVotesPass_None = 0,			/**< Special placeholder for error value */
-	NativeVotesPass_Custom,				/**< Details are custom pass message */
-	NativeVotesPass_ChgCampaign,		/**< L4D/L4D2: Details are campaign name */
-	NativeVotesPass_ChgDifficulty,		/**< L4D/L4D2/TF2: Details are difficulty number in L4D/L4D2 and mission name in TF2 */
-	NativeVotesPass_ReturnToLobby,		/**< L4D/L4D2: Details are ignored */
-	NativeVotesPass_AlltalkOn,			/**< L4D2: Details are ignored */
-	NativeVotesPass_AlltalkOff,			/**< L4D2: Details are ignored */
-	NativeVotesPass_Restart,			/**< Details are ignored */
-	NativeVotesPass_Kick,				/**< Details are player name */
-	NativeVotesPass_ChgLevel,			/**< Details are level number in L4D/L4D2 or map name in TF2/CS:GO */
-	NativeVotesPass_NextLevel,			/**< TF2/CS:GO: Details are map name */
-	NativeVotesPass_Extend,				/**< TF2/CS:GO: Details are ignored */
-	NativeVotesPass_Scramble,			/**< TF2/CS:GO: Details are ignored */
-	NativeVotesPass_ChgMission,			/**< TF2: Details are popfile */
-	NativeVotesPass_SwapTeams,			/**< CS:GO: Details are ignored */
-	NativeVotesPass_Surrender,			/**< CS:GO: Details are ignored */
-	NativeVotesPass_Rematch,			/**< CS:GO: Details are ignored */
-	NativeVotesPass_Continue,			/**< CS:GO: Details are ignored */
-	NativeVotesPass_StartRound,			/**< TF2: Details are ignored */
-	NativeVotesPass_Eternaween,			/**< TF2: Details are ignored */
-	NativeVotesPass_AutoBalanceOn,		/**< TF2: Yes/No, details are ignored */
-	NativeVotesPass_AutoBalanceOff,		/**< TF2: Yes/No, details are ignored */
-	NativeVotesPass_ClassLimitsOn,		/**< TF2: Yes/No, details are ignored */
-	NativeVotesPass_ClassLimitsOff,		/**< TF2: Yes/No, details are ignored */
-	NativeVotesPass_ChgCivilian,		/**< TF2 Classified: Yes/No, target is player userid, details are auto-set by target */
-};
+	NativeVotesPass_None = 0,			 /**< Special placeholder for error value */
+	NativeVotesPass_Custom,				 /**< Details are custom pass message */
+	NativeVotesPass_ChgCampaign,		 /**< L4D/L4D2: Details are campaign name */
+	NativeVotesPass_ChgDifficulty,       /**< L4D/L4D2/TF2/Fortress Connected: Details are difficulty number in L4D/L4D2/FC and mission name in TF2 */
+	NativeVotesPass_ReturnToLobby,		 /**< L4D/L4D2: Details are ignored */
+	NativeVotesPass_AlltalkOn,			 /**< L4D2: Details are ignored */
+	NativeVotesPass_AlltalkOff,			 /**< L4D2: Details are ignored */
+	NativeVotesPass_Restart,			 /**< Details are ignored */
+	NativeVotesPass_Kick,				 /**< Details are player name */
+	NativeVotesPass_ChgLevel,			 /**< Details are level number in L4D/L4D2 or map name in TF2/CS:GO */
+	NativeVotesPass_NextLevel,			 /**< TF2/CS:GO: Details are map name */
+	NativeVotesPass_Extend,				 /**< TF2/CS:GO: Details are ignored */
+	NativeVotesPass_Scramble,			 /**< TF2/CS:GO: Details are ignored */
+	NativeVotesPass_ChgMission,			 /**< TF2: Details are popfile */
+	NativeVotesPass_SwapTeams,			 /**< CS:GO: Details are ignored */
+	NativeVotesPass_Surrender,			 /**< CS:GO: Details are ignored */
+	NativeVotesPass_Rematch,			 /**< CS:GO: Details are ignored */
+	NativeVotesPass_Continue,			 /**< CS:GO: Details are ignored */
+	NativeVotesPass_StartRound,			 /**< TF2: Details are ignored */
+	NativeVotesPass_Eternaween,			 /**< TF2: Details are ignored */
+	NativeVotesPass_AutoBalanceOn,		 /**< TF2: Yes/No, details are ignored */
+	NativeVotesPass_AutoBalanceOff,		 /**< TF2: Yes/No, details are ignored */
+	NativeVotesPass_ClassLimitsOn,		 /**< TF2: Yes/No, details are ignored */
+	NativeVotesPass_ClassLimitsOff,		 /**< TF2: Yes/No, details are ignored */
+	NativeVotesPass_ChgCivilian,		 /**< TF2 Classified: Yes/No, target is player userid, details are auto-set by target */
+	NativeVotesPass_ChgGamemode          /**< Fortress Connected: Yes/No, details are gamemode number */
+}; 
 
 /**
  * Reasons a vote was canceled.  Not used for L4D/L4D2, as they don't care
@@ -240,6 +242,8 @@ enum NativeVotesOverride
 	NativeVotesOverride_ClassLimits,
 	NativeVotesOverride_Extend,
 	NativeVotesOverride_ChgCivilian,
+	NativeVotesOverride_ChgGamemode,
+	NativeVotesOverride_ChgDifficulty,
 	NativeVotesOverride_Count,
 }
 
