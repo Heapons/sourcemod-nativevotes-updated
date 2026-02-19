@@ -41,9 +41,9 @@ bool g_VoteMapInUse;
 void DisplayVoteMapMenu(int client, int mapCount, char maps[5][PLATFORM_MAX_PATH])
 {
 	LogAction(client, -1, "\"%L\" initiated a map vote.", client);
-	CShowActivity2(client, "[\x04NativeVotes\x01] ", "%t", "Initiated Vote Map");
+	CShowActivity2(client, PLUGIN_PREFIX ... " %t", "Initiated Vote Map");
 	
-	g_voteType = map;
+	g_VoteType = map;
 
 	char resolvedMaps[5][PLATFORM_MAX_PATH];
 	char displayNames[5][PLATFORM_MAX_PATH];
@@ -58,7 +58,7 @@ void DisplayVoteMapMenu(int client, int mapCount, char maps[5][PLATFORM_MAX_PATH
 		Handle voteMenu;
 		if (mapCount == 1)
 		{
-			strcopy(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]), displayNames[0]);
+			strcopy(g_VoteInfo[VOTE_NAME], sizeof(g_VoteInfo[]), displayNames[0]);
 			
 			voteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_ChgLevel, view_as<MenuAction>(MENU_ACTIONS_ALL));
 			
@@ -69,7 +69,7 @@ void DisplayVoteMapMenu(int client, int mapCount, char maps[5][PLATFORM_MAX_PATH
 		{
 			voteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_NextLevelMult, view_as<MenuAction>(MENU_ACTIONS_ALL));
 			
-			g_voteInfo[VOTE_NAME][0] = '\0';
+			g_VoteInfo[VOTE_NAME][0] = '\0';
 			
 			// No title, builtin type
 			for (int i = 0; i < mapCount; i++)
@@ -77,7 +77,7 @@ void DisplayVoteMapMenu(int client, int mapCount, char maps[5][PLATFORM_MAX_PATH
 				NativeVotes_AddItem(voteMenu, resolvedMaps[i], displayNames[i]);
 			}
 		}
-		NativeVotes_DisplayToAll(voteMenu, 20);
+		NativeVotes_DisplayToAll(voteMenu, g_ConVars[sv_vote_timer_duration].IntValue);
 	}
 	else
 	{
@@ -85,7 +85,7 @@ void DisplayVoteMapMenu(int client, int mapCount, char maps[5][PLATFORM_MAX_PATH
 		
 		if (mapCount == 1)
 		{
-			strcopy(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]), displayNames[0]);
+			strcopy(g_VoteInfo[VOTE_NAME], sizeof(g_VoteInfo[]), displayNames[0]);
 
 			SetMenuTitle(voteMenu, "Change Map To");
 			AddMenuItem(voteMenu, resolvedMaps[0], "Yes");
@@ -93,7 +93,7 @@ void DisplayVoteMapMenu(int client, int mapCount, char maps[5][PLATFORM_MAX_PATH
 		}
 		else
 		{
-			g_voteInfo[VOTE_NAME][0] = '\0';
+			g_VoteInfo[VOTE_NAME][0] = '\0';
 			
 			SetMenuTitle(voteMenu, "Map Vote");
 			for (int i = 0; i < mapCount; i++)
@@ -102,7 +102,7 @@ void DisplayVoteMapMenu(int client, int mapCount, char maps[5][PLATFORM_MAX_PATH
 			}
 		}
 		SetMenuExitButton(voteMenu, false);
-		VoteMenuToAll(voteMenu, 20);
+		VoteMenuToAll(voteMenu, g_ConVars[sv_vote_timer_duration].IntValue);
 	}
 }
 
@@ -140,9 +140,9 @@ public int MenuHandler_Confirm(Handle menu, MenuAction action, int param1, int p
 		case MenuAction_Cancel:
 		{
 			ResetMenu();
-			if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+			if (param2 == MenuCancel_ExitBack && g_TopMenu != INVALID_HANDLE)
 			{
-				DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
+				DisplayTopMenu(g_TopMenu, param1, TopMenuPosition_LastCategory);
 			}
 		}
 		case MenuAction_Select:
@@ -167,7 +167,7 @@ public int MenuHandler_Map(Handle menu, MenuAction action, int param1, int param
 	{
 		case MenuAction_Cancel:
 		{
-			if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+			if (param2 == MenuCancel_ExitBack && g_TopMenu != INVALID_HANDLE)
 			{
 				ConfirmVote(param1);
 			}
@@ -234,7 +234,7 @@ public void AdminMenu_VoteMap(Handle topmenu, TopMenuAction action, TopMenuObjec
 			}
 			else
 			{
-				CPrintToChat(param, "[\x04NativeVotes\x01] %T", "Map Vote In Use", param);
+				CPrintToChat(param, PLUGIN_PREFIX ... " %t", "Map Vote In Use", param);
 			}
 		}
 		case TopMenuAction_DrawOption:
@@ -249,13 +249,13 @@ public Action Command_Votemap(int client, int args)
 {
 	if (args < 1)
 	{
-		CReplyToCommand(client, "[\x04NativeVotes\x01] Usage: sm_votemap <mapname> [mapname2] ... [mapname5]");
+		CReplyToCommand(client, PLUGIN_PREFIX ... " Usage: sm_votemap <mapname> [mapname2] ... [mapname5]");
 		return Plugin_Handled;
 	}
 	
 	if (Internal_IsVoteInProgress())
 	{
-		CReplyToCommand(client, "[\x04NativeVotes\x01] %t", "Vote in Progress");
+		CReplyToCommand(client, PLUGIN_PREFIX ... " %t", "Vote in Progress");
 		return Plugin_Handled;
 	}
 	
@@ -277,7 +277,7 @@ public Action Command_Votemap(int client, int args)
 		
 		if (!IsMapValid(maps[mapCount]))
 		{
-			CReplyToCommand(client, "[\x04NativeVotes\x01] %t", "Map was not found", maps[mapCount]);
+			CReplyToCommand(client, PLUGIN_PREFIX ... " %t", "Map was not found", maps[mapCount]);
 			return Plugin_Handled;
 		}
 

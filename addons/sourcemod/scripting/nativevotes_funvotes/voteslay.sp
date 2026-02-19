@@ -36,28 +36,28 @@ void DisplayVoteSlayMenu(int client, int target, char name[MAX_NAME_LENGTH])
 {
 	if (!IsPlayerAlive(target))
 	{
-		CReplyToCommand(client, "[\x04NativeVotes\x01] %t", "Cannot be performed on dead", name);
+		CReplyToCommand(client, PLUGIN_PREFIX ... " %t", "Cannot be performed on dead", name);
 		return;
 	}
 	
-	g_voteClient[VOTE_CLIENTID] = target;
+	g_VoteClient[VOTE_CLIENTID] = target;
 
 	char playerName[MAX_NAME_LENGTH];
 	GetPlayerName(target, playerName, sizeof(playerName));
 
-	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
+	GetClientName(target, g_VoteInfo[VOTE_NAME], sizeof(g_VoteInfo[]));
 
 	LogAction(client, target, "\"%L\" initiated a slay vote against %N", client, target);
-	CShowActivity2(client, "[\x04NativeVotes\x01] ", "%t", "Initiated Vote Slay", playerName);
+	CShowActivity2(client, PLUGIN_PREFIX ... " %t", "Initiated Vote Slay", playerName);
 	
-	g_voteType = slay;
+	g_VoteType = slay;
 	
 	if (g_NativeVotes)
 	{
 		Handle hVoteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Custom_YesNo, view_as<MenuAction>(MENU_ACTIONS_ALL));
 		NativeVotes_SetTitle(hVoteMenu, "Voteslay Player");
 		NativeVotes_SetTarget(hVoteMenu, target);
-		NativeVotes_DisplayToAll(hVoteMenu, 20);
+		NativeVotes_DisplayToAll(hVoteMenu, g_ConVars[sv_vote_timer_duration].IntValue);
 	}
 	else
 	{
@@ -66,7 +66,7 @@ void DisplayVoteSlayMenu(int client, int target, char name[MAX_NAME_LENGTH])
 		AddMenuItem(hVoteMenu, VOTE_YES, "Yes");
 		AddMenuItem(hVoteMenu, VOTE_NO, "No");
 		SetMenuExitButton(hVoteMenu, false);
-		VoteMenuToAll(hVoteMenu, 20);
+		VoteMenuToAll(hVoteMenu, g_ConVars[sv_vote_timer_duration].IntValue);
 	}
 }
 
@@ -113,9 +113,9 @@ public int MenuHandler_Slay(Handle menu, MenuAction action, int param1, int para
 		}
 		case MenuAction_Cancel:
 		{
-			if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+			if (param2 == MenuCancel_ExitBack && g_TopMenu != INVALID_HANDLE)
 			{
-				DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
+				DisplayTopMenu(g_TopMenu, param1, TopMenuPosition_LastCategory);
 			}
 		}
 		case MenuAction_Select:
@@ -127,15 +127,15 @@ public int MenuHandler_Slay(Handle menu, MenuAction action, int param1, int para
 			
 			if ((target = GetClientOfUserId(userid)) == 0)
 			{
-				CPrintToChat(param1, "[SM] %t", "Player no longer available");
+				CPrintToChat(param1, PLUGIN_PREFIX ... " %t", "Player no longer available");
 			}
 			else if (!CanUserTarget(param1, target))
 			{
-				CPrintToChat(param1, "[SM] %t", "Unable to target");
+				CPrintToChat(param1, PLUGIN_PREFIX ... " %t", "Unable to target");
 			}
 			else if (!IsPlayerAlive(target))
 			{
-				CPrintToChat(param1, "[SM] %t", "Player has since died");
+				CPrintToChat(param1, PLUGIN_PREFIX ... " %t", "Player has since died");
 			}
 			else
 			{
@@ -151,13 +151,13 @@ public Action Command_VoteSlay(int client, int args)
 {
 	if (args < 1)
 	{
-		CReplyToCommand(client, "[\x04NativeVotes\x01] Usage: sm_voteslay <player>");
+		CReplyToCommand(client, PLUGIN_PREFIX ... " Usage: sm_voteslay <player>");
 		return Plugin_Handled;
 	}
 	
 	if (Internal_IsVoteInProgress())
 	{
-		CReplyToCommand(client, "[\x04NativeVotes\x01] %t", "Vote in Progress");
+		CReplyToCommand(client, PLUGIN_PREFIX ... " %t", "Vote in Progress");
 		return Plugin_Handled;
 	}
 	

@@ -16,7 +16,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Medieval Auto-RP",
 	author = "Heapons",
 	description = "Provides Medieval Auto-RP voting.",
-	version = "26w07a",
+	version = "26w08a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -24,7 +24,7 @@ enum
 {
     tf_medieval,
     tf_medieval_autorp,
-    vote_duration,
+    sv_vote_timer_duration,
 
     MAX_CONVARS
 }
@@ -42,7 +42,7 @@ public void OnPluginStart()
         SetFailState("This game doesn't support Medieval Mode.");
     }
 
-    g_ConVars[vote_duration] = CreateConVar("sm_voterp_voteduration", "20", "Specifies how long the rp vote should be available for.", _, true, 5.0);
+    g_ConVars[sv_vote_timer_duration] = FindConVar("sv_vote_timer_duration");
 
     RegConsoleCmd("sm_voterp", Command_VoteRP, "Vote to toggle 'tf_medieval_autorp'.");
 }
@@ -111,7 +111,7 @@ Action Command_VoteRP(int client, int args)
 
     bool enabled = g_ConVars[tf_medieval_autorp].BoolValue;
     char title[64];
-    Format(title, sizeof(title), "Turn Medieval Auto-RP %s?", enabled ? "off" : "on");
+    Format(title, sizeof(title), "%s Medieval Mode auto-roleplaying?", enabled ? "Disable" : "Enable");
 
     if (g_NativeVotes)
     {
@@ -120,7 +120,7 @@ Action Command_VoteRP(int client, int args)
         NativeVotes_SetInitiator(vote, client);
         NativeVotes_AddItem(vote, enabled ? "0" : "1", enabled ? "Disable" : "Enable");
         NativeVotes_AddItem(vote, enabled ? "1" : "0", enabled ? "Enable" : "Disable");
-        NativeVotes_DisplayToAll(vote, g_ConVars[vote_duration].IntValue);
+        NativeVotes_DisplayToAll(vote, g_ConVars[sv_vote_timer_duration].IntValue);
     }
     else
     {
@@ -129,7 +129,7 @@ Action Command_VoteRP(int client, int args)
         menu.AddItem(enabled ? "0" : "1", enabled ? "Disable" : "Enable");
         menu.AddItem(enabled ? "1" : "0", enabled ? "Enable" : "Disable");
         menu.ExitButton = false;
-        menu.DisplayVoteToAll(g_ConVars[vote_duration].IntValue);
+        menu.DisplayVoteToAll(g_ConVars[sv_vote_timer_duration].IntValue);
     }
 
     return Plugin_Handled;
@@ -146,7 +146,7 @@ int VoteHandler(NativeVote vote, MenuAction action, int param1, int param2)
             NativeVotes_GetItem(vote, item, info, sizeof(info));
             int value = StringToInt(info);
             g_ConVars[tf_medieval_autorp].SetInt(value);
-            NativeVotes_DisplayPass(vote, "tf_medieval_autorp set to %d", value);
+            NativeVotes_DisplayPass(vote, "Set 'tf_medieval_autorp' to %s...", value ? "true" : "false");
         }
         case MenuAction_End:
         {

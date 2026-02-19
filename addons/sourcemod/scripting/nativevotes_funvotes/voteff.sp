@@ -36,7 +36,7 @@ void DisplayVoteFFMenu(int client)
 {
 	if (Internal_IsVoteInProgress())
 	{
-		CReplyToCommand(client, "[\x04NativeVotes\x01] %t", "Vote in Progress");
+		CReplyToCommand(client, PLUGIN_PREFIX ... " %t", "Vote in Progress");
 		return;
 	}	
 	
@@ -46,10 +46,10 @@ void DisplayVoteFFMenu(int client)
 	}
 	
 	LogAction(client, -1, "\"%L\" initiated a friendly fire vote.", client);
-	CShowActivity2(client, "[\x04NativeVotes\x01] ", "%t", "Initiated Vote FF");
+	CShowActivity2(client, PLUGIN_PREFIX ... " %t", "Initiated Vote FF");
 	
-	g_voteType = voteType:ff;
-	g_voteInfo[VOTE_NAME][0] = '\0';
+	g_VoteType = ff;
+	g_VoteInfo[VOTE_NAME][0] = '\0';
 	
 	if (g_NativeVotes)
 	{
@@ -63,7 +63,7 @@ void DisplayVoteFFMenu(int client)
 		{
 			NativeVotes_SetTitle(hVoteMenu, "Voteff On");
 		}
-		NativeVotes_DisplayToAll(hVoteMenu, 20);		
+		NativeVotes_DisplayToAll(hVoteMenu, g_ConVars[sv_vote_timer_duration].IntValue);		
 	}
 	else
 	{
@@ -81,7 +81,7 @@ void DisplayVoteFFMenu(int client)
 		AddMenuItem(hVoteMenu, VOTE_YES, "Yes");
 		AddMenuItem(hVoteMenu, VOTE_NO, "No");
 		SetMenuExitButton(hVoteMenu, false);
-		VoteMenuToAll(hVoteMenu, 20);
+		VoteMenuToAll(hVoteMenu, g_ConVars[sv_vote_timer_duration].IntValue);
 	}
 }
 
@@ -109,7 +109,7 @@ public Action Command_VoteFF(int client, int args)
 {
 	if (args > 0)
 	{
-		CReplyToCommand(client, "[\x04NativeVotes\x01] Usage: sm_voteff");
+		CReplyToCommand(client, PLUGIN_PREFIX ... " Usage: sm_voteff");
 		return Plugin_Handled;
 	}
 	

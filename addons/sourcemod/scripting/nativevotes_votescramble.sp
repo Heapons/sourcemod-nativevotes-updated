@@ -13,7 +13,7 @@ public Plugin myinfo =
     name = "NativeVotes | Scramble Teams",
     author = "Heapons",
     description = "Provides RTV-style Scramble Teams Voting",
-    version = "26w07a",
+    version = "26w08a",
     url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -26,6 +26,7 @@ enum
     full_reset,
     mp_match_end_at_timelimit,
     mp_timelimit,
+    sv_vote_timer_duration,
 
     MAX_CONVARS
 }
@@ -72,12 +73,13 @@ public void OnPluginStart()
     g_ConVars[full_reset]                = CreateConVar("sm_scrambleteams_full_reset", "1", "Whether time/rounds played should reset after a scramble is triggered ", 0, true, 0.0, true, 1.0);
     g_ConVars[mp_match_end_at_timelimit] = FindConVar("mp_match_end_at_timelimit");
     g_ConVars[mp_timelimit]              = FindConVar("mp_timelimit");
+    g_ConVars[sv_vote_timer_duration]    = FindConVar("sv_vote_timer_duration");
 
     RegConsoleCmd("sm_votescramble", Command_VoteScramble);
     RegConsoleCmd("sm_scramble", Command_VoteScramble);
 
-    RegAdminCmd("sm_forcescramble", Command_ForceScramble, ADMFLAG_CHANGEMAP);
-    RegAdminCmd("sm_resetscramble", Command_ResetScramble, ADMFLAG_CHANGEMAP);
+    RegAdminCmd("sm_forcescramble", Command_ForceScramble, ADMFLAG_VOTE);
+    RegAdminCmd("sm_resetscramble", Command_ResetScramble, ADMFLAG_VOTE);
 
     AutoExecConfig(true, "votescramble");
 
@@ -357,9 +359,7 @@ void StartScramble()
     {
         NativeVote vote = NativeVotes_Create(ScrambleVoteHandler, NativeVotesType_ScrambleNow);
         NativeVotes_SetTitle(vote, "%t", "Scramble Teams");
-        NativeVotes_AddItem(vote, "yes", yes);
-        NativeVotes_AddItem(vote, "no", no);
-        NativeVotes_DisplayToAll(vote, 20);
+        NativeVotes_DisplayToAll(vote, g_ConVars[sv_vote_timer_duration].IntValue);
         NativeVotes_SetResultCallback(vote, ScrambleVoteResult);
     }
     else
@@ -373,7 +373,7 @@ void StartScramble()
         {
             if (IsClientInGame(i) && !IsFakeClient(i))
             {
-                menu.Display(i, 20);
+                menu.Display(i, g_ConVars[sv_vote_timer_duration].IntValue);
             }
         }
     }
@@ -426,11 +426,7 @@ public Action Menu_ScrambleTeams(int client, NativeVotesOverride overrideType, c
 
 int ScrambleVoteHandler(NativeVote vote, MenuAction action, int param1, int param2)
 {
-    if (action == MenuAction_VoteEnd)
-    {
-        // handled by result callback
-    }
-    else if (action == MenuAction_End)
+    if (action == MenuAction_End)
     {
         NativeVotes_Close(vote);
     }

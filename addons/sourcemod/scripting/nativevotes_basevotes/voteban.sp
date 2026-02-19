@@ -34,26 +34,26 @@
 
 void DisplayVoteBanMenu(int client, int target)
 {
-	g_voteClient[VOTE_CLIENTID] = target;
-	g_voteClient[VOTE_USERID] = GetClientUserId(target);
+	g_VoteClient[VOTE_CLIENTID] = target;
+	g_VoteClient[VOTE_USERID] = GetClientUserId(target);
 
 	char playerName[MAX_NAME_LENGTH];
 	GetPlayerName(target, playerName, sizeof(playerName));
 
-	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
-	GetClientIP(target, g_voteInfo[VOTE_IP], sizeof(g_voteInfo[]));
+	GetClientName(target, g_VoteInfo[VOTE_NAME], sizeof(g_VoteInfo[]));
+	GetClientIP(target, g_VoteInfo[VOTE_IP], sizeof(g_VoteInfo[]));
 
 	LogAction(client, target, "\"%L\" initiated a ban vote against %s", client, playerName);
-	CShowActivity2(client, "[\x04NativeVotes\x01] ", "%t", "Initiated Vote Ban", playerName);
+	CShowActivity2(client, PLUGIN_PREFIX ... " ", "%t", "Initiated Vote Ban", playerName);
 
-	g_voteType = ban;
+	g_VoteType = ban;
 	
 	if (g_NativeVotes)
 	{
 		Handle voteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Custom_YesNo, view_as<MenuAction>(MENU_ACTIONS_ALL));
 		NativeVotes_SetTitle(voteMenu, "Voteban Player");
 		NativeVotes_SetTarget(voteMenu, target);
-		NativeVotes_DisplayToAll(voteMenu, 20);
+		NativeVotes_DisplayToAll(voteMenu, g_ConVars[sv_vote_timer_duration].IntValue);
 	}
 	else
 	{
@@ -62,7 +62,7 @@ void DisplayVoteBanMenu(int client, int target)
 		AddMenuItem(voteMenu, VOTE_YES, "Yes");
 		AddMenuItem(voteMenu, VOTE_NO, "No");
 		SetMenuExitButton(voteMenu, false);
-		VoteMenuToAll(voteMenu, 20);
+		VoteMenuToAll(voteMenu, g_ConVars[sv_vote_timer_duration].IntValue);
 	}
 }
 
@@ -104,9 +104,9 @@ public int MenuHandler_Ban(Handle menu, MenuAction action, int param1, int param
 		}
 		case MenuAction_Cancel:
 		{
-			if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+			if (param2 == MenuCancel_ExitBack && g_TopMenu != INVALID_HANDLE)
 			{
-				DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
+				DisplayTopMenu(g_TopMenu, param1, TopMenuPosition_LastCategory);
 			}
 		}
 		case MenuAction_Select:
@@ -117,15 +117,15 @@ public int MenuHandler_Ban(Handle menu, MenuAction action, int param1, int param
 			userid = StringToInt(info);
 			if ((target = GetClientOfUserId(userid)) == 0)
 			{
-				CPrintToChat(param1, "[\x04NativeVotes\x01] %t", "Player no longer available");
+				CPrintToChat(param1, PLUGIN_PREFIX ... " %t", "Player no longer available");
 			}
 			else if (!CanUserTarget(param1, target))
 			{
-				CPrintToChat(param1, "[\x04NativeVotes\x01] %t", "Unable to target");
+				CPrintToChat(param1, PLUGIN_PREFIX ... " %t", "Unable to target");
 			}
 			else
 			{
-				g_voteArg[0] = '\0';
+				g_VoteArg[0] = '\0';
 				DisplayVoteBanMenu(param1, target);
 			}
 		}
@@ -138,13 +138,13 @@ public Action Command_Voteban(int client, int args)
 {
 	if (args < 1)
 	{
-		CReplyToCommand(client, "[\x04NativeVotes\x01] Usage: sm_voteban <player> [reason]");
+		CReplyToCommand(client, PLUGIN_PREFIX ... " Usage: sm_voteban <player> [reason]");
 		return Plugin_Handled;
 	}
 	
 	if (Internal_IsVoteInProgress())
 	{
-		CReplyToCommand(client, "[\x04NativeVotes\x01] %t", "Vote in Progress");
+		CReplyToCommand(client, PLUGIN_PREFIX ... " %t", "Vote in Progress");
 		return Plugin_Handled;
 	}
 	
@@ -158,11 +158,11 @@ public Action Command_Voteban(int client, int args)
 	int len = BreakString(text, arg, sizeof(arg));
 	if (len != -1)
 	{
-		strcopy(g_voteArg, sizeof(g_voteArg), text[len]);
+		strcopy(g_VoteArg, sizeof(g_VoteArg), text[len]);
 	}
 	else
 	{
-		g_voteArg[0] = '\0';
+		g_VoteArg[0] = '\0';
 	}
 
 	char target_name[MAX_TARGET_LENGTH];

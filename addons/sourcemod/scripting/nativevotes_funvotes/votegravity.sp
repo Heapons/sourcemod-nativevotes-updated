@@ -35,16 +35,16 @@
 void DisplayVoteGravityMenu(int client, int count, char items[5][64])
 {
 	LogAction(client, -1, "\"%L\" initiated a gravity vote.", client);
-	CShowActivity2(client, "[\x04NativeVotes\x01] ", "%t", "Initiated Vote Gravity");
+	CShowActivity2(client, PLUGIN_PREFIX ... " %t", "Initiated Vote Gravity");
 	
-	g_voteType = voteType:gravity;
+	g_VoteType = gravity;
 	
 	if (g_NativeVotes && (count == 1 || NativeVotes_IsVoteTypeSupported(NativeVotesType_Custom_Mult)) )
 	{
 		Handle hVoteMenu;
 		if (count == 1)
 		{
-			strcopy(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]), items[0]);
+			strcopy(g_VoteInfo[VOTE_NAME], sizeof(g_VoteInfo[]), items[0]);
 
 			hVoteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Custom_YesNo, view_as<MenuAction>(MENU_ACTIONS_ALL));
 			NativeVotes_SetTitle(hVoteMenu, "Change Gravity To");
@@ -54,12 +54,12 @@ void DisplayVoteGravityMenu(int client, int count, char items[5][64])
 		{
 			hVoteMenu = NativeVotes_Create(Handler_NativeVoteCallback, NativeVotesType_Custom_Mult, view_as<MenuAction>(MENU_ACTIONS_ALL));
 			NativeVotes_SetTitle(hVoteMenu, "Gravity Vote");
-			for (new i = 0; i < count; i++)
+			for (int i = 0; i < count; i++)
 			{
 				NativeVotes_AddItem(hVoteMenu, items[i], items[i]);
 			}	
 		}
-		NativeVotes_DisplayToAll(hVoteMenu, 20);
+		NativeVotes_DisplayToAll(hVoteMenu, g_ConVars[sv_vote_timer_duration].IntValue);
 	}
 	else
 	{
@@ -67,7 +67,7 @@ void DisplayVoteGravityMenu(int client, int count, char items[5][64])
 		
 		if (count == 1)
 		{
-			strcopy(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]), items[0]);
+			strcopy(g_VoteInfo[VOTE_NAME], sizeof(g_VoteInfo[]), items[0]);
 				
 			SetMenuTitle(hVoteMenu, "Change Gravity To");
 			AddMenuItem(hVoteMenu, items[0], "Yes");
@@ -75,17 +75,17 @@ void DisplayVoteGravityMenu(int client, int count, char items[5][64])
 		}
 		else
 		{
-			g_voteInfo[VOTE_NAME][0] = '\0';
+			g_VoteInfo[VOTE_NAME][0] = '\0';
 			
 			SetMenuTitle(hVoteMenu, "Gravity Vote");
-			for (new i = 0; i < count; i++)
+			for (int i = 0; i < count; i++)
 			{
 				AddMenuItem(hVoteMenu, items[i], items[i]);
 			}	
 		}
 		
 		SetMenuExitButton(hVoteMenu, false);
-		VoteMenuToAll(hVoteMenu, 20);
+		VoteMenuToAll(hVoteMenu, g_ConVars[sv_vote_timer_duration].IntValue);
 	}
 }
 
@@ -112,13 +112,13 @@ public Action Command_VoteGravity(int client, int args)
 {
 	if (args < 1)
 	{
-		CReplyToCommand(client, "[\x04NativeVotes\x01] Usage: sm_votegravity <amount> [amount2] ... [amount5]");
+		CReplyToCommand(client, PLUGIN_PREFIX ... " Usage: sm_votegravity <amount> [amount2] ... [amount5]");
 		return Plugin_Handled;
 	}
 	
 	if (Internal_IsVoteInProgress())
 	{
-		CReplyToCommand(client, "[\x04NativeVotes\x01] %t", "Vote in Progress");
+		CReplyToCommand(client, PLUGIN_PREFIX ... " %t", "Vote in Progress");
 		return Plugin_Handled;
 	}
 	
@@ -141,7 +141,7 @@ public Action Command_VoteGravity(int client, int args)
 		float temp;
 		if (StringToFloatEx(items[count], temp) == 0)
 		{
-			CReplyToCommand(client, "[\x04NativeVotes\x01] %t", "Invalid Amount");
+			CReplyToCommand(client, PLUGIN_PREFIX ... " %t", "Invalid Amount");
 			return Plugin_Handled;
 		}
 

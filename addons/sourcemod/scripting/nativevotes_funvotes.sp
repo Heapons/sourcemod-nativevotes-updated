@@ -42,12 +42,14 @@
 #include <adminmenu>
 #include <nativevotes>
 
+#define PLUGIN_PREFIX "[\x04NativeVotes\x01]"
+
 public Plugin myinfo =
 {
 	name = "NativeVotes | Fun Votes",
 	author = "Powerlord and AlliedModders LLC",
 	description = "NativeVotes Fun Vote Commands",
-	version = "26w07a",
+	version = "26w08a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -61,6 +63,7 @@ enum
 	sv_gravity,
 	sv_alltalk,
 	mp_friendlyfire,
+	sv_vote_timer_duration,
 
 	vote_gravity,
 	vote_burn,
@@ -73,7 +76,7 @@ enum
 
 ConVar g_ConVars[MAX_CONVARS];
 
-enum voteType
+enum VoteType
 {
 	gravity,
 	burn,
@@ -82,21 +85,21 @@ enum voteType
 	ff
 };
 
-voteType g_voteType = gravity;
+VoteType g_VoteType = gravity;
 
 // Menu API does not provide us with a way to pass multiple peices of data with a single
 // choice, so some globals are used to hold stuff.
 //
 #define VOTE_CLIENTID 0
 #define VOTE_USERID 1
-int g_voteClient[2];        // Holds the target's client id and user id
+int g_VoteClient[2];        // Holds the target's client id and user id
 
 #define VOTE_NAME 0
 #define VOTE_AUTHID 1
 #define VOTE_IP 2
-char g_voteInfo[3][65];    // Holds the target's name, authid, and IP
+char g_VoteInfo[3][65];    // Holds the target's name, authid, and IP
 
-Handle hTopMenu;
+Handle g_TopMenu;
 
 // NativeVotes
 bool g_NativeVotes;
@@ -120,15 +123,16 @@ public void OnPluginStart()
 	RegAdminCmd("sm_votealltalk", Command_VoteAlltalk, ADMFLAG_VOTE, "sm_votealltalk");
 	RegAdminCmd("sm_voteff", Command_VoteFF, ADMFLAG_VOTE, "sm_voteff");
 
-	g_ConVars[sv_gravity] 	   = FindConVar("sv_gravity");
-	g_ConVars[sv_alltalk] 	   = FindConVar("sv_alltalk");
-	g_ConVars[mp_friendlyfire] = FindConVar("mp_friendlyfire");
-	g_ConVars[vote_gravity]    = CreateConVar("sm_vote_gravity", "0.60", "Percent required for successful gravity vote.", 0, true, 0.05, true, 1.0);
-	g_ConVars[vote_burn] 	   = CreateConVar("sm_vote_burn", "0.60", "Percent required for successful burn vote.", 0, true, 0.05, true, 1.0);
-	g_ConVars[vote_slay] 	   = CreateConVar("sm_vote_slay", "0.60", "Percent required for successful slay vote.", 0, true, 0.05, true, 1.0);
-	g_ConVars[vote_alltalk]    = CreateConVar("sm_vote_alltalk", "0.60", "Percent required for successful alltalk vote.", 0, true, 0.05, true, 1.0);
-	g_ConVars[vote_ff] 		   = CreateConVar("sm_vote_ff", "0.60", "Percent required for successful friendly fire vote.", 0, true, 0.05, true, 1.0);
-	}
+	g_ConVars[sv_gravity] 	   		  = FindConVar("sv_gravity");
+	g_ConVars[sv_alltalk] 	   		  = FindConVar("sv_alltalk");
+	g_ConVars[mp_friendlyfire] 		  = FindConVar("mp_friendlyfire");
+	g_ConVars[sv_vote_timer_duration] = FindConVar("sv_vote_timer_duration");
+	g_ConVars[vote_gravity]    		  = CreateConVar("sm_vote_gravity", "0.60", "Percent required for successful gravity vote.", 0, true, 0.05, true, 1.0);
+	g_ConVars[vote_burn] 	   		  = CreateConVar("sm_vote_burn", "0.60", "Percent required for successful burn vote.", 0, true, 0.05, true, 1.0);
+	g_ConVars[vote_slay] 	   		  = CreateConVar("sm_vote_slay", "0.60", "Percent required for successful slay vote.", 0, true, 0.05, true, 1.0);
+	g_ConVars[vote_alltalk]    		  = CreateConVar("sm_vote_alltalk", "0.60", "Percent required for successful alltalk vote.", 0, true, 0.05, true, 1.0);
+	g_ConVars[vote_ff] 		   		  = CreateConVar("sm_vote_ff", "0.60", "Percent required for successful friendly fire vote.", 0, true, 0.05, true, 1.0);
+}
 
 public void OnAllPluginsLoaded()
 {
@@ -179,7 +183,7 @@ public void OnLibraryRemoved(const char[] name)
 {
 	if (StrEqual(name, "adminmenu"))
 	{
-		hTopMenu = null;
+		g_TopMenu = null;
 	}
 	else if (StrEqual(name, "nativevotes"))
 	{
@@ -190,20 +194,20 @@ public void OnLibraryRemoved(const char[] name)
 public void OnAdminMenuReady(Handle topmenu)
 {
 	/* Block us from being called twice */
-	if (topmenu == hTopMenu)
+	if (topmenu == g_TopMenu)
 	{
 		return;
 	}
 	
 	/* Save the Handle */
-	hTopMenu = topmenu;
+	g_TopMenu = topmenu;
 	
 	/* Build the "Voting Commands" category */
-	TopMenuObject voting_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_VOTINGCOMMANDS);
+	TopMenuObject voting_commands = FindTopMenuCategory(g_TopMenu, ADMINMENU_VOTINGCOMMANDS);
 	
 	if (voting_commands != INVALID_TOPMENUOBJECT)
 	{
-		AddToTopMenu(hTopMenu,
+		AddToTopMenu(g_TopMenu,
 			"sm_votegravity",
 			TopMenuObject_Item,
 			AdminMenu_VoteGravity,
@@ -211,7 +215,7 @@ public void OnAdminMenuReady(Handle topmenu)
 			"sm_votegravity",
 			ADMFLAG_VOTE);
 		
-		AddToTopMenu(hTopMenu,
+		AddToTopMenu(g_TopMenu,
 			"sm_voteburn",
 			TopMenuObject_Item,
 			AdminMenu_VoteBurn,
@@ -219,7 +223,7 @@ public void OnAdminMenuReady(Handle topmenu)
 			"sm_voteburn",
 			ADMFLAG_VOTE|ADMFLAG_SLAY);
 		
-		AddToTopMenu(hTopMenu,
+		AddToTopMenu(g_TopMenu,
 			"sm_voteslay",
 			TopMenuObject_Item,
 			AdminMenu_VoteSlay,
@@ -227,7 +231,7 @@ public void OnAdminMenuReady(Handle topmenu)
 			"sm_voteslay",
 			ADMFLAG_VOTE|ADMFLAG_SLAY);
 		
-		AddToTopMenu(hTopMenu,
+		AddToTopMenu(g_TopMenu,
 			"sm_votealltalk",
 			TopMenuObject_Item,
 			AdminMenu_VoteAllTalk,
@@ -235,7 +239,7 @@ public void OnAdminMenuReady(Handle topmenu)
 			"sm_votealltalk",
 			ADMFLAG_VOTE);
 		
-		AddToTopMenu(hTopMenu,
+		AddToTopMenu(g_TopMenu,
 			"sm_voteff",
 			TopMenuObject_Item,
 			AdminMenu_VoteFF,
@@ -261,7 +265,7 @@ public int Handler_VoteCallback(Handle menu, MenuAction action, int param1, int 
 			GetMenuTitle(menu, title, sizeof(title));
 			
 			char buffer[255];
-			Format(buffer, sizeof(buffer), "%T", title, param1, g_voteInfo[VOTE_NAME]);
+			Format(buffer, sizeof(buffer), "%T", title, param1, g_VoteInfo[VOTE_NAME]);
 
 			Handle panel = view_as<Handle>(param2);
 			SetPanelTitle(panel, buffer);
@@ -305,14 +309,14 @@ public int Handler_VoteCallback(Handle menu, MenuAction action, int param1, int 
 			
 			percent = GetVotePercent(votes, totalVotes);
 			
-			limit = GetConVarFloat(g_ConVars[g_voteType]);
+			limit = GetConVarFloat(g_ConVars[g_VoteType]);
 			
-			// :TODO: g_voteClient[userid] needs to be checked
+			// :TODO: g_VoteClient[userid] needs to be checked
 
 			// A multi-argument vote is "always successful", but have to check if its a Yes/No vote.
 			if ((strcmp(item, VOTE_YES) == 0 && FloatCompare(percent,limit) < 0 && param1 == 0) || (strcmp(item, VOTE_NO) == 0 && param1 == 1))
 			{
-				/* :TODO: g_voteClient[userid] should be used here and set to -1 if not applicable.
+				/* :TODO: g_VoteClient[userid] should be used here and set to -1 if not applicable.
 				 */
 				LogAction(-1, -1, "Vote failed.");
 				CPrintToChatAll("%t", "Vote Failed", RoundToNearest(100.0*limit), RoundToNearest(100.0*percent), totalVotes);
@@ -322,9 +326,9 @@ public int Handler_VoteCallback(Handle menu, MenuAction action, int param1, int 
 				CPrintToChatAll("%t", "Vote Successful", RoundToNearest(100.0*percent), totalVotes);
 				
 				char name[MAX_NAME_LENGTH];
-				GetPlayerName(g_voteClient[VOTE_CLIENTID], name, sizeof(name));
+				GetPlayerName(g_VoteClient[VOTE_CLIENTID], name, sizeof(name));
 
-				switch (g_voteType)
+				switch (g_VoteType)
 				{
 					case gravity:
 					{
@@ -334,18 +338,18 @@ public int Handler_VoteCallback(Handle menu, MenuAction action, int param1, int 
 					}
 					case burn:
 					{
-						CPrintToChatAllEx(g_voteClient[VOTE_CLIENTID], "%t", "Set target on fire", "_s", name);                    
-						LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote burn successful, igniting \"%L\"", g_voteClient[VOTE_CLIENTID]);
+						CPrintToChatAllEx(g_VoteClient[VOTE_CLIENTID], "%t", "Set target on fire", "_s", name);                    
+						LogAction(-1, g_VoteClient[VOTE_CLIENTID], "Vote burn successful, igniting \"%L\"", g_VoteClient[VOTE_CLIENTID]);
 						
-						IgniteEntity(g_voteClient[VOTE_CLIENTID], 19.8);	
+						IgniteEntity(g_VoteClient[VOTE_CLIENTID], 19.8);	
 					}
 					case slay:
 					{
-						CPrintToChatAllEx(g_voteClient[VOTE_CLIENTID], "%t", "Slayed player", "_s", name);						
-						LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote slay successful, slaying \"%L\"", g_voteClient[VOTE_CLIENTID]);
+						CPrintToChatAllEx(g_VoteClient[VOTE_CLIENTID], "%t", "Slayed player", "_s", name);						
+						LogAction(-1, g_VoteClient[VOTE_CLIENTID], "Vote slay successful, slaying \"%L\"", g_VoteClient[VOTE_CLIENTID]);
 						
-						ExtinguishEntity(g_voteClient[VOTE_CLIENTID]);
-						ForcePlayerSuicide(g_voteClient[VOTE_CLIENTID]);
+						ExtinguishEntity(g_VoteClient[VOTE_CLIENTID]);
+						ForcePlayerSuicide(g_VoteClient[VOTE_CLIENTID]);
 					}
 					case alltalk:
 					{
@@ -385,7 +389,7 @@ public int Handler_NativeVoteCallback(Handle menu, MenuAction action, int param1
 				NativeVotes_GetTitle(menu, title, sizeof(title));
 				
 				char buffer[255];
-				Format(buffer, sizeof(buffer), "%T", title, param1, g_voteInfo[VOTE_NAME]);
+				Format(buffer, sizeof(buffer), "%T", title, param1, g_VoteInfo[VOTE_NAME]);
 				
 				return NativeVotes_RedrawVoteTitle(buffer);
 			}
@@ -422,14 +426,14 @@ public int Handler_NativeVoteCallback(Handle menu, MenuAction action, int param1
 			
 			percent = GetVotePercent(votes, totalVotes);
 			
-			limit = GetConVarFloat(g_ConVars[g_voteType]);
+			limit = GetConVarFloat(g_ConVars[g_VoteType]);
 			
-			// :TODO: g_voteClient[userid] needs to be checked
+			// :TODO: g_VoteClient[userid] needs to be checked
 
 			// A multi-argument vote is "always successful", but have to check if its a Yes/No vote.
 			if ((nVoteType != NativeVotesType_NextLevelMult && nVoteType != NativeVotesType_Custom_Mult) && ((param1 == NATIVEVOTES_VOTE_YES && FloatCompare(percent,limit) < 0) || (param1 == NATIVEVOTES_VOTE_NO)))
 			{
-				/* :TODO: g_voteClient[userid] should be used here and set to -1 if not applicable.
+				/* :TODO: g_VoteClient[userid] should be used here and set to -1 if not applicable.
 				 */
 				NativeVotes_DisplayFail(menu, NativeVotesFail_Loses);
 				LogAction(-1, -1, "Vote failed.");
@@ -439,7 +443,7 @@ public int Handler_NativeVoteCallback(Handle menu, MenuAction action, int param1
 			{
 				CPrintToChatAll("%t", "Vote Successful", RoundToNearest(100.0*percent), totalVotes);
 				
-				switch (g_voteType)
+				switch (g_VoteType)
 				{
 					case gravity:
 					{
@@ -451,21 +455,21 @@ public int Handler_NativeVoteCallback(Handle menu, MenuAction action, int param1
 					
 					case burn:
 					{
-						CPrintToChatAll("%t", "Set target on fire", "_s", g_voteInfo[VOTE_NAME]);
-						NativeVotes_DisplayPassCustom(menu, "%t", "Set target on fire", "_s", g_voteInfo[VOTE_NAME]);
-						LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote burn successful, igniting \"%L\"", g_voteClient[VOTE_CLIENTID]);
+						CPrintToChatAll("%t", "Set target on fire", "_s", g_VoteInfo[VOTE_NAME]);
+						NativeVotes_DisplayPassCustom(menu, "%t", "Set target on fire", "_s", g_VoteInfo[VOTE_NAME]);
+						LogAction(-1, g_VoteClient[VOTE_CLIENTID], "Vote burn successful, igniting \"%L\"", g_VoteClient[VOTE_CLIENTID]);
 						
-						IgniteEntity(g_voteClient[VOTE_CLIENTID], 19.8);	
+						IgniteEntity(g_VoteClient[VOTE_CLIENTID], 19.8);	
 					}
 					
 					case slay:
 					{
-						CPrintToChatAll("%t", "Slayed player", g_voteInfo[VOTE_NAME]);
-						NativeVotes_DisplayPassCustom(menu, "%t", "Slayed player", g_voteInfo[VOTE_NAME]);
-						LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote slay successful, slaying \"%L\"", g_voteClient[VOTE_CLIENTID]);
+						CPrintToChatAll("%t", "Slayed player", g_VoteInfo[VOTE_NAME]);
+						NativeVotes_DisplayPassCustom(menu, "%t", "Slayed player", g_VoteInfo[VOTE_NAME]);
+						LogAction(-1, g_VoteClient[VOTE_CLIENTID], "Vote slay successful, slaying \"%L\"", g_VoteClient[VOTE_CLIENTID]);
 						
-						ExtinguishEntity(g_voteClient[VOTE_CLIENTID]);
-						ForcePlayerSuicide(g_voteClient[VOTE_CLIENTID]);
+						ExtinguishEntity(g_VoteClient[VOTE_CLIENTID]);
+						ForcePlayerSuicide(g_VoteClient[VOTE_CLIENTID]);
 					}
 					
 					case alltalk:
@@ -499,6 +503,11 @@ float GetVotePercent(int votes, int totalVotes)
 bool TestVoteDelay(int client)
 {
 	int delay = Internal_CheckVoteDelay();
+	if (client <= 0 || GetUserFlagBits(client) & ADMFLAG_GENERIC)
+	{
+		delay = 0;
+	}
+
 	if (delay > 0)
 	{
 		if (delay > 60)
