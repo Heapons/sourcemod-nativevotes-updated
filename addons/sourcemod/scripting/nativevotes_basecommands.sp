@@ -43,14 +43,14 @@
 
 #define PLUGIN_PREFIX "[\x04NativeVotes\x01]"
 
-TopMenu hTopMenu;
+TopMenu g_TopMenu;
 
 public Plugin myinfo = 
 {
 	name = "NativeVotes | Basic Commands",
 	author = "Powerlord and AlliedModders LLC",
 	description = "Revote and Cancel support for NativeVotes",
-	version = "26w07a",
+	version = "26w08a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 }
 
@@ -71,7 +71,7 @@ bool PerformCancelVote(int client)
 		return false;
 	}
 
-	CShowActivity2(client, "[\x04NativeVotes\x01] ", "%t", "Cancelled Vote");
+	CShowActivity2(client, PLUGIN_PREFIX ... " ", "%t", "Cancelled Vote");
 	
 	NativeVotes_Cancel();
 	return true;
@@ -199,19 +199,19 @@ public void OnAdminMenuReady(Handle aTopMenu)
 	TopMenu topmenu = TopMenu.FromHandle(aTopMenu);
 	
 	/* Block us from being called twice */
-	if (topmenu == hTopMenu)
+	if (topmenu == g_TopMenu)
 	{
 		return;
 	}
 	
 	/* Save the Handle */
-	hTopMenu = topmenu;
+	g_TopMenu = topmenu;
 	
-	TopMenuObject voting_commands = hTopMenu.FindCategory(ADMINMENU_VOTINGCOMMANDS);
+	TopMenuObject voting_commands = g_TopMenu.FindCategory(ADMINMENU_VOTINGCOMMANDS);
 
 	if (voting_commands != INVALID_TOPMENUOBJECT)
 	{
-		hTopMenu.AddItem("sm_cancelvote", AdminMenu_CancelVote, voting_commands, "sm_cancelvote", ADMFLAG_VOTE);
+		g_TopMenu.AddItem("sm_cancelvote", AdminMenu_CancelVote, voting_commands, "sm_cancelvote", ADMFLAG_VOTE);
 	}
 }
 
@@ -219,6 +219,6 @@ public void OnLibraryRemoved(const char[] name)
 {
 	if (strcmp(name, "adminmenu") == 0)
 	{
-		hTopMenu = null;
+		g_TopMenu = null;
 	}
 }

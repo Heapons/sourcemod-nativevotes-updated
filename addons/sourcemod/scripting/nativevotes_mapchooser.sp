@@ -58,7 +58,7 @@ public Plugin myinfo =
 	name = "NativeVotes | MapChooser",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Automated Map Voting",
-	version = "26w07a",
+	version = "26w08a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -419,7 +419,7 @@ public Action Command_SetNextMap(int client, int args)
 	GetMapDisplayName(displayName, displayName, sizeof(displayName));
 	Format(displayName, sizeof(displayName), "\x05%s\x01", displayName);
 	
-	CShowActivity2(client, "[\x04MapChooser\x01] ", "%t", "Changed Next Map", displayName);
+	CShowActivity2(client, PLUGIN_PREFIX ... " ", "%t", "Changed Next Map", displayName);
 	if (client > 0)
 	{
 		LogAction(client, -1, "\"%L\" changed nextmap to \"%s\"", client, map);
@@ -1037,7 +1037,7 @@ public void Handler_NV_MapVoteFinished(NativeVote menu, int num_votes, int num_c
 		
 		if (winningvotes < required)
 		{
-			//Added in 1.5.1
+						//Added in 1.5.1
 			menu.DisplayFail(NativeVotesFail_NotEnoughVotes);
 			
 			/* Insufficient Winning margin - Lets do a runoff */
@@ -1064,9 +1064,8 @@ public void Handler_NV_MapVoteFinished(NativeVote menu, int num_votes, int num_c
 			/* Notify */
 			float map1percent = float(item_votes[0])/ float(num_votes) * 100;
 			float map2percent = float(item_votes[1])/ float(num_votes) * 100;
-			
-			
-			CPrintToChatAll("[\x04MapChooser\x01] %t", "Starting Runoff", g_ConVars[mapvote_runoffpercent].FloatValue, info1, map1percent, info2, map2percent);
+
+			   CPrintToChatAll(PLUGIN_PREFIX ... " %t", "Starting Runoff", g_ConVars[mapvote_runoffpercent].FloatValue, info1, map1percent, info2, map2percent);
 			LogMessage("Voting for next map was indecisive, beginning runoff vote");
 					
 			return;
@@ -1127,7 +1126,7 @@ public void Handler_MapVoteFinished(Menu menu, int num_votes, int num_clients, c
 			float map1percent = float(item_info[0][VOTEINFO_ITEM_VOTES])/ float(num_votes) * 100;
 			float map2percent = float(item_info[1][VOTEINFO_ITEM_VOTES])/ float(num_votes) * 100;
 			
-			CPrintToChatAll("[\x04MapChooser\x01] %t", "Starting Runoff", g_ConVars[mapvote_runoffpercent].FloatValue, info1, map1percent, info2, map2percent);
+			   CPrintToChatAll(PLUGIN_PREFIX ... " %t", "Starting Runoff", g_ConVars[mapvote_runoffpercent].FloatValue, info1, map1percent, info2, map2percent);
 			LogMessage("Voting for next map was indecisive, beginning runoff vote");
 					
 			return;
