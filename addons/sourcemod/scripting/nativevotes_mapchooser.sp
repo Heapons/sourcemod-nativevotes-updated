@@ -501,34 +501,20 @@ public void Event_TeamplayWinPanel(Event event, const char[] name, bool dontBroa
 		g_ChangeMapInProgress = true;
 	}
 	
-	int bluescore = event.GetInt("blue_score");
-	int redscore = event.GetInt("red_score");
-		
 	if (event.GetInt("round_complete") == 1 || StrEqual(name, "arena_win_panel"))
 	{
-		
 		if (!g_MapList.Length || g_HasVoteStarted || g_MapVoteCompleted || !g_ConVars[mapvote_endvote].BoolValue)
 		{
 			return;
 		}
-		
+
 		CheckMaxRounds();
-		
-		switch(event.GetInt("winning_team"))
+
+		int winning_team = event.GetInt("winning_team");
+		if (winning_team > 1 && winning_team < MAX_TEAMS)
 		{
-			case 3:
-			{
-				CheckWinLimit(bluescore);
-			}
-			case 2:
-			{
-				CheckWinLimit(redscore);				
-			}			
-			//We need to do nothing on winning_team == 0 this indicates stalemate.
-			default:
-			{
-				return;
-			}			
+			int score = GetTeamScore(winning_team);
+			CheckWinLimit(score);
 		}
 	}
 }
