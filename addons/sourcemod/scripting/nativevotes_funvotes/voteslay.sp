@@ -48,7 +48,7 @@ void DisplayVoteSlayMenu(int client, int target, char name[MAX_NAME_LENGTH])
 	GetClientName(target, g_VoteInfo[VOTE_NAME], sizeof(g_VoteInfo[]));
 
 	LogAction(client, target, "\"%L\" initiated a slay vote against %N", client, target);
-	CShowActivity2(client, PLUGIN_PREFIX ... " ", "%t", "Initiated Vote Slay", playerName);
+	CShowActivity2(client, PLUGIN_PREFIX ... " %t", "Initiated Vote Slay", playerName);
 	
 	g_VoteType = slay;
 	
