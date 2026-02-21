@@ -48,7 +48,7 @@ void DisplayVoteBurnMenu(int client, int target, char name[MAX_NAME_LENGTH])
 	GetClientName(target, g_VoteInfo[VOTE_NAME], sizeof(g_VoteInfo[]));
 
 	LogAction(client, target, "\"%L\" initiated a burn vote against %N", client, target);
-	CShowActivity2(client, PLUGIN_PREFIX ... " ", "%t", "Initiated Vote Burn", playerName);
+	CShowActivity2(client, PLUGIN_PREFIX ... " %t", "Initiated Vote Burn", playerName);
 	
 	g_VoteType = burn;
 	
