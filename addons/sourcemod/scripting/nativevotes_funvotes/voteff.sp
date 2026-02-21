@@ -46,7 +46,7 @@ void DisplayVoteFFMenu(int client)
 	}
 	
 	LogAction(client, -1, "\"%L\" initiated a friendly fire vote.", client);
-	CShowActivity2(client, PLUGIN_PREFIX ... " %t", "Initiated Vote FF");
+	CShowActivity2(client, PLUGIN_PREFIX ... " ", "%t", "Initiated Vote FF");
 	
 	g_VoteType = ff;
 	g_VoteInfo[VOTE_NAME][0] = '\0';
