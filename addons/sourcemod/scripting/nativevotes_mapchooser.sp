@@ -1149,13 +1149,13 @@ public int Handler_MapVoteMenu(Menu menu, MenuAction action, int param1, int par
 				menu.GetItem(param2, map, sizeof(map));
 				if (strcmp(map, VOTE_EXTEND, false) == 0)
 				{
-					Format(buffer, sizeof(buffer), "%t", "Extend Map", param1);
+					Format(buffer, sizeof(buffer), "%T", "Extend Map", param1);
 					return RedrawMenuItem(buffer);
 				}
 				else if (strcmp(map, VOTE_DONTCHANGE, false) == 0)
 				{
-					Format(buffer, sizeof(buffer), "%t", "Dont Change", param1);
-					return RedrawMenuItem(buffer);					
+					Format(buffer, sizeof(buffer), "%T", "Dont Change", param1);
+					return RedrawMenuItem(buffer);
 				}
 			}
 		}		
@@ -1214,12 +1214,12 @@ public int Handler_NV_MapVoteMenu(NativeVote menu, MenuAction action, int param1
 				menu.GetItem(param2, map, sizeof(map));
 				if (strcmp(map, VOTE_EXTEND, false) == 0)
 				{
-					Format(buffer, sizeof(buffer), "%t", "Extend Map", param1);
+					Format(buffer, sizeof(buffer), "%T", "Extend Map", param1);
 					return view_as<int>(NativeVotes_RedrawVoteItem(buffer));
 				}
 				else if (strcmp(map, VOTE_DONTCHANGE, false) == 0)
 				{
-					Format(buffer, sizeof(buffer), "%t", "Dont Change", param1);
+					Format(buffer, sizeof(buffer), "%T", "Dont Change", param1);
 					return view_as<int>(NativeVotes_RedrawVoteItem(buffer));
 				}
 			}

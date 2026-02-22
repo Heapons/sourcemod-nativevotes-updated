@@ -399,7 +399,7 @@ static ConVar g_Cvar_ChangeGamemode_Enabled;
  * Ideally we peek and poke at the game's `s_nVoteIdx` and increment it accordingly, but we also
  * have to store an internal list of active votes.
  */
-static int s_nNativeVoteIdx = 0;
+static int s_nNativeVoteIdx = 0x7FFFFFFF;
 
 bool Game_IsGameSupported(char[] engineName="", int maxlength=0)
 {
@@ -2252,15 +2252,15 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 			SetEntProp(g_VoteController, Prop_Send, "m_nVoteOptionCount", 0, _, i);
 		}
 
-		// TODO(UPDATE): M-M-M-MULTIVOTE
-		// we need unique vote indices; HUD elements for previous votes aren't cleaned up (?)
-		// the game implements this as `this->m_nVoteIdx = s_nVoteIdx++`
-		s_nNativeVoteIdx = GetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx");
-		
+		// Use a unique vote index that counts down from 0x7FFFFFFF to avoid
+		// colliding with the game's internal s_nVoteIdx which counts up from 0.
+		// This prevents the vote HUD from getting stuck on screen (GitHub issue #2).
+		--s_nNativeVoteIdx;
+
 	#if defined LOG
 		PrintToServer("Starting vote index: %d (controller: %d)", s_nNativeVoteIdx, GetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx"));
-	#endif		
-		SetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx", s_nNativeVoteIdx + 1); // TODO(UPDATE)
+	#endif
+		SetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx", s_nNativeVoteIdx);
 	}
 	
 	// According to Source SDK 2013, vote_options is only sent for a multiple choice vote.
@@ -2560,7 +2560,11 @@ static void TF2CSGO_ResetVote()
 	{
 		if (g_EngineVersion == Engine_TF2)
 		{
-			SetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx", -1);
+			// Don't reset m_nVoteIdx to -1; the game checks if a new vote's index
+			// matches the old one to decide whether to refresh the HUD. Setting -1
+			// could cause the next NativeVote (which counts down) to appear stale.
+			// Instead, leave it at the current value — our unique indices ensure
+			// each new vote gets a fresh HUD display.
 			SetEntProp(g_VoteController, Prop_Send, "m_iActiveIssueIndex", INVALID_ISSUE);
 		}
 		SetEntProp(g_VoteController, Prop_Send, "m_iOnlyTeamToVote", g_EngineVersion == Engine_TF2 ? NATIVEVOTES_TF2_ALL_TEAMS : NATIVEVOTES_ALL_TEAMS);
