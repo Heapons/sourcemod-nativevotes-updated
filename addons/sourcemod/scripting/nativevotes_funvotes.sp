@@ -309,14 +309,15 @@ public int Handler_VoteCallback(Handle menu, MenuAction action, int param1, int 
 			
 			percent = GetVotePercent(votes, totalVotes);
 			
-			limit = GetConVarFloat(g_ConVars[g_VoteType]);
+			limit = GetConVarFloat(g_ConVars[vote_gravity + view_as<int>(g_VoteType)]);
 			
 			// :TODO: g_VoteClient[userid] needs to be checked
 
 			// A multi-argument vote is "always successful", but have to check if its a Yes/No vote.
 			if ((strcmp(item, VOTE_YES) == 0 && FloatCompare(percent,limit) < 0 && param1 == 0) || (strcmp(item, VOTE_NO) == 0 && param1 == 1))
 			{
-				/* :TODO: g_VoteClient[userid] should be used here and set to -1 if not applicable.
+				/*
+				 * :TODO: g_VoteClient[userid] should be used here and set to -1 if not applicable.
 				 */
 				LogAction(-1, -1, "Vote failed.");
 				CPrintToChatAll("%t", "Vote Failed", RoundToNearest(100.0*limit), RoundToNearest(100.0*percent), totalVotes);
@@ -426,7 +427,7 @@ public int Handler_NativeVoteCallback(Handle menu, MenuAction action, int param1
 			
 			percent = GetVotePercent(votes, totalVotes);
 			
-			limit = GetConVarFloat(g_ConVars[g_VoteType]);
+			limit = GetConVarFloat(g_ConVars[vote_gravity + view_as<int>(g_VoteType)]);
 			
 			// :TODO: g_VoteClient[userid] needs to be checked
 
@@ -452,7 +453,6 @@ public int Handler_NativeVoteCallback(Handle menu, MenuAction action, int param1
 						LogAction(-1, -1, "Changing gravity to %s due to vote.", item);
 						SetConVarInt(g_ConVars[sv_gravity], StringToInt(item));
 					}
-					
 					case burn:
 					{
 						CPrintToChatAll("%t", "Set target on fire", "_s", g_VoteInfo[VOTE_NAME]);
@@ -461,7 +461,6 @@ public int Handler_NativeVoteCallback(Handle menu, MenuAction action, int param1
 						
 						IgniteEntity(g_VoteClient[VOTE_CLIENTID], 19.8);	
 					}
-					
 					case slay:
 					{
 						CPrintToChatAll("%t", "Slayed player", g_VoteInfo[VOTE_NAME]);
@@ -471,7 +470,6 @@ public int Handler_NativeVoteCallback(Handle menu, MenuAction action, int param1
 						ExtinguishEntity(g_VoteClient[VOTE_CLIENTID]);
 						ForcePlayerSuicide(g_VoteClient[VOTE_CLIENTID]);
 					}
-					
 					case alltalk:
 					{
 						CPrintToChatAll("%t", "Cvar changed", "sv_alltalk", (GetConVarBool(g_ConVars[sv_alltalk]) ? "0" : "1"));
@@ -479,7 +477,6 @@ public int Handler_NativeVoteCallback(Handle menu, MenuAction action, int param1
 						LogAction(-1, -1, "Changing alltalk to %s due to vote.", (GetConVarBool(g_ConVars[sv_alltalk]) ? "0" : "1"));
 						SetConVarBool(g_ConVars[sv_alltalk], !GetConVarBool(g_ConVars[sv_alltalk]));
 					}
-					
 					case ff:
 					{
 						CPrintToChatAll("%t", "Cvar changed", "mp_friendlyfire", (GetConVarBool(g_ConVars[mp_friendlyfire]) ? "0" : "1"));
