@@ -49,7 +49,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Fun Votes",
 	author = "Powerlord and AlliedModders LLC",
 	description = "NativeVotes Fun Vote Commands",
-	version = "26w08a",
+	version = "26w11a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 

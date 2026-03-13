@@ -244,7 +244,7 @@ enum NativeVotesOverride
 	NativeVotesOverride_ChgCivilian,
 	NativeVotesOverride_ChgGamemode,
 	NativeVotesOverride_ChgDifficulty,
-	NativeVotesOverride_Count,
+	NativeVotesOverride_Count
 }
 
 methodmap NativeVote < KeyValues
@@ -527,11 +527,11 @@ native bool NativeVotes_IsVoteTypeSupported(NativeVotesType voteType);
 /**
  * Creates a new, empty vote.
  * 
- * @param handler			Function which will receive vote actions.
+ * @param handler		Function which will receive vote actions.
  * @param voteType		Vote type, cannot be changed after set
- * @param actions			Optionally set which actions to receive.  VoteStart,
+ * @param actions		Optionally set which actions to receive. VoteStart,
  * 						VoteCancel, VoteEnd, and End will always be received
- * 						regardless of whether they are set or not.  They are
+ * 						regardless of whether they are set or not. They are
  * 						also the only default actions.
  * @return				A new vote Handle on INVALID_HANDLE if a vote type is unsupported by this game.
  */

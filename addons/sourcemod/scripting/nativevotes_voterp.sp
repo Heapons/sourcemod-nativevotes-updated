@@ -16,7 +16,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Medieval Auto-RP",
 	author = "Heapons",
 	description = "Provides Medieval Auto-RP voting.",
-	version = "26w08a",
+	version = "26w11a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -146,7 +146,7 @@ int VoteHandler(NativeVote vote, MenuAction action, int param1, int param2)
             NativeVotes_GetItem(vote, item, info, sizeof(info));
             int value = StringToInt(info);
             g_ConVars[tf_medieval_autorp].SetInt(value);
-            NativeVotes_DisplayPass(vote, "Set 'tf_medieval_autorp' to %s...", value ? "true" : "false");
+            NativeVotes_DisplayPass(vote, "Setting 'tf_medieval_autorp' to %s...", value ? "true" : "false");
         }
         case MenuAction_End:
         {

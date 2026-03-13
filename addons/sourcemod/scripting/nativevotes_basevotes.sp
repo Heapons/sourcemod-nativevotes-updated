@@ -50,7 +50,7 @@ public Plugin myinfo =
 	name = "NativeVotes | Basic Votes",
 	author = "Powerlord and AlliedModders LLC",
 	description = "NativeVotes Basic Vote Commands",
-	version = "26w08a",
+	version = "26w11a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -220,8 +220,6 @@ public void OnAllPluginsLoaded()
 		{
 			LogMessage("Moving basevotes to disabled.");
 		}
-        
-		//SetFailState("This plugin replaces basevotes. You cannot run both at once.");
 	}
     
 	/* Account for late loading */

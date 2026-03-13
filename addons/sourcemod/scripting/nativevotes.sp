@@ -152,7 +152,7 @@ public Plugin myinfo =
 	name = "NativeVotes",
 	author = "Powerlord",
 	description = "Voting API to use the game's native vote panels. Compatible with L4D, L4D2, TF2, and CS:GO.",
-	version = "26w08a",
+	version = "26w11a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 }
 
@@ -219,7 +219,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("NativeVotes_DisplayCallVoteFail", Native_DisplayCallVoteFail);
 	CreateNative("NativeVotes_RedrawVoteTitle", Native_RedrawVoteTitle);
 	CreateNative("NativeVotes_RedrawVoteItem", Native_RedrawVoteItem);
-	
+
 	// Transitional syntax support
 	CreateNative("NativeVote.NativeVote", Native_Create);
 	CreateNative("NativeVote.Close", Native_Close);
@@ -477,7 +477,7 @@ public Action Command_CallVote(int client, const char[] command, int argc)
 					}
 				}
 			}
-			
+
 			if (overridesPresent)
 			{
 				PerformVisChecks(client, hVoteTypes);
@@ -1511,8 +1511,14 @@ void Internal_Reset(bool cancel=false)
 		delete g_hDisplayTimer;
 	}
 
+	Game_ResetVote(null);
+
 	if (!cancel)
 	{
+		if (g_hVoteTimer != null)
+		{
+			delete g_hVoteTimer;
+		}
 		g_hVoteTimer = CreateTimer(5.0, Game_ResetVote, TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
@@ -2546,7 +2552,7 @@ public int Native_RegisterVoteCommand(Handle plugin, int numParams)
 	if (callVoteHandler == INVALID_FUNCTION)
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "CallVoteHandler function was invalid");
-		return;
+		return 0;
 	}
 	
 	AddToForward(g_CallVotes[overrideType].CallVote_Forward, plugin, callVoteHandler);
@@ -2573,7 +2579,7 @@ public int Native_UnregisterVoteCommand(Handle plugin, int numParams)
 	if (callVoteHandler == INVALID_FUNCTION)
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "CallVoteHandler function was invalid");
-		return;
+		return 0;
 	}
 	
 	RemoveFromForward(g_CallVotes[overrideType].CallVote_Forward, plugin, callVoteHandler);
@@ -2654,7 +2660,7 @@ void SendInstructorHint(int client, const char[] caption)
 
 	event.SetString("hint_name", "nativevotes_progress");
 	event.SetString("hint_replace_key", "nativevotes_progress");
-	event.SetInt("hint_target", client);
+	//event.SetInt("hint_target", client);
 	event.SetInt("hint_activator_userid", GetClientUserId(client));
 	event.SetInt("hint_timeout", 0);
 	char icon[64];
@@ -2668,6 +2674,7 @@ void SendInstructorHint(int client, const char[] caption)
 	event.SetInt("hint_allow_nodraw_target", 1);
 	event.SetInt("hint_nooffscreen", 1);
 	event.SetInt("hint_forcecaption", 1);
+	event.SetBool("hint_local_player_only", true);
 
 	event.FireToClient(client);
 }
@@ -2688,4 +2695,3 @@ void EndInstructorHint(int client)
 	event.SetString("hint_name", "nativevotes_progress");
 	event.FireToClient(client);
 }
-

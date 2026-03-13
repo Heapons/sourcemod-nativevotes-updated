@@ -2531,46 +2531,48 @@ static void TF2_DisplayVoteSetup(int client, ArrayList hVoteTypes)
 	int count = hVoteTypes.Length;
 	
 	BfWrite voteSetup = UserMessageToBfWrite(StartMessageOne("VoteSetup", client, USERMSG_RELIABLE));
-	
+
 	voteSetup.WriteByte(count);
-	
+
 	for (int i = 0; i < count; ++i)
 	{
 		char voteIssue[128];
 		
 		CallVoteListData voteData;
 		hVoteTypes.GetArray(i, voteData, sizeof(CallVoteListData));
-		
-		Game_OverrideTypeToVoteString(voteData.CallVoteList_VoteType, voteIssue, sizeof(voteIssue));
-		
-		char translation[128];
-		Game_OverrideTypeToTranslationString(voteData.CallVoteList_VoteType, translation, sizeof(translation));
 
-		voteSetup.WriteString(voteIssue);
-		voteSetup.WriteString(translation);
-		voteSetup.WriteByte(voteData.CallVoteList_VoteEnabled);
+			Game_OverrideTypeToVoteString(voteData.CallVoteList_VoteType, voteIssue, sizeof(voteIssue));
+		
+			char translation[128];
+			Game_OverrideTypeToTranslationString(voteData.CallVoteList_VoteType, translation, sizeof(translation));
+
+			voteSetup.WriteString(voteIssue);
+			voteSetup.WriteString(translation);
+			voteSetup.WriteByte(voteData.CallVoteList_VoteEnabled);
 	}
-	
+
 	EndMessage();
 }
 
 static void TF2CSGO_ResetVote()
 {
-	if (CheckVoteController())
-	{
-		if (g_EngineVersion == Engine_TF2)
-		{
-			SetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx", -1);
-			SetEntProp(g_VoteController, Prop_Send, "m_iActiveIssueIndex", INVALID_ISSUE);
-		}
-		SetEntProp(g_VoteController, Prop_Send, "m_iOnlyTeamToVote", g_EngineVersion == Engine_TF2 ? NATIVEVOTES_TF2_ALL_TEAMS : NATIVEVOTES_ALL_TEAMS);
-		for (int i = 0; i < TF2CSGO_COUNT; i++)
-		{
-			SetEntProp(g_VoteController, Prop_Send, "m_nVoteOptionCount", 0, _, i);
-		}
-		SetEntProp(g_VoteController, Prop_Send, "m_nPotentialVotes", 0);
-		SetEntProp(g_VoteController, Prop_Send, "m_bIsYesNoVote", true);
-	}
+    if (CheckVoteController())
+    {
+        if (g_EngineVersion == Engine_TF2)
+        {
+            SetEntProp(g_VoteController, Prop_Send, "m_nVoteIdx", -1);
+            SetEntProp(g_VoteController, Prop_Send, "m_iActiveIssueIndex", INVALID_ISSUE);
+
+            ChangeEdictState(g_VoteController, GetEntSendPropOffs(g_VoteController, "m_nVoteIdx"));
+        }
+        SetEntProp(g_VoteController, Prop_Send, "m_iOnlyTeamToVote", g_EngineVersion == Engine_TF2 ? NATIVEVOTES_TF2_ALL_TEAMS : NATIVEVOTES_ALL_TEAMS);
+        for (int i = 0; i < TF2CSGO_COUNT; i++)
+        {
+            SetEntProp(g_VoteController, Prop_Send, "m_nVoteOptionCount", 0, _, i);
+        }
+        SetEntProp(g_VoteController, Prop_Send, "m_nPotentialVotes", 0);
+        SetEntProp(g_VoteController, Prop_Send, "m_bIsYesNoVote", true);
+    }
 }
 
 static bool TF2CSGO_IsVoteInProgress()
