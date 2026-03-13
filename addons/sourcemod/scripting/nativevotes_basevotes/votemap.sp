@@ -41,7 +41,7 @@ bool g_VoteMapInUse;
 void DisplayVoteMapMenu(int client, int mapCount, char maps[5][PLATFORM_MAX_PATH])
 {
 	LogAction(client, -1, "\"%L\" initiated a map vote.", client);
-	CShowActivity2(client, PLUGIN_PREFIX ... " %t", "Initiated Vote Map");
+	CShowActivity2(client, PLUGIN_PREFIX ... " ", "%t", "Initiated Vote Map");
 	
 	g_VoteType = map;
 

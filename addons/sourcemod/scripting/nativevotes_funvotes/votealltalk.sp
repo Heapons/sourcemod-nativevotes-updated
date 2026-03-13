@@ -46,7 +46,7 @@ void DisplayVoteAllTalkMenu(int client)
 	}
 	
 	LogAction(client, -1, "\"%L\" initiated an alltalk vote.", client);
-	CShowActivity2(client, PLUGIN_PREFIX ... " %t", "Initiated Vote Alltalk");
+	CShowActivity2(client, PLUGIN_PREFIX ... " ", "%t", "Initiated Vote Alltalk");
 	
 	g_VoteType = alltalk;
 	g_VoteInfo[VOTE_NAME][0] = '\0';

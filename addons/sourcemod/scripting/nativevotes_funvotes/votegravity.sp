@@ -35,7 +35,7 @@
 void DisplayVoteGravityMenu(int client, int count, char items[5][64])
 {
 	LogAction(client, -1, "\"%L\" initiated a gravity vote.", client);
-	CShowActivity2(client, PLUGIN_PREFIX ... " %t", "Initiated Vote Gravity");
+	CShowActivity2(client, PLUGIN_PREFIX ... " ", "%t", "Initiated Vote Gravity");
 	
 	g_VoteType = gravity;
 	
