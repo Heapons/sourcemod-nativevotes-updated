@@ -441,7 +441,7 @@ void ResetRTV()
 {
 	g_Votes = 0;
 			
-	for (int i = 1; i <= MAXPLAYERS; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		g_Voted[i] = false;
 	}
