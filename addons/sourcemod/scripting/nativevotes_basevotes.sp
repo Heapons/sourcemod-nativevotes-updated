@@ -33,8 +33,6 @@
  * Version: $Id$
  */
 
-#pragma semicolon 1
-
 #include <sourcemod>
 #include <sdktools>
 

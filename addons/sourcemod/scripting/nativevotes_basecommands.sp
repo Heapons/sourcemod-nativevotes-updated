@@ -38,9 +38,6 @@
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
 
-#pragma newdecls required
-#pragma semicolon 1
-
 #define PLUGIN_PREFIX "[\x04NativeVotes\x01]"
 
 TopMenu g_TopMenu;

@@ -48,9 +48,6 @@
 #include <ripext>
 #define REQUIRE_EXTENSIONS
 
-#pragma semicolon 1
-#pragma newdecls required
-
 #define PLUGIN_PREFIX "[\x04MapChooser\x01]"
 
 public Plugin myinfo =

@@ -36,9 +36,6 @@
 #include <sourcemod>
 #include <sdktools>
 
-#pragma semicolon 1
-#pragma newdecls required
-
 #include <nativevotes>
 #include <implodeexplode>
 

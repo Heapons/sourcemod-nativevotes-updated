@@ -47,9 +47,6 @@
 #include <tf2>
 #define REQUIRE_EXTENSIONS
 
-#pragma semicolon 1
-#pragma newdecls required
-
 #define PLUGIN_PREFIX "[\x04Rock The Vote\x01]"
 
 public Plugin myinfo =

@@ -40,9 +40,6 @@
 #include <nativevotes>
 #define REQUIRE_PLUGIN
 
-#pragma semicolon 1
-#pragma newdecls required
-
 #define PLUGIN_PREFIX "[\x04Nominations\x01]"
 
 public Plugin myinfo =
