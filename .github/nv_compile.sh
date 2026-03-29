@@ -13,6 +13,7 @@ nv_plugs+=("nativevotes_mapchooser")
 nv_plugs+=("nativevotes_nominations")
 nv_plugs+=("nativevotes_rockthevote")
 nv_plugs+=("nativevotes_voterp")
+nv_plugs+=("nativevotes_votescramble")
 
 # we start in git root
 pushd ./addons/sourcemod/scripting
@@ -29,4 +30,3 @@ mkdir build || true
 7za a -r build/nativevotes_sm_"${versvers}".zip scripting/ translations/ plugins/
 rm plugins/ -rfv
 ls -la
-
