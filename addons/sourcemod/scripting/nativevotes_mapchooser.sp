@@ -177,6 +177,7 @@ public void OnPluginStart()
 	g_ConVars[mapcycle_auto]         		= CreateConVar("sm_mapcycle_auto", "0", "Specifies whether or not to automatically populate the maps list.", _, true, 0.0, true, 1.0);
 	g_ConVars[mapcycle_exclude]      		= CreateConVar("sm_mapcycle_exclude", ".*test.*|background01|^tr.*$", "Specifies which maps shouldn't be automatically added with a regex pattern.");
 
+	EngineVersion engine = GetEngineVersion();
 	if (engine != Engine_SDK2013 && engine == Engine_TF2)
 	{
 		g_ConVars[workshop_map_collection]  = CreateConVar("sm_workshop_map_collection", "", "Specifies the workshop collection to fetch the maps from.");
@@ -194,10 +195,13 @@ public void OnPluginStart()
 	
 	if (g_ConVars[mp_winlimit] || g_ConVars[mp_maxrounds])
 	{
-		if (HookEventEx("teamplay_win_panel", Event_TeamPlayWinPanel))
+		char folder[64];
+		GetGameFolderName(folder, sizeof(folder));
+
+		if (HookEventEx("teamplay_win_panel", Event_TeamplayWinPanel))
 		{
 			HookEvent("teamplay_restart_round", Event_TFRestartRound);
-			HookEvent("arena_win_panel", Event_TeamPlayWinPanel);
+			HookEvent("arena_win_panel", Event_TeamplayWinPanel);
 		}
 		else if (strcmp(folder, "nucleardawn") == 0)
 		{
