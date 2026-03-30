@@ -45,7 +45,7 @@ jobs:
     - name: Setup SourcePawn 1.13 Compiler
       uses: rumblefrog/setup-sp@master
       with:
-        version: "1.13.x"
+        version: "1.13.7301"
 
     - name: Compile plugins 1.13
       shell: bash
