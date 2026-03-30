@@ -55,7 +55,7 @@ public Plugin myinfo =
 	name = "NativeVotes | MapChooser",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Automated Map Voting",
-	version = "26w13a",
+	version = "26w14a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -486,7 +486,24 @@ public Action Timer_StartMapVote(Handle timer, DataPack data)
 	{
 		g_VoteTimer = null;
 	}
-	
+
+	// Prevent map vote if the server is empty
+	int playerCount = 0;
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientInGame(i))
+			continue;
+
+		if (IsFakeClient(i))
+			continue;
+
+		playerCount++;
+	}
+	if (playerCount == 0)
+	{
+		return Plugin_Stop;
+	}
+
 	if (!g_MapList.Length || !g_ConVars[mapvote_endvote].BoolValue || g_MapVoteCompleted || g_HasVoteStarted)
 	{
 		return Plugin_Stop;
