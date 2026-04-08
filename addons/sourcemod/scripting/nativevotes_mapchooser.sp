@@ -55,7 +55,7 @@ public Plugin myinfo =
 	name = "NativeVotes | MapChooser",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Automated Map Voting",
-	version = "26w14a",
+	version = "26w15a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
@@ -1083,7 +1083,7 @@ public void Handler_NV_MapVoteFinished(NativeVote menu, int num_votes, int num_c
 			float map1percent = float(item_votes[0])/ float(num_votes) * 100;
 			float map2percent = float(item_votes[1])/ float(num_votes) * 100;
 
-			   CPrintToChatAll(PLUGIN_PREFIX ... " %t", "Starting Runoff", g_ConVars[mapvote_runoffpercent].FloatValue, info1, map1percent, info2, map2percent);
+			CPrintToChatAll(PLUGIN_PREFIX ... " %t", "Starting Runoff", g_ConVars[mapvote_runoffpercent].FloatValue, info1, map1percent, info2, map2percent);
 			LogMessage("Voting for next map was indecisive, beginning runoff vote");
 					
 			return;
@@ -1247,12 +1247,12 @@ public int Handler_NV_MapVoteMenu(NativeVote menu, MenuAction action, int param1
 				menu.GetItem(param2, map, sizeof(map));
 				if (strcmp(map, VOTE_EXTEND, false) == 0)
 				{
-					Format(buffer, sizeof(buffer), "%T", LANG_SERVER, "Extend Map", param1);
+					Format(buffer, sizeof(buffer), "%T", "Extend Map", param1);
 					return view_as<int>(NativeVotes_RedrawVoteItem(buffer));
 				}
 				else if (strcmp(map, VOTE_DONTCHANGE, false) == 0)
 				{
-					Format(buffer, sizeof(buffer), "%T", LANG_SERVER, "Dont Change", param1);
+					Format(buffer, sizeof(buffer), "%T", "Dont Change", param1);
 					return view_as<int>(NativeVotes_RedrawVoteItem(buffer));
 				}
 			}
