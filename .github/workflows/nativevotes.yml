@@ -41,6 +41,7 @@ jobs:
         curl -o addons/sourcemod/scripting/include/multicolors.inc https://raw.githubusercontent.com/Bara/Multi-Colors/master/addons/sourcemod/scripting/include/multicolors.inc
         curl -o addons/sourcemod/scripting/include/multicolors/colors.inc https://raw.githubusercontent.com/Bara/Multi-Colors/master/addons/sourcemod/scripting/include/multicolors/colors.inc
         curl -o addons/sourcemod/scripting/include/multicolors/morecolors.inc https://raw.githubusercontent.com/Bara/Multi-Colors/master/addons/sourcemod/scripting/include/multicolors/morecolors.inc
+        curl -o addons/sourcemod/scripting/include/sourcebanspp.inc https://raw.githubusercontent.com/sbpp/sourcebans-pp/refs/heads/main/game/addons/sourcemod/scripting/include/sourcebanspp.inc
 
     - name: Setup SourcePawn 1.13 Compiler
       uses: rumblefrog/setup-sp@master
