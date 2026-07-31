@@ -55,21 +55,21 @@ public Plugin myinfo =
 	name = "NativeVotes | MapChooser",
 	author = "AlliedModders LLC and Powerlord",
 	description = "Automated Map Voting",
-	version = "26w15a",
+	version = "26w31a",
 	url = "https://github.com/Heapons/sourcemod-nativevotes-updated/"
 };
 
 /* ConVars */
 enum
 {
-	/* Valve ConVars */
+	/* Valve */
 	mp_winlimit,
 	mp_maxrounds,
 	mp_fraglimit,
 	mp_bonusroundtime,
 	mapcyclefile,
 
-	/* Plugin ConVars */
+	/* Plugin */
 	mapvote_endvote,
 	mapvote_start,
 	mapvote_startround,
@@ -91,6 +91,9 @@ enum
 	mapcycle_exclude,
 	workshop_map_collection,
 	workshop_cleanup,
+
+	/* Rafmod */
+	sig_etc_workshop_map_fix,
 
 	MAX_CONVARS
 }
@@ -126,8 +129,11 @@ MapChange g_ChangeTime;
 GlobalForward g_NominationsResetForward;
 GlobalForward g_MapVoteStartedForward;
 
-/* Upper bound of how many team there could be */
-#define MAX_TEAMS 10
+/** 
+ * Upper bound of how many team there could be.
+ * https://github.com/ValveSoftware/source-sdk-2013/blob/master/src/game/shared/shareddefs.h#L288
+ */
+#define MAX_TEAMS 32
 int g_winCount[MAX_TEAMS];
 
 #define VOTE_EXTEND 	"##extend##"
@@ -187,11 +193,12 @@ public void OnPluginStart()
 	RegAdminCmd("sm_mapvote", Command_MapVote, ADMFLAG_CHANGEMAP, "Forces MapChooser to attempt to run a map vote now.");
 	RegAdminCmd("sm_setnextmap", Command_SetNextMap, ADMFLAG_CHANGEMAP, "sm_setnextmap <map>");
 
-	g_ConVars[mp_winlimit]       = FindConVar("mp_winlimit");
-	g_ConVars[mp_maxrounds]      = FindConVar("mp_maxrounds");
-	g_ConVars[mp_fraglimit]      = FindConVar("mp_fraglimit");
-	g_ConVars[mp_bonusroundtime] = FindConVar("mp_bonusroundtime");
-	g_ConVars[mapcyclefile]      = FindConVar("mapcyclefile");
+	g_ConVars[mp_winlimit]       		= FindConVar("mp_winlimit");
+	g_ConVars[mp_maxrounds]      		= FindConVar("mp_maxrounds");
+	g_ConVars[mp_fraglimit]      		= FindConVar("mp_fraglimit");
+	g_ConVars[mp_bonusroundtime] 		= FindConVar("mp_bonusroundtime");
+	g_ConVars[mapcyclefile]      		= FindConVar("mapcyclefile");
+	g_ConVars[sig_etc_workshop_map_fix] = FindConVar("sig_etc_workshop_map_fix");
 	
 	if (g_ConVars[mp_winlimit] || g_ConVars[mp_maxrounds])
 	{
@@ -200,7 +207,7 @@ public void OnPluginStart()
 
 		if (HookEventEx("teamplay_win_panel", Event_TeamplayWinPanel))
 		{
-			HookEvent("teamplay_restart_round", Event_TFRestartRound);
+			HookEvent("teamplay_restart_round", Event_TeamplayRestartRound);
 			HookEvent("arena_win_panel", Event_TeamplayWinPanel);
 		}
 		else if (strcmp(folder, "nucleardawn") == 0)
@@ -249,7 +256,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("GetNominatedMapList", Native_GetNominatedMapList);
 	CreateNative("EndOfMapVoteEnabled", Native_EndOfMapVoteEnabled);
 
-	// Why doesn't RIP ext already set these as optional??
 	MarkNativeAsOptional("HTTPRequest.HTTPRequest");
 	MarkNativeAsOptional("HTTPRequest.AppendFormParam");
 	MarkNativeAsOptional("HTTPRequest.PostForm");
@@ -308,7 +314,7 @@ public void OnLibraryRemoved(const char[] name)
 
 public void OnConfigsExecuted()
 {
-	if (g_ConVars[workshop_cleanup].BoolValue)
+	if (g_ConVars[workshop_cleanup] != null && g_ConVars[workshop_cleanup].BoolValue)
 	{
 		CleanupWorkshopMaps();
 	}
@@ -318,13 +324,14 @@ public void OnConfigsExecuted()
 		PopulateMapList();
 	}
 
-	if (ReadMapList(g_MapList, g_mapFileSerial, "mapchooser", MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER) != null)
+	if (ReadMapList(g_MapList, g_mapFileSerial, "mapchooser", MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER) == null)
 	{
 		if (g_mapFileSerial == -1)
 		{
 			LogError("Unable to create a valid map list.");
 		}
 	}
+
 	/* First-load previous maps from a text file when persistency is enabled. */
 	static bool g_FirstConfigExec = true;
 	if (g_FirstConfigExec)
@@ -517,7 +524,7 @@ public Action Timer_StartMapVote(Handle timer, DataPack data)
 	return Plugin_Stop;
 }
 
-public void Event_TFRestartRound(Event event, const char[] name, bool dontBroadcast)
+public void Event_TeamplayRestartRound(Event event, const char[] name, bool dontBroadcast)
 {
 	/* Game got restarted - reset our round count tracking */
 	g_TotalRounds = 0;	
@@ -532,12 +539,14 @@ public void Event_TeamplayWinPanel(Event event, const char[] name, bool dontBroa
 		g_ChangeMapInProgress = true;
 	}
 	
-	if (event.GetInt("round_complete") == 1 || StrEqual(name, "arena_win_panel"))
+	if (event.GetInt("round_complete") == 1 || StrContains(name, "_win"))
 	{
 		if (!g_MapList.Length || g_HasVoteStarted || g_MapVoteCompleted || !g_ConVars[mapvote_endvote].BoolValue)
 		{
 			return;
 		}
+
+		g_TotalRounds++;
 
 		CheckMaxRounds(g_TotalRounds);
 
@@ -1163,35 +1172,34 @@ public int Handler_MapVoteMenu(Menu menu, MenuAction action, int param1, int par
 			g_VoteMenu = null;
 			delete menu;
 		}
-		
 		case MenuAction_Display:
 		{
 	 		char buffer[255];
-			Format(buffer, sizeof(buffer), "%T", "Vote Nextmap", param1);
+			SetGlobalTransTarget(param1);
+			Format(buffer, sizeof(buffer), "%t", "Vote Nextmap");
 
 			Panel panel = view_as<Panel>(param2);
 			panel.SetTitle(buffer);
-		}		
-		
+		}
 		case MenuAction_DisplayItem:
 		{
 			if (menu.ItemCount - 1 == param2)
 			{
 				char map[PLATFORM_MAX_PATH], buffer[255];
 				menu.GetItem(param2, map, sizeof(map));
+				SetGlobalTransTarget(param1);
 				if (strcmp(map, VOTE_EXTEND, false) == 0)
 				{
-					Format(buffer, sizeof(buffer), "%T", "Extend Map", param1);
+					Format(buffer, sizeof(buffer), "%t", "Extend Map");
 					return RedrawMenuItem(buffer);
 				}
 				else if (strcmp(map, VOTE_DONTCHANGE, false) == 0)
 				{
-					Format(buffer, sizeof(buffer), "%T", "Dont Change", param1);
+					Format(buffer, sizeof(buffer), "%t", "Dont Change");
 					return RedrawMenuItem(buffer);					
 				}
 			}
-		}		
-	
+		}
 		case MenuAction_VoteCancel:
 		{
 			// If we receive 0 votes, pick at random.
@@ -1220,11 +1228,9 @@ public int Handler_MapVoteMenu(Menu menu, MenuAction action, int param1, int par
 					g_MapVoteCompleted = true;
 				}
 			}
-			
 			g_HasVoteStarted = false;
 		}
 	}
-	
 	return 0;
 }
 
@@ -1238,26 +1244,25 @@ public int Handler_NV_MapVoteMenu(NativeVote menu, MenuAction action, int param1
 			menu.Close();
 			g_HasVoteStarted = false;
 		}
-		
 		case MenuAction_DisplayItem:
 		{
 			if (menu.ItemCount - 1 == param2)
 			{
 				char map[PLATFORM_MAX_PATH], buffer[255];
 				menu.GetItem(param2, map, sizeof(map));
+				SetGlobalTransTarget(param1);
 				if (strcmp(map, VOTE_EXTEND, false) == 0)
 				{
-					Format(buffer, sizeof(buffer), "%T", "Extend Map", param1);
+					Format(buffer, sizeof(buffer), "%t", "Extend Map");
 					return view_as<int>(NativeVotes_RedrawVoteItem(buffer));
 				}
 				else if (strcmp(map, VOTE_DONTCHANGE, false) == 0)
 				{
-					Format(buffer, sizeof(buffer), "%T", "Dont Change", param1);
+					Format(buffer, sizeof(buffer), "%t", "Dont Change");
 					return view_as<int>(NativeVotes_RedrawVoteItem(buffer));
 				}
 			}
-		}		
-	
+		}
 		case MenuAction_VoteCancel:
 		{
 			// If we receive 0 votes, pick at random.
@@ -1297,11 +1302,9 @@ public int Handler_NV_MapVoteMenu(NativeVote menu, MenuAction action, int param1
 				// We were actually cancelled. Display the generic fail message
 				menu.DisplayFail(NativeVotesFail_Generic);
 			}
-			
 			g_HasVoteStarted = false;
 		}
 	}
-	
 	return 0;
 }
 
@@ -1703,7 +1706,7 @@ void PopulateMapList()
 	if (dir == null)
 	{
 		delete regex;
-		CloseHandle(file);
+		file.Close();
 		return;
 	}
 
@@ -1711,8 +1714,7 @@ void PopulateMapList()
 	FileType type;
 	int len;
 
-	file.WriteLine("// Generated with NativeVotes MapChooser.");
-	file.WriteLine("// https://github.com/Heapons/sourcemod-nativevotes-updated");
+	ArrayList fastdl = new ArrayList(ByteCountToCells(PLATFORM_MAX_PATH));
 
 	// FastDL
 	while (dir.GetNext(mapName, sizeof(mapName), type))
@@ -1729,24 +1731,43 @@ void PopulateMapList()
 		if (regex.Match(mapName) >= 1)
 			continue;
 
-		file.WriteLine("%s", mapName);
+		fastdl.PushString(mapName);
 	}
 	delete dir;
 	delete regex;
 
-	// Workshop
-	char workshopCollection[64];
-	g_ConVars[workshop_map_collection].GetString(workshopCollection, sizeof(workshopCollection));
-	if (g_RestInPawn && workshopCollection[0] != '\0')
+	fastdl.Sort(Sort_Ascending, Sort_String);
+
+	file.WriteLine("// Generated with NativeVotes MapChooser.");
+	file.WriteLine("// https://github.com/Heapons/sourcemod-nativevotes-updated");
+
+	for (int i = 0; i < fastdl.Length; i++)
 	{
-        HTTPRequest req = new HTTPRequest("https://api.steampowered.com/ISteamRemoteStorage/GetCollectionDetails/v1/");
-        req.AppendFormParam("collectioncount", "1");
-		req.AppendFormParam("publishedfileids[0]", workshopCollection);
-        req.PostForm(HTTPResponse_GetCollectionDetails, file);
+		fastdl.GetString(i, mapName, sizeof(mapName));
+		file.WriteLine("%s", mapName);
+	}
+	delete fastdl;
+
+	// Workshop
+	if (g_ConVars[workshop_map_collection] != null)
+	{
+		char workshopCollection[64];
+		g_ConVars[workshop_map_collection].GetString(workshopCollection, sizeof(workshopCollection));
+		if (g_RestInPawn && workshopCollection[0] != '\0')
+		{
+			HTTPRequest req = new HTTPRequest("https://api.steampowered.com/ISteamRemoteStorage/GetCollectionDetails/v1/");
+			req.AppendFormParam("collectioncount", "1");
+			req.AppendFormParam("publishedfileids[0]", workshopCollection);
+			req.PostForm(HTTPResponse_GetCollectionDetails, file);
+		}
+		else
+		{
+			file.Close();
+		}
 	}
 	else
 	{
-		CloseHandle(file);
+		file.Close();
 	}
 
 	CreateTimer(3.0, Timer_ReadMapList, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
@@ -1754,7 +1775,7 @@ void PopulateMapList()
 
 public Action Timer_ReadMapList(Handle timer, any data)
 {
-	if (ReadMapList(g_MapList, g_mapFileSerial, "mapchooser", MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER) != null)
+	if (ReadMapList(g_MapList, g_mapFileSerial, "mapchooser", MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER) == null)
 	{
 		if (g_mapFileSerial == -1)
 		{
@@ -1769,14 +1790,14 @@ void HTTPResponse_GetCollectionDetails(HTTPResponse response, File file)
 {
 	if (response.Status != HTTPStatus_OK || response.Data == null)
 	{
-		CloseHandle(file);
+		file.Close();
 		return;
 	}
 
 	JSONObject root = view_as<JSONObject>(response.Data);
 	if (root == null)
 	{
-		CloseHandle(file);
+		file.Close();
 		return;
 	}
 
@@ -1784,7 +1805,7 @@ void HTTPResponse_GetCollectionDetails(HTTPResponse response, File file)
 	if (responseObj == null)
 	{
 		delete root;
-		CloseHandle(file);
+		file.Close();
 		return;
 	}
 
@@ -1793,7 +1814,7 @@ void HTTPResponse_GetCollectionDetails(HTTPResponse response, File file)
 	{
 		delete responseObj;
 		delete root;
-		CloseHandle(file);
+		file.Close();
 		return;
 	}
 
@@ -1803,15 +1824,15 @@ void HTTPResponse_GetCollectionDetails(HTTPResponse response, File file)
 		delete collectionDetailsArray;
 		delete responseObj;
 		delete root;
-		CloseHandle(file);
+		file.Close();
 		return;
 	}
 
 	JSONArray children = view_as<JSONArray>(collectionDetails.Get("children"));
 	if (children != null)
 	{
-		ConVar sig_etc_workshop_map_fix = FindConVar("sig_etc_workshop_map_fix");
-		bool workshopMapFix = sig_etc_workshop_map_fix != null ? sig_etc_workshop_map_fix.BoolValue : false;
+		bool workshopMapFix = g_ConVars[sig_etc_workshop_map_fix] != null ? g_ConVars[sig_etc_workshop_map_fix].BoolValue : false;
+		ArrayList workshop = new ArrayList(ByteCountToCells(PLATFORM_MAX_PATH));
 		for (int i = 0; i < children.Length; i++)
 		{
 			JSONObject child = view_as<JSONObject>(children.Get(i));
@@ -1831,19 +1852,34 @@ void HTTPResponse_GetCollectionDetails(HTTPResponse response, File file)
 					}
 					else
 					{
-						file.WriteLine("workshop/%s", publishedfileid);
+						char mapName[PLATFORM_MAX_PATH];
+						Format(mapName, sizeof(mapName), "workshop/%s", publishedfileid);
+						if (g_MapList.FindString(mapName) == -1)
+						{
+							g_MapList.PushString(mapName);
+							workshop.PushString(mapName);
+						}
 					}
 				}
 			}
 			delete child;
 		}
 		delete children;
+
+		workshop.Sort(Sort_Ascending, Sort_String);
+		for (int i = 0; i < workshop.Length; i++)
+		{
+			char mapName[PLATFORM_MAX_PATH];
+			workshop.GetString(i, mapName, sizeof(mapName));
+			file.WriteLine("%s", mapName);
+		}
+		delete workshop;
 	}
 	delete collectionDetails;
 	delete collectionDetailsArray;
 	delete responseObj;
 	delete root;
-	CloseHandle(file);
+	file.Close();
 }
 
 void CleanupWorkshopMaps()
