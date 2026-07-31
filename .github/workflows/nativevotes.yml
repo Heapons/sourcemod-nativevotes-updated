@@ -40,11 +40,10 @@ jobs:
         curl -o addons/sourcemod/scripting/include/ripext.inc https://raw.githubusercontent.com/ErikMinekus/sm-ripext/main/pawn/scripting/include/ripext.inc
         curl -o addons/sourcemod/scripting/include/ripext/http.inc https://raw.githubusercontent.com/ErikMinekus/sm-ripext/main/pawn/scripting/include/ripext/http.inc
         curl -o addons/sourcemod/scripting/include/ripext/json.inc https://raw.githubusercontent.com/ErikMinekus/sm-ripext/main/pawn/scripting/include/ripext/json.inc
-        curl -o addons/sourcemod/scripting/include/sbpp_version.inc https://raw.githubusercontent.com/sbpp/sourcebans-pp/refs/heads/main/game/addons/sourcemod/scripting/include/sourcebanspp.inc
-        curl -o addons/sourcemod/scripting/include/sourcebanschecker.inc https://raw.githubusercontent.com/sbpp/sourcebans-pp/refs/heads/main/game/addons/sourcemod/scripting/include/sourcebanspp.inc
+        curl -o addons/sourcemod/scripting/include/sbpp_version.inc https://raw.githubusercontent.com/sbpp/sourcebans-pp/refs/heads/main/game/addons/sourcemod/scripting/include/sbpp_version.inc
+        curl -o addons/sourcemod/scripting/include/sourcebanschecker.inc https://raw.githubusercontent.com/sbpp/sourcebans-pp/refs/heads/main/game/addons/sourcemod/scripting/include/sourcebanschecker.inc
         curl -o addons/sourcemod/scripting/include/sourcebanspp.inc https://raw.githubusercontent.com/sbpp/sourcebans-pp/refs/heads/main/game/addons/sourcemod/scripting/include/sourcebanspp.inc
-        curl -o addons/sourcemod/scripting/include/sourcebanspp.inc https://raw.githubusercontent.com/sbpp/sourcebans-pp/refs/heads/php81/game/addons/sourcemod/scripting/include/sourcebanspp.inc
-        curl -o addons/sourcemod/scripting/include/sourcecomms.inc https://raw.githubusercontent.com/sbpp/sourcebans-pp/refs/heads/main/game/addons/sourcemod/scripting/include/sourcebanspp.inc
+        curl -o addons/sourcemod/scripting/include/sourcecomms.inc https://raw.githubusercontent.com/sbpp/sourcebans-pp/refs/heads/main/game/addons/sourcemod/scripting/include/sourcecomms.inc
 
     - name: Setup SourcePawn 1.13 Compiler
       uses: rumblefrog/setup-sp@master
