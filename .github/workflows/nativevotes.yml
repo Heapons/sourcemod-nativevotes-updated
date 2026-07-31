@@ -32,16 +32,19 @@ jobs:
     - name: Download dependencies
       shell: bash
       run: |
-        curl -o addons/sourcemod/scripting/include/sourcebanspp.inc https://raw.githubusercontent.com/sbpp/sourcebans-pp/refs/heads/php81/game/addons/sourcemod/scripting/include/sourcebanspp.inc
-        mkdir -p addons/sourcemod/scripting/include/ripext
-        curl -o addons/sourcemod/scripting/include/ripext.inc https://raw.githubusercontent.com/ErikMinekus/sm-ripext/main/pawn/scripting/include/ripext.inc
-        curl -o addons/sourcemod/scripting/include/ripext/http.inc https://raw.githubusercontent.com/ErikMinekus/sm-ripext/main/pawn/scripting/include/ripext/http.inc
-        curl -o addons/sourcemod/scripting/include/ripext/json.inc https://raw.githubusercontent.com/ErikMinekus/sm-ripext/main/pawn/scripting/include/ripext/json.inc
         mkdir -p addons/sourcemod/scripting/include/multicolors
+        mkdir -p addons/sourcemod/scripting/include/ripext
         curl -o addons/sourcemod/scripting/include/multicolors.inc https://raw.githubusercontent.com/Bara/Multi-Colors/master/addons/sourcemod/scripting/include/multicolors.inc
         curl -o addons/sourcemod/scripting/include/multicolors/colors.inc https://raw.githubusercontent.com/Bara/Multi-Colors/master/addons/sourcemod/scripting/include/multicolors/colors.inc
         curl -o addons/sourcemod/scripting/include/multicolors/morecolors.inc https://raw.githubusercontent.com/Bara/Multi-Colors/master/addons/sourcemod/scripting/include/multicolors/morecolors.inc
+        curl -o addons/sourcemod/scripting/include/ripext.inc https://raw.githubusercontent.com/ErikMinekus/sm-ripext/main/pawn/scripting/include/ripext.inc
+        curl -o addons/sourcemod/scripting/include/ripext/http.inc https://raw.githubusercontent.com/ErikMinekus/sm-ripext/main/pawn/scripting/include/ripext/http.inc
+        curl -o addons/sourcemod/scripting/include/ripext/json.inc https://raw.githubusercontent.com/ErikMinekus/sm-ripext/main/pawn/scripting/include/ripext/json.inc
+        curl -o addons/sourcemod/scripting/include/sbpp_version.inc https://raw.githubusercontent.com/sbpp/sourcebans-pp/refs/heads/main/game/addons/sourcemod/scripting/include/sourcebanspp.inc
+        curl -o addons/sourcemod/scripting/include/sourcebanschecker.inc https://raw.githubusercontent.com/sbpp/sourcebans-pp/refs/heads/main/game/addons/sourcemod/scripting/include/sourcebanspp.inc
         curl -o addons/sourcemod/scripting/include/sourcebanspp.inc https://raw.githubusercontent.com/sbpp/sourcebans-pp/refs/heads/main/game/addons/sourcemod/scripting/include/sourcebanspp.inc
+        curl -o addons/sourcemod/scripting/include/sourcebanspp.inc https://raw.githubusercontent.com/sbpp/sourcebans-pp/refs/heads/php81/game/addons/sourcemod/scripting/include/sourcebanspp.inc
+        curl -o addons/sourcemod/scripting/include/sourcecomms.inc https://raw.githubusercontent.com/sbpp/sourcebans-pp/refs/heads/main/game/addons/sourcemod/scripting/include/sourcebanspp.inc
 
     - name: Setup SourcePawn 1.13 Compiler
       uses: rumblefrog/setup-sp@master
