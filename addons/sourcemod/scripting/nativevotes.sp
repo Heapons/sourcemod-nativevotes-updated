@@ -1416,7 +1416,7 @@ void StartVoting()
 
 public Action DisplayTimer(Handle timer)
 {
-	if (!Internal_IsVoteInProgress() || g_TimeLeft <= 0)
+	if (!Internal_IsVoteInProgress() || --g_TimeLeft <= 0)
 	{
 		if (g_hDisplayTimer != null)
 		{
@@ -1426,7 +1426,6 @@ public Action DisplayTimer(Handle timer)
 		return Plugin_Stop;
 	}
 	DrawHintProgress();
-	--g_TimeLeft;
 	return Plugin_Continue;
 }
 
