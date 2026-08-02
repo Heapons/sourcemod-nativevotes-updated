@@ -1312,7 +1312,7 @@ bool DoClientVote(NativeVote vote, int[] clients, int num_clients)
 	
 	if (totalPlayers > 0)
 	{
-		Game_DisplayVote(vote, realClients, totalPlayers);
+		Game_DisplayVote(vote, realClients, totalPlayers, (g_fStartTime + g_VoteTime) - GetGameTime());
 		return true;
 	}
 	else
@@ -1592,7 +1592,7 @@ public Action RedrawTimer(Handle timer, DataPack data)
 	
 	if (Internal_IsVoteInProgress() && !Internal_IsCancelling() && vote == g_hCurVote)
 	{
-		Game_DisplayVoteToOne(vote, client);
+		Game_DisplayVoteToOne(vote, client, (g_fStartTime + g_VoteTime) - GetGameTime());
 	}
 	
 	return Plugin_Stop;

@@ -645,7 +645,7 @@ bool Game_CheckVotePassType(NativeVotesPassType type)
 	return returnVal;
 }
 
-bool Game_DisplayVoteToOne(NativeVote vote, int client)
+bool Game_DisplayVoteToOne(NativeVote vote, int client, float end_time = 0.0)
 {
 	if (g_bCancelled)
 	{
@@ -655,10 +655,10 @@ bool Game_DisplayVoteToOne(NativeVote vote, int client)
 	int clients[1];
 	clients[0] = client;
 	
-	return Game_DisplayVote(vote, clients, 1);
+	return Game_DisplayVote(vote, clients, 1, end_time);
 }
 
-bool Game_DisplayVote(NativeVote vote, int[] clients, int num_clients)
+bool Game_DisplayVote(NativeVote vote, int[] clients, int num_clients, float end_time = 0.0)
 {
 	if (g_bCancelled)
 	{
@@ -677,7 +677,7 @@ bool Game_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 		}
 		case Engine_CSGO, Engine_TF2:
 		{
-			TF2CSGO_DisplayVote(vote, clients, num_clients);
+			TF2CSGO_DisplayVote(vote, clients, num_clients, end_time);
 		}
 	}
 
@@ -2172,7 +2172,7 @@ static stock void TF2CSGO_UpdateClientCount(int num_clients)
 	}
 }
 
-static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
+static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients, float end_time)
 {
 	NativeVotesType voteType = Data_GetType(vote);
 	
@@ -2358,8 +2358,12 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients)
 			{
 				bfStart.WriteString(details);
 			}
-			bfStart.WriteByte(bYesNo);
+			bfStart.WriteBool(bYesNo);
 			bfStart.WriteByte(Data_GetTarget(vote) - 1);
+			if (g_AppID == 3545060) // Team Fortress 2 Classified
+			{
+				bfStart.WriteFloat(GetGameTime() + end_time);
+			}
 		}
 		EndMessage();
 	}
