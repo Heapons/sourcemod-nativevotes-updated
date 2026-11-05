@@ -2363,11 +2363,17 @@ static void TF2CSGO_DisplayVote(NativeVote vote, int[] clients, int num_clients,
 			{
 				bfStart.WriteString(details);
 			}
-			bfStart.WriteBool(bYesNo);
-			bfStart.WriteByte(Data_GetTarget(vote) - 1);
+
 			if (g_AppID == 3545060) // Team Fortress 2 Classified
 			{
+				bfStart.WriteBool(bYesNo);
+				bfStart.WriteByte(Data_GetTarget(vote) - 1);
 				bfStart.WriteFloat(GetGameTime() + end_time);
+			}
+			else // Others
+			{
+				bfStart.WriteByte(bYesNo ? 1 : 0);
+				bfStart.WriteByte(Data_GetTarget(vote) - 1);
 			}
 		}
 		EndMessage();
