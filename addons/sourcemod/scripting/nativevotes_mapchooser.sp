@@ -535,7 +535,7 @@ public void Event_TeamplayWinPanel(Event event, const char[] name, bool dontBroa
 	if (g_ChangeMapAtRoundEnd)
 	{
 		g_ChangeMapAtRoundEnd = false;
-		CreateTimer(2.0, Timer_ChangeMap, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(GetChangeMapDelay(), Timer_ChangeMap, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
 		g_ChangeMapInProgress = true;
 	}
 	
@@ -564,7 +564,7 @@ public void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 	if (g_ChangeMapAtRoundEnd)
 	{
 		g_ChangeMapAtRoundEnd = false;
-		CreateTimer(2.0, Timer_ChangeMap, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(GetChangeMapDelay(), Timer_ChangeMap, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
 		g_ChangeMapInProgress = true;
 	}
 	
@@ -1307,7 +1307,15 @@ public int Handler_NV_MapVoteMenu(NativeVote menu, MenuAction action, int param1
 	}
 	return 0;
 }
+float GetChangeMapDelay()
+{
+	if (g_ConVars[mp_bonusroundtime] != null)
+	{
+		return g_ConVars[mp_bonusroundtime].FloatValue;
+	}
 
+	return 2.0;
+}
 public Action Timer_ChangeMap(Handle hTimer, DataPack dp)
 {
 	g_ChangeMapInProgress = false;
