@@ -53,7 +53,7 @@ enum ImplodePart
  */
 stock int ExplodeStringToArrayList(const char[] text, const char[] split, ArrayList buffers, int maxStringLength)
 {
-	int reloc_idx, idx, total;
+	int reloc_idx, idx;
 	
 	if (buffers == null || !split[0])
 	{
@@ -64,10 +64,8 @@ stock int ExplodeStringToArrayList(const char[] text, const char[] split, ArrayL
 	while ((idx = SplitString(text[reloc_idx], split, item, maxStringLength)) != -1)
 	{
 		reloc_idx += idx;
-		++total;
 		buffers.PushString(item);
 	}
-	++total;
 	buffers.PushString(text[reloc_idx]);
 	
 	return buffers.Length;

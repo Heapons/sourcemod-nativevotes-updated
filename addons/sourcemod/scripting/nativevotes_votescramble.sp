@@ -22,7 +22,7 @@ enum
     needed,
     minplayers,
     initialdelay,
-    interval,
+    intervaltime,
     full_reset,
     mp_match_end_at_timelimit,
     mp_timelimit,
@@ -69,7 +69,7 @@ public void OnPluginStart()
     g_ConVars[needed]                    = CreateConVar("sm_scrambleteams_needed", "0.60", "Percentage of players needed to scramble teams (Def 60%)", 0, true, 0.05, true, 1.0);
     g_ConVars[minplayers]                = CreateConVar("sm_scrambleteams_minplayers", "0", "Number of players required before scramble will be enabled.", 0, true, 0.0, true, float(MAXPLAYERS));
     g_ConVars[initialdelay]              = CreateConVar("sm_scrambleteams_initialdelay", "30.0", "Time (in seconds) before first scramble can be held", 0, true, 0.00);
-    g_ConVars[interval]                  = CreateConVar("sm_scrambleteams_interval", "240.0", "Time (in seconds) after a failed scramble before another can be held", 0, true, 0.00);
+    g_ConVars[intervaltime]                  = CreateConVar("sm_scrambleteams_interval", "240.0", "Time (in seconds) after a failed scramble before another can be held", 0, true, 0.00);
     g_ConVars[full_reset]                = CreateConVar("sm_scrambleteams_full_reset", "1", "Whether time/rounds played should reset after a scramble is triggered ", 0, true, 0.0, true, 1.0);
     g_ConVars[mp_match_end_at_timelimit] = FindConVar("mp_match_end_at_timelimit");
     g_ConVars[mp_timelimit]              = FindConVar("mp_timelimit");
@@ -401,8 +401,8 @@ void StartScramble()
     ResetScramble();
     g_ScrambleAllowed = false;
 
-    g_ScrambleTime = GetTime() + g_ConVars[interval].IntValue;
-    CreateTimer(g_ConVars[interval].FloatValue, Timer_DelayScramble, _, TIMER_FLAG_NO_MAPCHANGE);
+    g_ScrambleTime = GetTime() + g_ConVars[intervaltime].IntValue;
+    CreateTimer(g_ConVars[intervaltime].FloatValue, Timer_DelayScramble, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 void ResetScramble()
@@ -529,6 +529,7 @@ public Action Timer_FixCTFTimer(Handle timer, DataPack pack)
     int oldFlags = pack.ReadCell();
     g_ConVars[mp_timelimit].IntValue = oldValue;
     g_ConVars[mp_timelimit].Flags = oldFlags;
+    return Plugin_Stop;
 }
 
 void GetPlayerName(int client, char[] name, int maxlen)

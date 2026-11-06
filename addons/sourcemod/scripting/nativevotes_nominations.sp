@@ -340,7 +340,7 @@ int FindMatchingMaps(ArrayList mapList, ArrayList results, const char[] input)
 	int matches = 0;
 	char map[PLATFORM_MAX_PATH];
 
-	int maxmatches = g_ConVars[maxmatches].IntValue;
+	int maxMatchesLimit = g_ConVars[maxmatches].IntValue;
 
 	for (int i = 0; i < map_count; i++)
 	{
@@ -350,7 +350,7 @@ int FindMatchingMaps(ArrayList mapList, ArrayList results, const char[] input)
 			results.Push(i);
 			matches++;
 
-			if (maxmatches > 0 && matches >= maxmatches)
+			if (maxMatchesLimit > 0 && matches >= maxMatchesLimit)
 			{
 				break;
 			}
