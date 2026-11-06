@@ -147,7 +147,7 @@ public int MenuHandler_Confirm(Handle menu, MenuAction action, int param1, int p
 		}
 		case MenuAction_Select:
 		{
-			char maps[5][64];
+			char maps[5][PLATFORM_MAX_PATH];
 			int selectedmaps = GetArraySize(g_SelectedMaps);
 			for (int i = 0; i < selectedmaps; i++)
 			{
@@ -179,7 +179,7 @@ public int MenuHandler_Map(Handle menu, MenuAction action, int param1, int param
 		}
 		case MenuAction_DrawItem:
 		{
-			char info[32], name[32];
+			char info[PLATFORM_MAX_PATH], name[PLATFORM_MAX_PATH];
 			GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
 			if (FindStringInArray(g_SelectedMaps, info) != -1)
 			{
@@ -192,7 +192,7 @@ public int MenuHandler_Map(Handle menu, MenuAction action, int param1, int param
 		}
 		case MenuAction_Select:
 		{
-			char info[32], name[32];
+			char info[PLATFORM_MAX_PATH], name[PLATFORM_MAX_PATH];
 			GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
 			PushArrayString(g_SelectedMaps, info);
 			/* Redisplay the list */
