@@ -98,7 +98,7 @@ public void AdminMenu_VoteGravity(Handle topmenu, TopMenuAction action, TopMenuO
 	else if (action == TopMenuAction_SelectOption)
 	{
 		/* Might need a better way of selecting the list of pre-defined gravity choices */
-		char items[5][5] ={"200","400","800","1600","3200"};
+		char items[5][64] ={"200","400","800","1600","3200"};
 		DisplayVoteGravityMenu(param,5, items);
 	}
 	else if (action == TopMenuAction_DrawOption)
