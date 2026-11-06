@@ -2218,7 +2218,7 @@ public int Native_SetTeam(Handle plugin, int numParams)
 	if (team >= GetTeamCount())
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Team %d is invalid", team);
-		return;
+		return 0;
 	}
 	
 	if (g_EngineVersion == Engine_TF2 && team == NATIVEVOTES_ALL_TEAMS)
@@ -2335,6 +2335,8 @@ public int Native_DisplayPassEx(Handle plugin, int numParams)
 	{
 		Game_DisplayVotePassEx(vote, passType);
 	}
+
+	return 0;
 }
 
 // native NativeVotes_DisplayRawPass(NativeVotesPassType:passType, const String:details[]="", team=NATIVEVOTES_ALL_TEAMS);
@@ -2596,6 +2598,8 @@ public int Native_RegisterVoteCommand(Handle plugin, int numParams)
 	{
 		AddToForward(g_CallVotes[overrideType].CallVote_Vis, plugin, visHandler);
 	}
+
+	return 0;
 }
 
 // native NativeVotes_UnregisterVoteCommand(NativeVotesOverride overrideType, NativeVotes_CallVoteHandler callHandler, NativeVotes_CallVoteVisCheck visHandler=INVALID_FUNCTION);

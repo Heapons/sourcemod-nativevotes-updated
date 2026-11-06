@@ -40,9 +40,6 @@
 
 #include <sourcemod>
 
-#define L4DL4D2_COUNT						2
-#define TF2CSGO_COUNT						5
-
 #define INVALID_ISSUE						-1
 
 //----------------------------------------------------------------------------
