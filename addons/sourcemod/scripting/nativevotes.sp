@@ -1727,6 +1727,8 @@ public int Native_Close(Handle plugin, int numParams)
 	
 	// Do the datatype-specific close operations
 	Data_CloseVote(vote);
+
+	return 0;
 }
 
 // native bool NativeVotes_Display(Handle vote, int clients[], int numClients, int time, int flags=0);
@@ -1862,6 +1864,8 @@ public int Native_RemoveAllItems(Handle plugin, int numParams)
 	}
 	
 	Data_RemoveAllItems(vote);
+
+	return 0;
 }
 
 // native bool NativeVotes_GetItem(Handle vote, int position, const char[] infoBuf, int infoBufLen, const char[] dispBuf = "", int dispBufLen = 0);
@@ -1891,6 +1895,8 @@ public int Native_GetItem(Handle plugin, int numParams)
 			SetNativeString(5, display, displayLength);
 		}
 	}
+
+	return 0;
 }
 
 // native NativeVotes_GetItemCount(Handle vote);
@@ -1923,6 +1929,8 @@ public int Native_GetDetails(Handle plugin, int numParams)
 	Data_GetDetails(vote, details, len);
 	
 	SetNativeString(2, details, len);
+
+	return 0;
 }
 
 // native NativeVotes_SetDetails(Handle vote, const char[] fmt, any:...);
@@ -1940,6 +1948,8 @@ public int Native_SetDetails(Handle plugin, int numParams)
 	FormatNativeString(0, 2, 3, sizeof(details), _, details);
 	
 	Data_SetDetails(vote, details);
+
+	return 0;
 }
 
 // native NativeVotes_GetDetails(Handle vote, const char[] buffer, int maxlength);
@@ -1959,6 +1969,8 @@ public int Native_GetTitle(Handle plugin, int numParams)
 	Data_GetTitle(vote, title, len);
 	
 	SetNativeString(2, title, len);
+
+	return 0;
 }
 
 // native NativeVotes_SetTitle(Handle vote, const char[] fmt, any:...);
@@ -1976,6 +1988,8 @@ public int Native_SetTitle(Handle plugin, int numParams)
 	FormatNativeString(0, 2, 3, sizeof(details), _, details);
 	
 	Data_SetTitle(vote, details);
+
+	return 0;
 }
 
 // native bool NativeVotes_IsVoteInProgress();
@@ -2019,6 +2033,8 @@ public int Native_SetOptionFlags(Handle plugin, int numParams)
 	flags &= (MENUFLAG_BUTTON_NOVOTE);
 	
 	Data_SetFlags(vote, flags);
+
+	return 0;
 }
 
 // native bool NativeVotes_SetNoVoteButton(Handle vote, bool button);
@@ -2058,6 +2074,8 @@ public int Native_Cancel(Handle plugin, int numParams)
 	}
 	
 	CancelVoting();
+
+	return 0;
 }
 
 // native NativeVotes_SetResultCallback(Handle vote, NativeVotes_VoteHandler callback);
@@ -2075,7 +2093,7 @@ public int Native_SetResultCallback(Handle plugin, int numParams)
 	if (handler == INVALID_FUNCTION)
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "NativeVotes_VoteHandler is invalid");
-		return;
+		return 0;
 	}
 	
 	Handle voteResults = Data_GetResultCallback(vote);
@@ -2085,6 +2103,8 @@ public int Native_SetResultCallback(Handle plugin, int numParams)
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "NativeVotes_VoteHandler cannot be added to forward");
 	}
+
+	return 0;
 }
 
 // native NativeVotes_CheckVoteDelay();
@@ -2207,6 +2227,8 @@ public int Native_SetTeam(Handle plugin, int numParams)
 	}
 	
 	Data_SetTeam(vote, team);
+
+	return 0;
 }
 
 // native NativeVotes_GetInitiator(Handle vote);
@@ -2234,6 +2256,8 @@ public int Native_SetInitiator(Handle plugin, int numParams)
 	
 	int initiator = GetNativeCell(2);
 	Data_SetInitiator(vote, initiator);
+
+	return 0;
 }
 
 // native NativeVotes_DisplayPass(Handle vote, const char[] details = "");
@@ -2257,6 +2281,8 @@ public int Native_DisplayPass(Handle plugin, int numParams)
 	{
 		Game_DisplayVotePass(vote);		
 	}
+
+	return 0;
 }
 
 // native NativeVotes_DisplayPassCustomToOne(Handle vote, client, const char[] format, any:...);
@@ -2277,6 +2303,8 @@ public int Native_DisplayPassCustomToOne(Handle plugin, int numParams)
 	FormatNativeString(0, 3, 4, TRANSLATION_LENGTH, _, translation);
 
 	Game_DisplayVotePassCustom(vote, translation, client);
+
+	return 0;
 }
 
 // native NativeVotes_DisplayPassEx(Handle vote, NativeVotesPassType passType, const char[] details = "");
@@ -2365,6 +2393,8 @@ public int Native_DisplayRawPassToOne(Handle plugin, int numParams)
 	{
 		Game_DisplayRawVotePass(passType, team, client);
 	}
+
+	return 0;
 }
 // native NativeVotes_DisplayRawPassCustomToOne(int client, int team, const char[] format, any:...);
 public int Native_DisplayRawPassCustomToOne(Handle plugin, int numParams)
@@ -2378,6 +2408,8 @@ public int Native_DisplayRawPassCustomToOne(Handle plugin, int numParams)
 	FormatNativeString(0, 3, 4, TRANSLATION_LENGTH, _, translation);
 
 	Game_DisplayRawVotePassCustom(translation, team, client);
+
+	return 0;
 }
 
 // native NativeVotes_DisplayFail(Handle vote, NativeVotesFailType reason = NativeVotesFail_Generic);
@@ -2393,6 +2425,8 @@ public int Native_DisplayFail(Handle plugin, int numParams)
 	NativeVotesFailType reason = view_as<NativeVotesFailType>(GetNativeCell(2));
 
 	Game_DisplayVoteFail(vote, reason);
+
+	return 0;
 }
 
 // native NativeVotes_DisplayRawFail(NativeVotesFailType reason = NativeVotesFail_Generic, int team = NATIVEVOTES_ALL_TEAMS);
@@ -2412,6 +2446,8 @@ public int Native_DisplayRawFail(Handle plugin, int numParams)
 	}
 	
 	Game_DisplayRawVoteFail(clients, size, reason, team);
+
+	return 0;
 }
 
 // native NativeVotes_DisplayRawFailToOne(int client, NativeVotesFailType reason = NativeVotesFail_Generic, int team = NATIVEVOTES_ALL_TEAMS);
@@ -2468,6 +2504,8 @@ public int Native_GetTargetSteam(Handle plugin, int numParams)
 	GetNativeString(2, steamId, size);
 	
 	Data_GetTargetSteam(vote, steamId, size);
+
+	return 0;
 }
 
 // native NativeVotes_SetTarget(Handle vote, int client, bool setDetails = true);
@@ -2485,7 +2523,7 @@ public int Native_SetTarget(Handle plugin, int numParams)
 	if (client < 1 || client > MaxClients || !IsClientConnected(client))
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index %d", client);
-		return;
+		return 0;
 	}
 	
 	int userid;
@@ -2522,6 +2560,7 @@ public int Native_SetTarget(Handle plugin, int numParams)
 			Data_SetDetails(vote, "");
 		}
 	}
+	return 0;
 }
 
 // native bool NativeVotes_AreVoteCommandsSupported();
@@ -2584,6 +2623,8 @@ public int Native_UnregisterVoteCommand(Handle plugin, int numParams)
 	{
 		RemoveFromForward(g_CallVotes[overrideType].CallVote_Vis, plugin, visHandler);
 	}
+
+	return 0;
 }
 
 // native NativeVotes_DisplayCallVoteFail(int client, NativeVotesCallFailType reason, int time=0);
@@ -2602,6 +2643,8 @@ public int Native_DisplayCallVoteFail(Handle plugin, int numParams)
 	int time = GetNativeCell(3);
 	
 	Game_DisplayCallVoteFail(client, reason, time);
+
+	return 0;
 }
 
 // native Action NativeVotes_RedrawVoteTitle(const char[] text);
